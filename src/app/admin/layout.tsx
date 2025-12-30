@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { AuthProvider, useAuth } from '@/lib/auth-context';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { profile, loading, signOut } = useAuth();
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: 'dashboard' },
@@ -17,6 +20,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/admin/login');
+    router.refresh();
+  };
+
+  // Get initials for avatar
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Get role display name
+  const getRoleDisplay = (role: string | undefined) => {
+    switch (role) {
+      case 'admin':
+        return 'Administrator';
+      case 'editor':
+        return 'Editor';
+      default:
+        return 'Member';
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-[#181411]">
@@ -69,18 +101,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* User */}
         <div className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center">
-              <span className="text-amber-800 font-bold">SJ</span>
+          {loading ? (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gray-700 animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-700 rounded animate-pulse mb-1"></div>
+                <div className="h-3 bg-gray-700 rounded animate-pulse w-20"></div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">Sarah Jenkins</p>
-              <p className="text-white/50 text-xs">Administrator</p>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center">
+                <span className="text-amber-800 font-bold">
+                  {getInitials(profile?.full_name || profile?.email)}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">
+                  {profile?.full_name || profile?.email || 'User'}
+                </p>
+                <p className="text-white/50 text-xs">{getRoleDisplay(profile?.role)}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-white/50 hover:text-white transition-colors"
+                title="Log out"
+              >
+                <span className="material-symbols-outlined">logout</span>
+              </button>
             </div>
-            <button className="text-white/50 hover:text-white">
-              <span className="material-symbols-outlined">logout</span>
-            </button>
-          </div>
+          )}
         </div>
       </aside>
 
@@ -118,5 +168,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </div>
     </div>
+  );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthProvider>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </AuthProvider>
   );
 }

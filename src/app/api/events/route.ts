@@ -1,59 +1,138 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-// Mock data for serverless deployment
-const mockEvents = [
-  {
-    id: 1,
-    title: 'Fall Festival',
-    date: '2023-10-28',
-    time: '10:00 AM - 4:00 PM',
-    location: 'School Playground',
-    description: 'Annual fall festival with games, food, and fun for the whole family!'
-  },
-  {
-    id: 2,
-    title: 'PTA General Meeting',
-    date: '2023-11-12',
-    time: '7:00 PM',
-    location: 'Library',
-    description: 'Monthly PTA meeting to discuss upcoming events and initiatives.'
-  },
-  {
-    id: 3,
-    title: 'Thanksgiving Feast',
-    date: '2023-11-24',
-    time: '11:00 AM',
-    location: 'Cafeteria',
-    description: 'School-wide Thanksgiving celebration with traditional dishes.'
-  },
-  {
-    id: 4,
-    title: 'Winter Concert',
-    date: '2023-12-15',
-    time: '6:30 PM',
-    location: 'Auditorium',
-    description: 'Annual winter concert featuring performances by all grade levels.'
-  },
-  {
-    id: 5,
-    title: 'Book Fair',
-    date: '2023-11-06',
-    time: '8:00 AM - 3:00 PM',
-    location: 'Library',
-    description: 'Scholastic Book Fair - great books for young readers!'
+export async function GET(request: Request) {
+  const supabase = await createClient();
+  const { searchParams } = new URL(request.url);
+  const category = searchParams.get('category');
+  const featured = searchParams.get('featured');
+  const upcoming = searchParams.get('upcoming');
+
+  let query = supabase
+    .from('events')
+    .select('*')
+    .order('date', { ascending: true });
+
+  if (category) {
+    query = query.eq('category', category);
   }
-];
 
-export async function GET() {
-  return NextResponse.json(mockEvents);
+  if (featured === 'true') {
+    query = query.eq('is_featured', true);
+  }
+
+  if (upcoming === 'true') {
+    query = query.gte('date', new Date().toISOString().split('T')[0]);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching events:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const newEvent = {
-    id: mockEvents.length + 1,
-    ...body
-  };
-  // In production, this would save to a database
-  return NextResponse.json(newEvent);
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    
+    const { data, error } = await supabase
+      .from('events')
+      .insert({
+        title: body.title,
+        description: body.description,
+        date: body.date,
+        time: body.time,
+        end_time: body.end_time,
+        location: body.location,
+        category: body.category,
+        image: body.image,
+        is_featured: body.is_featured || false,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating event:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error parsing request:', error);
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+}
+
+export async function PUT(request: Request) {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('events')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating event:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error parsing request:', error);
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+  }
+
+  const { error } = await supabase
+    .from('events')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting event:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
 }

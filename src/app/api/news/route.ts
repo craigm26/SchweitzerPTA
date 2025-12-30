@@ -1,48 +1,143 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-// Mock data for serverless deployment
-const mockNews = [
-  {
-    id: 1,
-    title: 'Annual Fun Run Raises Record Funds for New Playground!',
-    content: 'The annual Schweitzer Elementary Fun Run was a massive success this year, breaking all previous fundraising records.',
-    author: 'Jane Doe',
-    createdAt: '2023-10-24T10:00:00Z'
-  },
-  {
-    id: 2,
-    title: 'October PTA Meeting Minutes',
-    content: 'Catch up on the budget approval, new playground plans, and volunteer opportunities for the winter season.',
-    author: 'Sarah Jenkins',
-    createdAt: '2023-10-20T14:00:00Z'
-  },
-  {
-    id: 3,
-    title: 'Book Fair Volunteers Needed',
-    content: 'We need help setting up and running the Scholastic Book Fair next week. Sign up for a 1-hour slot!',
-    author: 'Lisa Wong',
-    createdAt: '2023-10-18T09:00:00Z'
-  },
-  {
-    id: 4,
-    title: 'Fall Festival Tickets Now Available',
-    content: 'Purchase your tickets early for a discount! Fun, games, and food for the whole family await at our biggest fundraiser of the year.',
-    author: 'Mike Ross',
-    createdAt: '2023-10-15T11:00:00Z'
+export async function GET(request: Request) {
+  const supabase = await createClient();
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get('status');
+  const limit = searchParams.get('limit');
+
+  let query = supabase
+    .from('news')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  // Filter by status if provided, otherwise show only published for public
+  if (status) {
+    query = query.eq('status', status);
+  } else {
+    query = query.eq('status', 'published');
   }
-];
 
-export async function GET() {
-  return NextResponse.json(mockNews);
+  if (limit) {
+    query = query.limit(parseInt(limit));
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching news:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const newArticle = {
-    id: mockNews.length + 1,
-    createdAt: new Date().toISOString(),
-    ...body
-  };
-  // In production, this would save to a database
-  return NextResponse.json(newArticle);
+  const supabase = await createClient();
+  
+  // Check if user is authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    
+    const { data, error } = await supabase
+      .from('news')
+      .insert({
+        title: body.title,
+        content: body.content,
+        excerpt: body.excerpt || body.content.substring(0, 200),
+        author_id: user.id,
+        author_name: body.author_name || user.email,
+        featured_image: body.featured_image,
+        status: body.status || 'draft',
+        category: body.category,
+        tags: body.tags,
+        published_at: body.status === 'published' ? new Date().toISOString() : null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating news:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error parsing request:', error);
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+}
+
+export async function PUT(request: Request) {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+    }
+
+    // Set published_at when publishing
+    if (updateData.status === 'published' && !updateData.published_at) {
+      updateData.published_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from('news')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating news:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error parsing request:', error);
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+  }
+
+  const { error } = await supabase
+    .from('news')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting news:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
 }

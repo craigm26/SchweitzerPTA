@@ -1,6 +1,55 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+      
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Update last login
+        await supabase
+          .from('profiles')
+          .update({ last_login: new Date().toISOString() })
+          .eq('id', data.user.id);
+
+        // Redirect to admin dashboard
+        router.push('/admin');
+        router.refresh();
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-full w-full h-screen">
       {/* Left Panel - Branding */}
@@ -69,13 +118,23 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form action="#" className="space-y-6">
+          {/* Error message */}
+          {error && (
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-red-600 text-xl">error</span>
+                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label
                 className="block text-sm font-medium leading-6 text-[#181411] dark:text-gray-200"
-                htmlFor="username"
+                htmlFor="email"
               >
-                Username or Email
+                Email Address
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
@@ -83,11 +142,14 @@ export default function LoginPage() {
                 </div>
                 <input
                   className="block w-full rounded-xl border-0 py-4 pl-12 text-[#181411] shadow-sm ring-1 ring-inset ring-[#e6e0db] placeholder:text-[#8a7560]/70 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 dark:bg-white/5 dark:text-white dark:ring-white/10 dark:focus:ring-primary transition-all"
-                  id="username"
-                  name="username"
-                  placeholder="user@schweitzerpta.org"
+                  id="email"
+                  name="email"
+                  placeholder="admin@schweitzerpta.org"
                   required
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -109,13 +171,19 @@ export default function LoginPage() {
                   name="password"
                   placeholder="••••••••"
                   required
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  <span className="material-symbols-outlined text-xl">visibility</span>
+                  <span className="material-symbols-outlined text-xl">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -141,11 +209,21 @@ export default function LoginPage() {
 
             <div>
               <button
-                className="flex w-full justify-center items-center gap-2 rounded-xl bg-primary px-3 py-4 text-sm font-bold leading-6 text-white shadow-lg shadow-primary/30 hover:bg-orange-600 hover:shadow-primary/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all transform active:scale-[0.98]"
+                className="flex w-full justify-center items-center gap-2 rounded-xl bg-primary px-3 py-4 text-sm font-bold leading-6 text-white shadow-lg shadow-primary/30 hover:bg-orange-600 hover:shadow-primary/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 type="submit"
+                disabled={loading}
               >
-                Log In
-                <span className="material-symbols-outlined text-lg">login</span>
+                {loading ? (
+                  <>
+                    <span className="animate-spin material-symbols-outlined text-lg">progress_activity</span>
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Log In
+                    <span className="material-symbols-outlined text-lg">login</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
