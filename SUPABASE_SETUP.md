@@ -29,6 +29,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
 For Vercel deployment, add these in your Vercel project settings:
+
 1. Go to your Vercel project → **Settings** → **Environment Variables**
 2. Add both variables for Production, Preview, and Development
 
@@ -50,6 +51,7 @@ For Vercel deployment, add these in your Vercel project settings:
 ## 6. Create Your First Admin User
 
 ### Option A: Via Supabase Dashboard
+
 1. Go to **Authentication** → **Users**
 2. Click "Add user" → "Create new user"
 3. Enter email and password
@@ -57,6 +59,7 @@ For Vercel deployment, add these in your Vercel project settings:
 5. Find your user and change `role` to `admin`
 
 ### Option B: Via SQL
+
 ```sql
 -- After the user signs up, update their profile to admin
 UPDATE public.profiles 
@@ -106,14 +109,17 @@ All tables have Row Level Security enabled:
 ## Troubleshooting
 
 ### "Invalid API key" error
+
 - Double-check your environment variables
 - Make sure you're using the `anon` key, not the `service_role` key
 
 ### Users can't access admin
+
 - Verify the user exists in the `profiles` table
 - Check that their `role` is set to `admin` or `editor`
 
 ### RLS policy errors
+
 - Make sure the schema.sql was run completely
 - Check that all policies were created in **Authentication** → **Policies**
 
@@ -133,10 +139,10 @@ npm run build
 ## Vercel Deployment
 
 The app is configured to work with Vercel:
+
 1. Push your code to GitHub
 2. Import the repo in Vercel
 3. Add environment variables
 4. Deploy!
 
 The Supabase client will automatically use your environment variables.
-

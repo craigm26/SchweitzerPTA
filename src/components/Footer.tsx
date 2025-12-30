@@ -48,7 +48,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-xs text-gray-500">
-          © 2023 Schweitzer Elementary PTA. All rights reserved.
+          © 2025 Schweitzer Elementary PTA. All rights reserved.
         </div>
       </div>
     </footer>
