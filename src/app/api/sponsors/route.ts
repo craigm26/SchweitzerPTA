@@ -1,33 +1,61 @@
 import { NextResponse } from 'next/server';
-import db from '@/utils/db';
+
+// Mock data for serverless deployment
+const mockSponsors = [
+  {
+    id: 1,
+    name: 'Tech Solutions Inc.',
+    website: 'https://techsolutions.example.com',
+    level: 'Gold',
+    logo: '🏢'
+  },
+  {
+    id: 2,
+    name: 'Main Street Pizza',
+    website: 'https://mainstreetpizza.example.com',
+    level: 'Gold',
+    logo: '🍕'
+  },
+  {
+    id: 3,
+    name: 'First National Bank',
+    website: 'https://fnb.example.com',
+    level: 'Gold',
+    logo: '🏦'
+  },
+  {
+    id: 4,
+    name: 'Schweitzer Realty Group',
+    website: 'https://schweitzerrealty.example.com',
+    level: 'Silver',
+    logo: '🏠'
+  },
+  {
+    id: 5,
+    name: 'Local Market',
+    website: 'https://localmarket.example.com',
+    level: 'Silver',
+    logo: '🛒'
+  },
+  {
+    id: 6,
+    name: 'The Diner',
+    website: 'https://thediner.example.com',
+    level: 'Bronze',
+    logo: '🍽️'
+  }
+];
 
 export async function GET() {
-  const sponsors = await new Promise((resolve, reject) => {
-    db.all('SELECT * FROM sponsors', (err, rows) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(rows);
-      }
-    });
-  });
-  return NextResponse.json(sponsors);
+  return NextResponse.json(mockSponsors);
 }
 
 export async function POST(request: Request) {
-  const { name, website, level, logo } = await request.json();
-  const result = await new Promise((resolve, reject) => {
-    db.run(
-      'INSERT INTO sponsors (name, website, level, logo) VALUES (?, ?, ?, ?)',
-      [name, website, level, logo],
-      function (err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ id: this.lastID });
-        }
-      }
-    );
-  });
-  return NextResponse.json(result);
+  const body = await request.json();
+  const newSponsor = {
+    id: mockSponsors.length + 1,
+    ...body
+  };
+  // In production, this would save to a database
+  return NextResponse.json(newSponsor);
 }
