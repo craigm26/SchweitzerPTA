@@ -1,10 +1,50 @@
-import Card from '@/components/Card';
-
 export default function NewsPage() {
+  const recentUpdates = [
+    {
+      id: 1,
+      category: 'Sponsors',
+      date: 'Oct 05, 2023',
+      title: "Sponsor Spotlight: Joe's Pizza",
+      excerpt: "A huge thank you to our Gold Sponsor for providing lunch for the teachers! We...",
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDl-hTl5tGPQ6HIfL0gBVdYqPZD1aChLEhMQ4SV',
+    },
+    {
+      id: 2,
+      category: 'Meeting Minutes',
+      date: 'Sept 28, 2023',
+      title: 'PTA Meeting Recap - September',
+      excerpt: "Here are the minutes from last Tuesday's meeting covering the budget and...",
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD0_t7hJk9YmLUq3XWE8EoNK5rWE4hFGQ9Md7s',
+    },
+    {
+      id: 3,
+      category: 'Community',
+      date: 'Sept 20, 2023',
+      title: 'Volunteer Opportunities Needed',
+      excerpt: 'We need help with the upcoming book fair. Sign up for a slot today! We need parents...',
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAB3x8nQPz9KvRq5WKF8tLhNR6V2dCjMQ7Nx4A',
+    },
+    {
+      id: 4,
+      category: 'Fundraiser',
+      date: 'Sept 15, 2023',
+      title: 'Wildcat Fun Run Total is In!',
+      excerpt: 'We crushed our goal this year! Thanks to everyone who participated in the annual...',
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_g5rT8kL2MN3xYWZ7tUvQ6hJk9aRbCdE4Of5',
+    },
+  ];
+
+  const upcomingEvents = [
+    { month: 'OCT', day: '12', title: 'Fall Carnival', time: '4:00 PM - 7:00 PM', location: 'School Grounds' },
+    { month: 'OCT', day: '20', title: 'No School - Teacher Prep', time: 'All Day', location: '' },
+    { month: 'OCT', day: '28', title: 'Trunk or Treat', time: '5:30 PM - 8:00 PM', location: 'Parking Lot B' },
+  ];
+
   return (
     <main className="layout-container flex h-full grow flex-col">
-      <div className="px-4 md:px-10 xl:px-40 flex flex-1 justify-center py-5">
+      <div className="px-4 md:px-10 xl:px-20 flex flex-1 justify-center py-5">
         <div className="layout-content-container flex flex-col max-w-[1200px] flex-1">
+          {/* Hero Section */}
           <div className="@container mb-8">
             <div className="flex flex-col gap-6 py-6 md:py-10 md:flex-row items-center">
               <div className="w-full md:w-1/2 flex flex-col gap-6 justify-center">
@@ -48,8 +88,12 @@ export default function NewsPage() {
               ></div>
             </div>
           </div>
+
+          {/* Main Content Area */}
           <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Column - News Content */}
             <div className="flex-1 flex flex-col gap-8">
+              {/* Featured Story */}
               <section>
                 <div className="flex items-center gap-2 px-4 pb-3">
                   <span className="material-symbols-outlined text-primary">campaign</span>
@@ -90,6 +134,8 @@ export default function NewsPage() {
                   </div>
                 </a>
               </section>
+
+              {/* Recent Updates */}
               <section>
                 <div className="flex items-center gap-2 px-4 pb-3 pt-4 border-b border-[#f5f2f0] dark:border-gray-800 mb-4 justify-between">
                   <div className="flex items-center gap-2">
@@ -102,10 +148,114 @@ export default function NewsPage() {
                     View All
                   </a>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                  {/* News Cards Here */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {recentUpdates.map((article) => (
+                    <a
+                      key={article.id}
+                      href={`/news/${article.id}`}
+                      className="group flex flex-col bg-white dark:bg-[#2a221a] rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow"
+                    >
+                      <div
+                        className="w-full aspect-video bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                        style={{
+                          backgroundImage: `url("${article.image}")`,
+                          backgroundColor: '#e5e5e5',
+                        }}
+                      ></div>
+                      <div className="p-4 flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="font-bold text-gray-500 dark:text-gray-400 uppercase">{article.category}</span>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-gray-500 dark:text-gray-400">{article.date}</span>
+                        </div>
+                        <h4 className="text-[#181411] dark:text-white font-bold text-lg group-hover:text-primary transition-colors">
+                          {article.title}
+                        </h4>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">{article.excerpt}</p>
+                      </div>
+                    </a>
+                  ))}
                 </div>
               </section>
+
+              {/* Load More */}
+              <div className="flex justify-center py-4">
+                <button className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#181411] dark:hover:text-white font-medium transition-colors">
+                  Load More News
+                  <span className="material-symbols-outlined text-lg">expand_more</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Sidebar */}
+            <div className="lg:w-80 shrink-0 flex flex-col gap-6">
+              {/* Upcoming Events */}
+              <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="material-symbols-outlined text-primary">event</span>
+                  <h4 className="font-bold text-[#181411] dark:text-white">Upcoming Events</h4>
+                </div>
+                <div className="flex flex-col gap-4">
+                  {upcomingEvents.map((event, index) => (
+                    <div key={index} className="flex gap-3">
+                      <div className="text-center shrink-0">
+                        <div className="text-primary text-xs font-bold">{event.month}</div>
+                        <div className="text-[#181411] dark:text-white text-xl font-bold">{event.day}</div>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-[#181411] dark:text-white text-sm">{event.title}</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xs">{event.time}</span>
+                        {event.location && (
+                          <span className="text-gray-400 dark:text-gray-500 text-xs">{event.location}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <a
+                  href="/events"
+                  className="block mt-4 text-center text-primary text-sm font-bold hover:underline"
+                >
+                  View Calendar
+                </a>
+              </div>
+
+              {/* Our Sponsors */}
+              <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="material-symbols-outlined text-primary">volunteer_activism</span>
+                  <h4 className="font-bold text-[#181411] dark:text-white">Our Sponsors</h4>
+                </div>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+                  Thanks to our amazing community partners for supporting our school!
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-gray-50 dark:bg-[#181411] rounded-lg p-3 flex items-center justify-center h-16"
+                    >
+                      <span className="material-symbols-outlined text-2xl text-gray-300">
+                        {i === 1 ? 'local_pizza' : i === 2 ? 'account_balance' : i === 3 ? 'store' : 'build'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full mt-4 bg-[#181411] dark:bg-white text-white dark:text-[#181411] py-2 px-4 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity">
+                  Become a Sponsor
+                </button>
+              </div>
+
+              {/* Newsletter CTA */}
+              <div className="bg-primary rounded-xl p-5 text-white">
+                <h4 className="font-bold text-lg mb-2">Weekly Roar Newsletter</h4>
+                <p className="text-white/80 text-sm mb-4">
+                  Don&apos;t miss out on important announcements delivered to your inbox.
+                </p>
+                <button className="w-full bg-white text-primary py-2 px-4 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors">
+                  Subscribe Now
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,16 +1,50 @@
-export default function NewsArticlePage({ params }: { params: { slug: string } }) {
+import Link from 'next/link';
+
+export default async function NewsArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  
+  const goldSponsors = [
+    { name: 'Main Street Pizza', description: 'Providing lunch for volunteers' },
+    { name: 'First National Bank', description: 'Matching donation partner' },
+    { name: 'Schweitzer Realty Group', description: 'Community support' },
+  ];
+
+  const moreNews = [
+    {
+      category: 'Academics',
+      title: 'Book Fair Next Week: What You Need to Know',
+      date: 'Oct 20, 2023',
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDl-hTl5tGPQ6HIfL0gBVdYqPZD1aChLEhMQ4SV',
+    },
+    {
+      category: 'Staff',
+      title: 'Meet Our New Science Teacher',
+      date: 'Oct 15, 2023',
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD0_t7hJk9YmLUq3XWE8EoNK5rWE4hFGQ9Md7s',
+    },
+    {
+      category: 'PTA',
+      title: 'Upcoming PTA Meeting Agenda',
+      date: 'Oct 12, 2023',
+      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_g5rT8kL2MN3xYWZ7tUvQ6hJk9aRbCdE4Of5',
+    },
+  ];
+
   return (
     <div className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Main Content */}
         <main className="lg:col-span-8 flex flex-col gap-6">
+          {/* Breadcrumb */}
           <nav className="flex items-center text-sm font-medium text-[#897561] dark:text-gray-400">
-            <a className="hover:text-primary transition-colors" href="/news">
+            <Link className="hover:text-primary transition-colors" href="/news">
               News
-            </a>
+            </Link>
             <span className="mx-2">/</span>
             <span className="text-[#181411] dark:text-white truncate">Annual Fun Run Details</span>
           </nav>
 
+          {/* Article Header */}
           <div className="flex flex-col gap-4 border-b border-[#e6e0db] dark:border-gray-700 pb-6">
             <div className="flex flex-wrap justify-between items-start gap-4">
               <h1 className="text-3xl md:text-4xl font-black text-[#181411] dark:text-white leading-tight tracking-tight max-w-3xl">
@@ -41,6 +75,7 @@ export default function NewsArticlePage({ params }: { params: { slug: string } }
             </div>
           </div>
 
+          {/* Featured Image */}
           <div className="w-full rounded-xl overflow-hidden shadow-sm aspect-video bg-gray-100 relative group">
             <div
               className="absolute inset-0 bg-cover bg-center"
@@ -51,17 +86,18 @@ export default function NewsArticlePage({ params }: { params: { slug: string } }
             ></div>
           </div>
 
+          {/* Article Content */}
           <article className="prose prose-lg dark:prose-invert max-w-none text-[#181411] dark:text-[#e2e2e2] leading-relaxed">
             <p className="mb-4">
               The annual Schweitzer Elementary Fun Run was a massive success this year, breaking all previous
               fundraising records. Students, parents, and teachers gathered on the track to show their school spirit
-              and support the PTA's initiatives for the upcoming school year. The energy was electric as the mascot,
+              and support the PTA&apos;s initiatives for the upcoming school year. The energy was electric as the mascot,
               Stripes the Tiger, led the warm-up exercises.
             </p>
             <p className="mb-4">
-              "I've never seen such enthusiasm from the community," said Principal Skinner. "Every lap run today
+              &quot;I&apos;ve never seen such enthusiasm from the community,&quot; said Principal Skinner. &quot;Every lap run today
               translates directly into new books for the library and updated equipment for the playground. We are
-              incredibly grateful."
+              incredibly grateful.&quot;
             </p>
             <h2 className="text-2xl font-bold text-[#181411] dark:text-white mt-8 mb-4">Community Impact</h2>
             <p className="mb-4">
@@ -75,8 +111,8 @@ export default function NewsArticlePage({ params }: { params: { slug: string } }
               <li>After-school art program supplies</li>
             </ul>
             <blockquote className="border-l-4 border-primary pl-4 py-2 my-6 bg-primary/5 dark:bg-primary/10 italic text-[#5c4d41] dark:text-gray-300 rounded-r-lg">
-              "The Fun Run isn't just about money; it's about teaching our kids the value of fitness and community
-              support." - Sarah Jenkins, PTA President
+              &quot;The Fun Run isn&apos;t just about money; it&apos;s about teaching our kids the value of fitness and community
+              support.&quot; - Sarah Jenkins, PTA President
             </blockquote>
             <p>
               We want to extend a special thank you to the local businesses who sponsored water stations and provided
@@ -84,6 +120,7 @@ export default function NewsArticlePage({ params }: { params: { slug: string } }
             </p>
           </article>
 
+          {/* Tags */}
           <div className="flex flex-wrap gap-2 mt-4 pt-6 border-t border-[#e6e0db] dark:border-gray-700">
             <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-sm font-medium rounded-full text-gray-600 dark:text-gray-300">
               #FunRun
@@ -97,10 +134,79 @@ export default function NewsArticlePage({ params }: { params: { slug: string } }
           </div>
         </main>
 
-        <aside className="lg:col-span-4 space-y-8">
-          {/* Sidebar content here */}
+        {/* Sidebar */}
+        <aside className="lg:col-span-4 space-y-6">
+          {/* Become a Sponsor CTA */}
+          <div className="bg-primary rounded-xl p-5 text-white">
+            <h4 className="font-bold text-lg mb-2">Become a Sponsor</h4>
+            <p className="text-white/80 text-sm mb-4">
+              Support Schweitzer Elementary and get your business featured in our newsletter and events.
+            </p>
+            <Link
+              href="/sponsors"
+              className="block w-full bg-white text-primary py-2 px-4 rounded-lg font-bold text-sm text-center hover:bg-gray-100 transition-colors"
+            >
+              View Sponsor Packages
+            </Link>
+          </div>
+
+          {/* Gold Sponsors */}
+          <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-amber-500">workspace_premium</span>
+              <h4 className="font-bold text-[#181411] dark:text-white">Gold Sponsors</h4>
+            </div>
+            <div className="flex flex-col gap-4">
+              {goldSponsors.map((sponsor, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-amber-600 text-lg">storefront</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-[#181411] dark:text-white text-sm">{sponsor.name}</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-xs">{sponsor.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link
+              href="/sponsors"
+              className="block mt-4 text-center text-primary text-sm font-bold hover:underline"
+            >
+              View All Sponsors →
+            </Link>
+          </div>
         </aside>
       </div>
+
+      {/* More News Section */}
+      <section className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-[#181411] dark:text-white mb-6">More News</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {moreNews.map((article, index) => (
+            <Link
+              key={index}
+              href={`/news/${index + 1}`}
+              className="group flex flex-col bg-white dark:bg-[#2a221a] rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow"
+            >
+              <div
+                className="w-full aspect-video bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                style={{
+                  backgroundImage: `url("${article.image}")`,
+                  backgroundColor: '#e5e5e5',
+                }}
+              ></div>
+              <div className="p-4 flex flex-col gap-2">
+                <span className="text-primary text-xs font-bold uppercase">{article.category}</span>
+                <h4 className="text-[#181411] dark:text-white font-bold group-hover:text-primary transition-colors">
+                  {article.title}
+                </h4>
+                <span className="text-gray-500 dark:text-gray-400 text-sm">{article.date}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

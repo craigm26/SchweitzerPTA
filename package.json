@@ -11,7 +11,9 @@
   "dependencies": {
     "@playwright/test": "^1.57.0",
     "@stripe/stripe-js": "^8.6.0",
+    "@tailwindcss/oxide-win32-x64-msvc": "^4.1.18",
     "@types/sqlite3": "^3.1.11",
+    "lightningcss-win32-x64-msvc": "^1.30.2",
     "next": "^16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -21,9 +23,7 @@
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "^4.1.18",
-    "@tailwindcss/oxide-win32-x64-msvc": "^4.1.18",
-    "lightningcss-linux-x64-gnu": "^1.30.2",
-    "lightningcss-win32-x64-msvc": "^1.30.2"
+    "lightningcss-linux-x64-gnu": "^1.30.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -33,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "lightningcss": "^1.30.2",
+    "lightningcss-win32-x64-msvc": "^1.30.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
