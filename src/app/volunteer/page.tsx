@@ -1,84 +1,115 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { getVolunteerOpportunities, getSponsors, signUpForVolunteer, VolunteerOpportunity, Sponsor } from '@/lib/api';
+
 export default function VolunteerPage() {
+  const [opportunities, setOpportunities] = useState<VolunteerOpportunity[]>([]);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [signupModal, setSignupModal] = useState<{ open: boolean; opportunity: VolunteerOpportunity | null }>({
+    open: false,
+    opportunity: null,
+  });
+  const [signupForm, setSignupForm] = useState({ name: '', email: '', phone: '' });
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+
   const stats = [
     { icon: 'schedule', value: '1,200+', label: 'Hours Volunteered' },
     { icon: 'groups', value: '450', label: 'Parents Involved' },
     { icon: 'celebration', value: '25', label: 'Events Supported' },
   ];
 
-  const opportunities = [
-    {
-      id: 1,
-      title: 'Fall Carnival Booth',
-      category: 'Event',
-      categoryColor: 'bg-primary',
-      date: { month: 'OCT', day: '24' },
-      time: '4:00 PM - 6:00 PM (2 hrs)',
-      location: 'School Playground',
-      description: "Help run the ring toss and bean bag throw games! It's easy, fun, and you get to see all...",
-      spots: { count: 3, urgent: false },
-      action: { label: 'Sign Up Now', variant: 'primary' },
-    },
-    {
-      id: 2,
-      title: 'Library Helper',
-      category: 'Ongoing',
-      categoryColor: 'bg-green-600',
-      date: { month: 'VAR', day: '📅' },
-      time: 'Tue/Thu 8:30 AM - 10:00 AM',
-      location: 'School Library',
-      description: 'Assist Mrs. Johnson with shelving books and managing check-outs during the busy...',
-      spots: { count: null, text: 'Open Availability', urgent: false },
-      action: { label: 'View Shifts', variant: 'secondary' },
-    },
-    {
-      id: 3,
-      title: 'Silent Auction Prep',
-      category: 'Fundraiser',
-      categoryColor: 'bg-red-500',
-      date: { month: 'NOV', day: '12' },
-      time: '6:00 PM - 8:30 PM',
-      location: 'Cafeteria',
-      description: 'Help us organize and wrap gift baskets for the annual Silent Auction. Supplies provided!',
-      spots: { count: 1, urgent: true },
-      action: { label: 'Sign Up Now', variant: 'primary' },
-    },
-    {
-      id: 4,
-      title: 'Field Day Setup',
-      category: 'Event',
-      categoryColor: 'bg-primary',
-      date: { month: 'MAY', day: '15' },
-      time: '7:00 AM - 9:00 AM',
-      location: 'Soccer Fields',
-      description: 'Early risers needed! Help us set up the obstacle course, water stations, and tug-of-...',
-      spots: { count: 10, urgent: false },
-      action: { label: 'Sign Up Now', variant: 'primary' },
-    },
-    {
-      id: 5,
-      title: 'Chaperone - Zoo Trip',
-      category: 'Full',
-      categoryColor: 'bg-gray-400',
-      date: { month: 'APR', day: '02' },
-      time: '9:00 AM - 2:00 PM',
-      location: 'Meet at Bus Loop',
-      description: "Chaperone specifically for Mr. Smith's 3rd grade class field trip to the city zoo.",
-      spots: { count: null, text: 'Full', urgent: false },
-      action: { label: 'Join Waitlist', variant: 'disabled' },
-    },
-    {
-      id: 6,
-      title: 'Traffic Control',
-      category: 'Ongoing',
-      categoryColor: 'bg-green-600',
-      date: { month: 'VAR', day: '📅' },
-      time: 'Mon-Fri 7:30 AM - 8:00 AM',
-      location: 'Main Entrance',
-      description: 'Keep our Wildcats safe! Direct traffic during morning drop-off. High visibility vest...',
-      spots: { count: null, text: 'Open Availability', urgent: false },
-      action: { label: 'View Shifts', variant: 'secondary' },
-    },
-  ];
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [opportunitiesData, sponsorsData] = await Promise.all([
+          getVolunteerOpportunities(),
+          getSponsors({ level: 'platinum' }),
+        ]);
+        setOpportunities(opportunitiesData || []);
+        setSponsors(sponsorsData?.slice(0, 5) || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const getDateParts = (dateString: string | null) => {
+    if (!dateString) return { month: 'VAR', day: '📅' };
+    const date = new Date(dateString);
+    return {
+      month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      day: date.getDate().toString().padStart(2, '0'),
+    };
+  };
+
+  const getCategoryColor = (category: string | null) => {
+    switch (category?.toLowerCase()) {
+      case 'event':
+        return 'bg-primary';
+      case 'ongoing':
+        return 'bg-green-600';
+      case 'fundraiser':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
+  const filteredOpportunities = opportunities.filter((opp) => {
+    const matchesSearch =
+      opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      opp.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'All Categories' ||
+      opp.category?.toLowerCase() === selectedCategory.toLowerCase();
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signupModal.opportunity) return;
+
+    setSignupLoading(true);
+    try {
+      await signUpForVolunteer({
+        opportunity_id: signupModal.opportunity.id,
+        name: signupForm.name,
+        email: signupForm.email,
+        phone: signupForm.phone,
+      });
+      setSignupSuccess(true);
+      setTimeout(() => {
+        setSignupModal({ open: false, opportunity: null });
+        setSignupForm({ name: '', email: '', phone: '' });
+        setSignupSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Error signing up:', error);
+      alert('Failed to sign up. Please try again.');
+    } finally {
+      setSignupLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="layout-container flex grow flex-col items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500">Loading opportunities...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="layout-container flex grow flex-col items-center">
@@ -112,9 +143,12 @@ export default function VolunteerPage() {
             <button className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary text-white text-base font-bold shadow-lg hover:bg-orange-600 transition-transform active:scale-95">
               View Opportunities
             </button>
-            <button className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-white text-[#181411] text-base font-bold shadow-lg hover:bg-gray-100 transition-transform active:scale-95">
+            <Link
+              href="/about"
+              className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-white text-[#181411] text-base font-bold shadow-lg hover:bg-gray-100 transition-transform active:scale-95"
+            >
               Learn More
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -141,7 +175,12 @@ export default function VolunteerPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <h2 className="text-[#181411] dark:text-white text-2xl md:text-3xl font-bold">Volunteer Opportunities</h2>
             <div className="flex flex-col sm:flex-row gap-3">
-              <select className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-[#181411] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                aria-label="Filter by category"
+                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-[#181411] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
                 <option>All Categories</option>
                 <option>Event</option>
                 <option>Ongoing</option>
@@ -154,6 +193,8 @@ export default function VolunteerPage() {
                 <input
                   type="text"
                   placeholder="Search events or roles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-[#181411] dark:text-white placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full sm:w-64"
                 />
               </div>
@@ -161,75 +202,83 @@ export default function VolunteerPage() {
           </div>
 
           {/* Opportunity Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {opportunities.map((opp) => (
-              <div
-                key={opp.id}
-                className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between mb-3">
-                  <span
-                    className={`${opp.categoryColor} text-white text-xs font-bold px-2 py-1 rounded uppercase`}
+          {filteredOpportunities.length === 0 ? (
+            <div className="text-center py-16">
+              <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">volunteer_activism</span>
+              <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No opportunities found</h3>
+              <p className="text-gray-500">Check back later for new volunteer opportunities!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredOpportunities.map((opp) => {
+                const { month, day } = getDateParts(opp.date);
+                const spotsLeft = opp.spots_available - opp.spots_filled;
+                const isFull = spotsLeft <= 0;
+                const isUrgent = spotsLeft > 0 && spotsLeft <= 3;
+
+                return (
+                  <div
+                    key={opp.id}
+                    className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col"
                   >
-                    {opp.category}
-                  </span>
-                  <div className="text-center">
-                    <div className="text-gray-400 text-xs font-bold">{opp.date.month}</div>
-                    <div className="text-[#181411] dark:text-white text-lg font-bold">{opp.date.day}</div>
-                  </div>
-                </div>
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-3">
+                      <span className={`${getCategoryColor(opp.category)} text-white text-xs font-bold px-2 py-1 rounded uppercase`}>
+                        {opp.category || 'General'}
+                      </span>
+                      <div className="text-center">
+                        <div className="text-gray-400 text-xs font-bold">{month}</div>
+                        <div className="text-[#181411] dark:text-white text-lg font-bold">{day}</div>
+                      </div>
+                    </div>
 
-                {/* Content */}
-                <h3 className="text-[#181411] dark:text-white font-bold text-lg mb-2">{opp.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">{opp.description}</p>
+                    {/* Content */}
+                    <h3 className="text-[#181411] dark:text-white font-bold text-lg mb-2">{opp.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">{opp.description}</p>
 
-                {/* Details */}
-                <div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">schedule</span>
-                    <span>{opp.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">location_on</span>
-                    <span>{opp.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`material-symbols-outlined text-sm ${opp.spots.urgent ? 'text-red-500' : 'text-green-500'}`}
+                    {/* Details */}
+                    <div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">schedule</span>
+                        <span>{opp.time_commitment}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`material-symbols-outlined text-sm ${isFull ? 'text-gray-400' : isUrgent ? 'text-red-500' : 'text-green-500'}`}>
+                          {isFull ? 'block' : isUrgent ? 'warning' : 'check_circle'}
+                        </span>
+                        <span className={isFull ? 'text-gray-400' : isUrgent ? 'text-red-500' : 'text-green-500'}>
+                          {isFull ? 'Full' : `${spotsLeft} spots left`}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      onClick={() => !isFull && setSignupModal({ open: true, opportunity: opp })}
+                      disabled={isFull}
+                      className={`mt-auto w-full py-3 rounded-lg font-bold text-sm transition-colors ${
+                        isFull
+                          ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                          : 'bg-primary hover:bg-orange-600 text-white'
+                      }`}
                     >
-                      {opp.spots.urgent ? 'warning' : 'check_circle'}
-                    </span>
-                    <span className={opp.spots.urgent ? 'text-red-500' : 'text-green-500'}>
-                      {opp.spots.text || `${opp.spots.count} spots left`}
-                    </span>
+                      {isFull ? 'Join Waitlist' : 'Sign Up Now'}
+                    </button>
                   </div>
-                </div>
-
-                {/* Action Button */}
-                <button
-                  className={`mt-auto w-full py-3 rounded-lg font-bold text-sm transition-colors ${
-                    opp.action.variant === 'primary'
-                      ? 'bg-primary hover:bg-orange-600 text-white'
-                      : opp.action.variant === 'secondary'
-                        ? 'border-2 border-primary text-primary hover:bg-primary/10'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                  }`}
-                  disabled={opp.action.variant === 'disabled'}
-                >
-                  {opp.action.label}
-                </button>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Load More Button */}
-          <div className="flex justify-center mt-8">
-            <button className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#181411] dark:hover:text-white font-medium transition-colors">
-              Load More Opportunities
-              <span className="material-symbols-outlined text-lg">expand_more</span>
-            </button>
-          </div>
+          {filteredOpportunities.length > 0 && (
+            <div className="flex justify-center mt-8">
+              <button className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#181411] dark:hover:text-white font-medium transition-colors">
+                Load More Opportunities
+                <span className="material-symbols-outlined text-lg">expand_more</span>
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -243,23 +292,97 @@ export default function VolunteerPage() {
             </h2>
           </div>
           <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="w-20 h-20 rounded-lg bg-white dark:bg-[#2a221a] shadow-sm flex items-center justify-center"
-              >
+            {sponsors.length === 0 ? (
+              [1, 2, 3, 4, 5].map((i) => (
                 <div
-                  className={`w-12 h-12 rounded flex items-center justify-center ${
-                    i % 2 === 0 ? 'bg-gray-100' : 'bg-primary/10'
-                  }`}
+                  key={i}
+                  className="w-20 h-20 rounded-lg bg-white dark:bg-[#2a221a] shadow-sm flex items-center justify-center"
                 >
                   <span className="material-symbols-outlined text-2xl text-gray-400">storefront</span>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              sponsors.map((sponsor) => (
+                <a
+                  key={sponsor.id}
+                  href={sponsor.website || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-20 h-20 rounded-lg bg-white dark:bg-[#2a221a] shadow-sm flex items-center justify-center hover:shadow-md transition-shadow"
+                >
+                  {sponsor.logo ? (
+                    <img src={sponsor.logo} alt={sponsor.name} className="max-h-12 max-w-12 object-contain" />
+                  ) : (
+                    <span className="material-symbols-outlined text-2xl text-gray-400">storefront</span>
+                  )}
+                </a>
+              ))
+            )}
           </div>
         </div>
       </section>
+
+      {/* Signup Modal */}
+      {signupModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 max-w-md w-full shadow-xl">
+            {signupSuccess ? (
+              <div className="text-center py-8">
+                <span className="material-symbols-outlined text-6xl text-green-500 mb-4">check_circle</span>
+                <h3 className="text-xl font-bold text-[#181411] dark:text-white mb-2">You're signed up!</h3>
+                <p className="text-gray-500">We'll send you more details soon.</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-[#181411] dark:text-white">Sign Up to Volunteer</h3>
+                  <button
+                    onClick={() => setSignupModal({ open: false, opportunity: null })}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <span className="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  <strong>{signupModal.opportunity?.title}</strong>
+                </p>
+                <form onSubmit={handleSignup} className="flex flex-col gap-4">
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    required
+                    value={signupForm.name}
+                    onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                    className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email Address"
+                    required
+                    value={signupForm.email}
+                    onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                    className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone (optional)"
+                    value={signupForm.phone}
+                    onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value })}
+                    className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  <button
+                    type="submit"
+                    disabled={signupLoading}
+                    className="w-full bg-primary hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {signupLoading ? 'Signing up...' : 'Confirm Sign Up'}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

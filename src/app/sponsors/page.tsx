@@ -1,40 +1,43 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { getSponsors, Sponsor } from '@/lib/api';
+
 export default function SponsorsPage() {
-  const goldSponsors = [
-    {
-      name: 'TechCorp Solutions',
-      description: 'Providing innovative technology solutions for local businesses since 2010.',
-      logo: '💎',
-      color: 'bg-blue-900',
-    },
-    {
-      name: 'Smile Bright Dentistry',
-      description: 'Family-friendly dental care for smiles of all ages.',
-      logo: '🦷',
-      color: 'bg-amber-100',
-    },
-    {
-      name: 'City Realty Group',
-      description: 'Helping Schweitzer families find their dream homes.',
-      logo: '🏠',
-      color: 'bg-gray-800',
-    },
-  ];
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const silverSponsors = [
-    { name: 'Local Gym', color: 'bg-amber-700' },
-    { name: 'Local Bookmart', color: 'bg-amber-200' },
-    { name: 'Landsplung', color: 'bg-teal-600' },
-    { name: 'Local Bakery', color: 'bg-amber-100' },
-  ];
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getSponsors();
+        setSponsors(data || []);
+      } catch (error) {
+        console.error('Error fetching sponsors:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
-  const bronzeSponsors = [
-    { name: 'Sponsor 1' },
-    { name: 'Sponsor 2' },
-    { name: 'Sponsor 3' },
-    { name: 'Sponsor 4' },
-    { name: 'Sponsor 5' },
-    { name: 'Sponsor 6' },
-  ];
+  // Group sponsors by level
+  const platinumSponsors = sponsors.filter((s) => s.level === 'platinum');
+  const goldSponsors = sponsors.filter((s) => s.level === 'gold');
+  const silverSponsors = sponsors.filter((s) => s.level === 'silver');
+  const bronzeSponsors = sponsors.filter((s) => s.level === 'bronze');
+
+  if (loading) {
+    return (
+      <main className="flex-grow flex flex-col items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500">Loading sponsors...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-grow flex flex-col items-center w-full">
@@ -77,71 +80,142 @@ export default function SponsorsPage() {
 
       {/* Sponsor Tiers */}
       <div className="w-full max-w-6xl px-4 pb-20 pt-10 lg:px-8">
-        {/* Gold Level */}
-        <section className="mb-16">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">🏆</span>
-            <div>
-              <h2 className="text-[#181411] dark:text-white text-2xl font-bold">Gold Level - Wildcat Champions</h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Our premier partners making the biggest impact.</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {goldSponsors.map((sponsor, index) => (
-              <div
-                key={index}
-                className="bg-white dark:bg-[#2a221a] rounded-xl border-2 border-amber-300 dark:border-amber-600 p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div
-                  className={`w-24 h-24 rounded-xl ${sponsor.color} flex items-center justify-center mb-4`}
-                >
-                  <span className="text-4xl">{sponsor.logo}</span>
-                </div>
-                <h3 className="text-[#181411] dark:text-white font-bold text-lg mb-2">{sponsor.name}</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{sponsor.description}</p>
-                <a href="#" className="text-primary font-bold text-sm hover:underline flex items-center gap-1">
-                  Visit Website <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </a>
+        {/* Platinum Level */}
+        {platinumSponsors.length > 0 && (
+          <section className="mb-16">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl">💎</span>
+              <div>
+                <h2 className="text-[#181411] dark:text-white text-2xl font-bold">Platinum Level - Wildcat Legends</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Our most distinguished partners.</p>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {platinumSponsors.map((sponsor) => (
+                <a
+                  key={sponsor.id}
+                  href={sponsor.website || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white dark:bg-[#2a221a] rounded-xl border-2 border-purple-300 dark:border-purple-600 p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 flex items-center justify-center mb-4">
+                    {sponsor.logo ? (
+                      <img src={sponsor.logo} alt={sponsor.name} className="max-h-16 max-w-16 object-contain" />
+                    ) : (
+                      <span className="text-4xl">💎</span>
+                    )}
+                  </div>
+                  <h3 className="text-[#181411] dark:text-white font-bold text-lg mb-2">{sponsor.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{sponsor.description || 'Proud supporter of Schweitzer Elementary.'}</p>
+                  <span className="text-primary font-bold text-sm hover:underline flex items-center gap-1">
+                    Visit Website <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Gold Level */}
+        {goldSponsors.length > 0 && (
+          <section className="mb-16">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl">🏆</span>
+              <div>
+                <h2 className="text-[#181411] dark:text-white text-2xl font-bold">Gold Level - Wildcat Champions</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Our premier partners making the biggest impact.</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {goldSponsors.map((sponsor) => (
+                <a
+                  key={sponsor.id}
+                  href={sponsor.website || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white dark:bg-[#2a221a] rounded-xl border-2 border-amber-300 dark:border-amber-600 p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900 dark:to-amber-800 flex items-center justify-center mb-4">
+                    {sponsor.logo ? (
+                      <img src={sponsor.logo} alt={sponsor.name} className="max-h-16 max-w-16 object-contain" />
+                    ) : (
+                      <span className="text-4xl">🏆</span>
+                    )}
+                  </div>
+                  <h3 className="text-[#181411] dark:text-white font-bold text-lg mb-2">{sponsor.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{sponsor.description || 'Proud supporter of Schweitzer Elementary.'}</p>
+                  <span className="text-primary font-bold text-sm hover:underline flex items-center gap-1">
+                    Visit Website <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Silver Level */}
-        <section className="mb-16">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">🥈</span>
-            <h2 className="text-[#181411] dark:text-white text-xl font-bold">Silver Level - Pride Partners</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {silverSponsors.map((sponsor, index) => (
-              <div
-                key={index}
-                className={`${sponsor.color} rounded-xl aspect-[4/3] flex items-center justify-center p-4 hover:scale-105 transition-transform cursor-pointer`}
-              >
-                <span className="text-white font-bold text-sm text-center drop-shadow-md">{sponsor.name}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        {silverSponsors.length > 0 && (
+          <section className="mb-16">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl">🥈</span>
+              <h2 className="text-[#181411] dark:text-white text-xl font-bold">Silver Level - Pride Partners</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {silverSponsors.map((sponsor) => (
+                <a
+                  key={sponsor.id}
+                  href={sponsor.website || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-xl aspect-[4/3] flex items-center justify-center p-4 hover:scale-105 transition-transform cursor-pointer"
+                >
+                  {sponsor.logo ? (
+                    <img src={sponsor.logo} alt={sponsor.name} className="max-h-12 max-w-full object-contain" />
+                  ) : (
+                    <span className="text-gray-800 dark:text-white font-bold text-sm text-center drop-shadow-md">{sponsor.name}</span>
+                  )}
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Bronze Level */}
-        <section className="mb-16">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">🥉</span>
-            <h2 className="text-[#181411] dark:text-white text-xl font-bold">Bronze Level - Paw Pals</h2>
+        {bronzeSponsors.length > 0 && (
+          <section className="mb-16">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl">🥉</span>
+              <h2 className="text-[#181411] dark:text-white text-xl font-bold">Bronze Level - Paw Pals</h2>
+            </div>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+              {bronzeSponsors.map((sponsor) => (
+                <a
+                  key={sponsor.id}
+                  href={sponsor.website || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-100 dark:bg-gray-800 rounded-lg aspect-square flex items-center justify-center p-2 grayscale hover:grayscale-0 transition-all cursor-pointer"
+                >
+                  {sponsor.logo ? (
+                    <img src={sponsor.logo} alt={sponsor.name} className="max-h-8 max-w-full object-contain" />
+                  ) : (
+                    <span className="material-symbols-outlined text-3xl text-gray-400">storefront</span>
+                  )}
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Empty State */}
+        {sponsors.length === 0 && (
+          <div className="text-center py-16">
+            <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">volunteer_activism</span>
+            <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No sponsors yet</h3>
+            <p className="text-gray-500">Be the first to support our school!</p>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-            {bronzeSponsors.map((sponsor, index) => (
-              <div
-                key={index}
-                className="bg-gray-100 dark:bg-gray-800 rounded-lg aspect-square flex items-center justify-center p-2 grayscale hover:grayscale-0 transition-all cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-3xl text-gray-400">storefront</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        )}
       </div>
 
       {/* Become a Sponsor CTA */}
@@ -161,9 +235,12 @@ export default function SponsorsPage() {
             <button className="flex h-12 items-center justify-center rounded-xl bg-primary px-8 text-base font-bold text-white shadow-lg hover:bg-orange-600 transition-all">
               Download Sponsor Packet
             </button>
-            <button className="flex h-12 items-center justify-center rounded-xl bg-gray-800 border border-gray-700 px-8 text-base font-bold text-white hover:bg-gray-700 transition-colors">
+            <Link
+              href="/about"
+              className="flex h-12 items-center justify-center rounded-xl bg-gray-800 border border-gray-700 px-8 text-base font-bold text-white hover:bg-gray-700 transition-colors"
+            >
               Contact Sponsorship Chair
-            </button>
+            </Link>
           </div>
         </div>
       </section>

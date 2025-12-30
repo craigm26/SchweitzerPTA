@@ -1,66 +1,98 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getUsers, updateUser, UserProfile } from '@/lib/api';
+
 export default function UserManagementPage() {
-  const users = [
-    {
-      id: 1,
-      name: 'Jane Doe',
-      avatar: 'JD',
-      avatarBg: 'bg-blue-600',
-      email: 'jane.doe@schweitzer.edu',
-      role: 'Administrator',
-      roleColor: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-      status: 'Active',
-      statusColor: 'bg-green-100 text-green-600',
-      lastLogin: '2 hours ago',
-    },
-    {
-      id: 2,
-      name: 'John Smith',
-      avatar: 'JS',
-      avatarBg: 'bg-amber-500',
-      email: 'john.smith@schweitzer.edu',
-      role: 'Editor',
-      roleColor: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-      status: 'Active',
-      statusColor: 'bg-green-100 text-green-600',
-      lastLogin: '1 day ago',
-    },
-    {
-      id: 3,
-      name: 'Emily Chen',
-      avatar: 'EC',
-      avatarBg: 'bg-pink-400',
-      email: 'emily.chen@example.com',
-      role: 'Editor',
-      roleColor: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-      status: 'Invited',
-      statusColor: 'bg-purple-100 text-purple-600',
-      lastLogin: 'Never',
-    },
-    {
-      id: 4,
-      name: 'Michael Brown',
-      avatar: 'MB',
-      avatarBg: 'bg-teal-600',
-      email: 'm.brown@example.com',
-      role: 'Administrator',
-      roleColor: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-      status: 'Active',
-      statusColor: 'bg-green-100 text-green-600',
-      lastLogin: '3 days ago',
-    },
-    {
-      id: 5,
-      name: 'Sarah Wilson',
-      avatar: 'SW',
-      avatarBg: 'bg-rose-400',
-      email: 's.wilson@example.com',
-      role: 'Editor',
-      roleColor: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-      status: 'Active',
-      statusColor: 'bg-green-100 text-green-600',
-      lastLogin: '1 week ago',
-    },
-  ];
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  async function fetchUsers() {
+    try {
+      const data = await getUsers();
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    setActionLoading(userId);
+    try {
+      await updateUser(userId, { role: newRole });
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, role: newRole as UserProfile['role'] } : u))
+      );
+    } catch (error) {
+      console.error('Error updating role:', error);
+      alert('Failed to update user role');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Filter users
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'editor':
+        return 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
+      default:
+        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+    }
+  };
+
+  const getAvatarColor = (name: string) => {
+    const colors = ['bg-blue-600', 'bg-amber-500', 'bg-pink-400', 'bg-teal-600', 'bg-rose-400', 'bg-purple-500'];
+    const index = name?.charCodeAt(0) % colors.length || 0;
+    return colors[index];
+  };
+
+  const getRelativeTime = (dateString: string | null) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 lg:p-10 flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-10">
@@ -72,12 +104,12 @@ export default function UserManagementPage() {
               User &amp; Role Management
             </h1>
             <p className="text-base text-gray-500 dark:text-gray-400">
-              View, edit, and invite administrators to the PTA portal.
+              View, edit, and manage user roles for the PTA portal.
             </p>
           </div>
           <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-orange-600 focus:ring-4 focus:ring-orange-500/30">
             <span className="material-symbols-outlined text-[20px]">mail</span>
-            <span>Invite New Administrator</span>
+            <span>Invite New User</span>
           </button>
         </div>
 
@@ -90,112 +122,183 @@ export default function UserManagementPage() {
             <input
               type="text"
               placeholder="Search users by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
-          <select className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 min-w-[150px]">
-            <option>All Roles</option>
-            <option>Administrator</option>
-            <option>Editor</option>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 min-w-[150px]"
+          >
+            <option value="all">All Roles</option>
+            <option value="admin">Administrator</option>
+            <option value="editor">Editor</option>
+            <option value="member">Member</option>
           </select>
         </div>
 
         {/* Table */}
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-[#2a221a]">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-[#181411]">
-                  <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Email Address
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Last Login
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b border-gray-50 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-[#181411] transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-10 h-10 rounded-full ${user.avatarBg} flex items-center justify-center text-white text-sm font-bold`}
+          {filteredUsers.length === 0 ? (
+            <div className="p-12 text-center">
+              <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">group</span>
+              <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No users found</h3>
+              <p className="text-gray-500">
+                {users.length === 0 ? 'No users have signed up yet.' : 'No users match your search.'}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-[#181411]">
+                      <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Email Address
+                      </th>
+                      <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Last Login
+                      </th>
+                      <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map((user) => {
+                      const isLoading = actionLoading === user.id;
+                      const displayName = user.full_name || user.email?.split('@')[0] || 'Unknown';
+                      const initials = displayName.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
+
+                      return (
+                        <tr
+                          key={user.id}
+                          className={`border-b border-gray-50 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-[#181411] transition-colors ${
+                            isLoading ? 'opacity-50' : ''
+                          }`}
                         >
-                          {user.avatar}
-                        </div>
-                        <span className="font-medium text-[#181411] dark:text-white">{user.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{user.email}</td>
-                    <td className="px-6 py-4">
-                      <span className={`text-xs font-bold px-2 py-1 rounded ${user.roleColor}`}>{user.role}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-xs font-bold px-2 py-1 rounded ${user.statusColor}`}>{user.status}</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{user.lastLogin}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1">
-                        {user.status === 'Invited' && (
-                          <button className="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                            <span className="material-symbols-outlined text-lg">send</span>
-                          </button>
-                        )}
-                        <button className="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                          <span className="material-symbols-outlined text-lg">edit</span>
-                        </button>
-                        <button className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                          <span className="material-symbols-outlined text-lg">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing <span className="font-bold">1-5</span> of <span className="font-bold">42</span> users
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
-                <span className="material-symbols-outlined text-lg">chevron_left</span>
-              </button>
-              <button className="w-8 h-8 rounded-lg bg-primary text-white text-sm font-bold">1</button>
-              <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm">
-                2
-              </button>
-              <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm">
-                3
-              </button>
-              <span className="text-gray-400">...</span>
-              <button className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm">
-                8
-              </button>
-              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
-                <span className="material-symbols-outlined text-lg">chevron_right</span>
-              </button>
-            </div>
-          </div>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-10 h-10 rounded-full ${getAvatarColor(displayName)} flex items-center justify-center text-white text-sm font-bold`}
+                              >
+                                {user.avatar_url ? (
+                                  <img src={user.avatar_url} alt={displayName} className="w-10 h-10 rounded-full object-cover" />
+                                ) : (
+                                  initials
+                                )}
+                              </div>
+                              <span className="font-medium text-[#181411] dark:text-white">{displayName}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{user.email}</td>
+                          <td className="px-6 py-4">
+                            <select
+                              value={user.role}
+                              onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                              disabled={isLoading}
+                              className={`text-xs font-bold px-2 py-1 rounded border-0 capitalize ${getRoleColor(user.role)}`}
+                            >
+                              <option value="member">Member</option>
+                              <option value="editor">Editor</option>
+                              <option value="admin">Administrator</option>
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            {getRelativeTime(user.last_login)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setEditingUser(user)}
+                                className="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                              >
+                                <span className="material-symbols-outlined text-lg">edit</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Showing {filteredUsers.length} of {users.length} users
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 max-w-md w-full shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-[#181411] dark:text-white">User Details</h3>
+              <button onClick={() => setEditingUser(null)} className="text-gray-400 hover:text-gray-600">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="flex flex-col items-center gap-4 mb-6">
+              <div
+                className={`w-20 h-20 rounded-full ${getAvatarColor(editingUser.full_name || '')} flex items-center justify-center text-white text-2xl font-bold`}
+              >
+                {editingUser.avatar_url ? (
+                  <img src={editingUser.avatar_url} alt={editingUser.full_name || ''} className="w-20 h-20 rounded-full object-cover" />
+                ) : (
+                  (editingUser.full_name || editingUser.email)?.substring(0, 2).toUpperCase()
+                )}
+              </div>
+              <div className="text-center">
+                <h4 className="font-bold text-lg text-[#181411] dark:text-white">
+                  {editingUser.full_name || editingUser.email?.split('@')[0]}
+                </h4>
+                <p className="text-gray-500">{editingUser.email}</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Role</label>
+                <p className={`inline-block text-sm font-bold px-3 py-1 rounded capitalize ${getRoleColor(editingUser.role)}`}>
+                  {editingUser.role}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Last Login</label>
+                <p className="text-[#181411] dark:text-white">{getRelativeTime(editingUser.last_login)}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Member Since</label>
+                <p className="text-[#181411] dark:text-white">
+                  {new Date(editingUser.created_at).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setEditingUser(null)}
+              className="w-full mt-6 py-3 px-4 rounded-lg border border-gray-200 dark:border-gray-700 text-[#181411] dark:text-white font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

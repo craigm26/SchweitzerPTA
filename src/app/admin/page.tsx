@@ -1,23 +1,60 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
+import { getNews, getEvents, getSponsors, NewsArticle, Event, Sponsor } from '@/lib/api';
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
+  const [news, setNews] = useState<NewsArticle[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [newsData, eventsData, sponsorsData] = await Promise.all([
+          getNews(),
+          getEvents({ upcoming: true }),
+          getSponsors({ includeInactive: true }),
+        ]);
+        setNews(newsData || []);
+        setEvents(eventsData || []);
+        setSponsors(sponsorsData || []);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  // Calculate stats from real data
+  const publishedNews = news.filter((n) => n.status === 'published').length;
+  const draftNews = news.filter((n) => n.status === 'draft').length;
+  const activeSponsors = sponsors.filter((s) => s.is_active).length;
+  const upcomingEvents = events.length;
+
   const stats = [
     {
       icon: 'article',
       iconBg: 'bg-blue-100 dark:bg-blue-900/30',
       iconColor: 'text-blue-600 dark:text-blue-400',
       label: 'News Posts',
-      value: '24 Total',
-      badge: '3 Pending',
-      badgeColor: 'bg-red-100 text-red-600',
-      link: { href: '/admin/news', label: 'Review Drafts' },
+      value: `${news.length} Total`,
+      badge: draftNews > 0 ? `${draftNews} Drafts` : null,
+      badgeColor: 'bg-amber-100 text-amber-600',
+      link: { href: '/admin/news', label: 'Manage News' },
     },
     {
       icon: 'handshake',
       iconBg: 'bg-amber-100 dark:bg-amber-900/30',
       iconColor: 'text-amber-600 dark:text-amber-400',
       label: 'Sponsors',
-      value: '12 Active',
+      value: `${activeSponsors} Active`,
       badge: 'Active',
       badgeColor: 'bg-green-100 text-green-600',
       link: { href: '/admin/sponsors', label: 'Manage Sponsors' },
@@ -27,7 +64,7 @@ export default function AdminDashboard() {
       iconBg: 'bg-teal-100 dark:bg-teal-900/30',
       iconColor: 'text-teal-600 dark:text-teal-400',
       label: 'Events',
-      value: '5 This Month',
+      value: `${upcomingEvents} Upcoming`,
       badge: 'Upcoming',
       badgeColor: 'bg-blue-100 text-blue-600',
       link: { href: '/events', label: 'View Calendar' },
@@ -37,28 +74,64 @@ export default function AdminDashboard() {
       iconBg: 'bg-purple-100 dark:bg-purple-900/30',
       iconColor: 'text-purple-600 dark:text-purple-400',
       label: 'Users',
-      value: '156 Total',
+      value: 'Manage',
       badge: null,
       link: { href: '/admin/users', label: 'User Settings' },
     },
   ];
 
-  const recentDrafts = [
-    { title: 'Fall Festival Recap', author: 'Sarah Jenkins', modified: '2 hours ago', status: 'Draft' },
-    { title: 'November Lunch Menu', author: 'Mike Ross', modified: 'Yesterday', status: 'Review' },
-    { title: 'Teacher Appreciation Week', author: 'Lisa Wong', modified: 'Oct 24, 2023', status: 'Draft' },
-  ];
+  const recentDrafts = news
+    .filter((n) => n.status === 'draft')
+    .slice(0, 3)
+    .map((n) => ({
+      id: n.id,
+      title: n.title,
+      author: n.author_name || 'Unknown',
+      modified: getRelativeTime(n.updated_at),
+      status: 'Draft',
+    }));
 
-  const recentActivity = [
-    { user: 'Mike Ross', action: 'published the "Winter Concert" event.', time: '10 minutes ago' },
-    { user: 'Sarah Jenkins', action: 'updated sponsor "TechCorp Solutions".', time: '1 hour ago' },
-    { user: 'Lisa Wong', action: 'created a new news draft.', time: '3 hours ago' },
-  ];
+  const upcomingEventsList = events.slice(0, 3).map((e) => {
+    const date = new Date(e.date);
+    return {
+      id: e.id,
+      month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      day: date.getDate().toString().padStart(2, '0'),
+      title: e.title,
+      time: e.time,
+      location: e.location,
+    };
+  });
 
-  const upcomingEvents = [
-    { month: 'NOV', day: '12', title: 'PTA General Meeting', time: '7:00 PM', location: 'Library' },
-    { month: 'NOV', day: '24', title: 'Thanksgiving Feast', time: '11:00 AM', location: 'Cafeteria' },
-  ];
+  const featuredSponsor = sponsors.filter((s) => s.is_active && s.level === 'gold')[0] ||
+    sponsors.filter((s) => s.is_active)[0];
+
+  function getRelativeTime(dateString: string) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  const userName = user?.email?.split('@')[0] || 'Admin';
+
+  if (loading) {
+    return (
+      <div className="flex-1 overflow-y-auto p-6 lg:p-10 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth">
@@ -66,7 +139,7 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="flex flex-col gap-1">
           <h1 className="text-[#181411] dark:text-white text-3xl font-bold leading-tight tracking-tight">
-            Welcome back, Sarah!
+            Welcome back, {userName}!
           </h1>
           <p className="text-gray-500 dark:text-gray-400">Here&apos;s what&apos;s happening at Schweitzer Elementary today.</p>
         </div>
@@ -114,78 +187,84 @@ export default function AdminDashboard() {
                   New Post
                 </Link>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-100 dark:border-gray-800">
-                      <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Title
-                      </th>
-                      <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Author
-                      </th>
-                      <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Last Modified
-                      </th>
-                      <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Status
-                      </th>
-                      <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentDrafts.map((draft, index) => (
-                      <tr key={index} className="border-b border-gray-50 dark:border-gray-800 last:border-0">
-                        <td className="px-5 py-4 text-sm font-medium text-[#181411] dark:text-white">{draft.title}</td>
-                        <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-300">{draft.author}</td>
-                        <td className="px-5 py-4 text-sm text-gray-500 dark:text-gray-400">{draft.modified}</td>
-                        <td className="px-5 py-4">
-                          <span
-                            className={`text-xs font-bold px-2 py-1 rounded ${
-                              draft.status === 'Draft'
-                                ? 'bg-amber-100 text-amber-600'
-                                : 'bg-blue-100 text-blue-600'
-                            }`}
-                          >
-                            {draft.status}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4">
-                          <button className="text-gray-400 hover:text-primary transition-colors">
-                            <span className="material-symbols-outlined">edit</span>
-                          </button>
-                        </td>
+              {recentDrafts.length === 0 ? (
+                <div className="p-8 text-center">
+                  <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">article</span>
+                  <p className="text-gray-500">No drafts yet. Create your first article!</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-gray-800">
+                        <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
+                        <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Author</th>
+                        <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Last Modified</th>
+                        <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
+                        <th className="text-left px-5 py-3 text-sm font-medium text-gray-500 dark:text-gray-400">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {recentDrafts.map((draft) => (
+                        <tr key={draft.id} className="border-b border-gray-50 dark:border-gray-800 last:border-0">
+                          <td className="px-5 py-4 text-sm font-medium text-[#181411] dark:text-white">{draft.title}</td>
+                          <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-300">{draft.author}</td>
+                          <td className="px-5 py-4 text-sm text-gray-500 dark:text-gray-400">{draft.modified}</td>
+                          <td className="px-5 py-4">
+                            <span className="text-xs font-bold px-2 py-1 rounded bg-amber-100 text-amber-600">
+                              {draft.status}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <Link href={`/admin/news/${draft.id}`} className="text-gray-400 hover:text-primary transition-colors">
+                              <span className="material-symbols-outlined">edit</span>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
               <div className="p-4 text-center border-t border-gray-100 dark:border-gray-800">
                 <Link href="/admin/news" className="text-gray-500 hover:text-primary text-sm font-medium">
-                  View All Drafts
+                  View All News
                 </Link>
               </div>
             </div>
 
-            {/* Recent Activity */}
+            {/* Quick Actions */}
             <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-              <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-4">Recent Activity</h2>
-              <div className="flex flex-col gap-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-teal-600 text-sm">check_circle</span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-[#181411] dark:text-white">
-                        <span className="font-bold">{activity.user}</span> {activity.action}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
+              <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Link
+                  href="/admin/news/new"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 dark:bg-[#181411] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-primary text-2xl">post_add</span>
+                  <span className="text-sm font-medium text-[#181411] dark:text-white">New Article</span>
+                </Link>
+                <Link
+                  href="/admin/sponsors"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 dark:bg-[#181411] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-amber-500 text-2xl">handshake</span>
+                  <span className="text-sm font-medium text-[#181411] dark:text-white">Add Sponsor</span>
+                </Link>
+                <Link
+                  href="/admin/users"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 dark:bg-[#181411] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-purple-500 text-2xl">person_add</span>
+                  <span className="text-sm font-medium text-[#181411] dark:text-white">Manage Users</span>
+                </Link>
+                <Link
+                  href="/"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 dark:bg-[#181411] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-teal-500 text-2xl">visibility</span>
+                  <span className="text-sm font-medium text-[#181411] dark:text-white">View Site</span>
+                </Link>
               </div>
             </div>
           </div>
@@ -196,21 +275,39 @@ export default function AdminDashboard() {
             <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-[#181411] dark:text-white text-lg font-bold">Sponsor Spotlight</h2>
-                <button className="text-gray-400 hover:text-gray-600">
+                <Link href="/admin/sponsors" className="text-gray-400 hover:text-gray-600">
                   <span className="material-symbols-outlined">more_horiz</span>
-                </button>
+                </Link>
               </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="w-24 h-24 rounded-xl bg-amber-600 flex items-center justify-center mb-4">
-                  <span className="text-white text-xs font-bold">GOLD</span>
+              {featuredSponsor ? (
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mb-4">
+                    {featuredSponsor.logo ? (
+                      <img src={featuredSponsor.logo} alt={featuredSponsor.name} className="max-h-16 max-w-16 object-contain" />
+                    ) : (
+                      <span className="text-white text-xs font-bold uppercase">{featuredSponsor.level}</span>
+                    )}
+                  </div>
+                  <h3 className="text-[#181411] dark:text-white font-bold text-lg">{featuredSponsor.name}</h3>
+                  <span className="text-primary text-xs font-bold uppercase tracking-wider mb-2">
+                    {featuredSponsor.level} Tier
+                  </span>
+                  <Link
+                    href="/admin/sponsors"
+                    className="w-full py-2 px-4 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center"
+                  >
+                    View Details
+                  </Link>
                 </div>
-                <h3 className="text-[#181411] dark:text-white font-bold text-lg">Tech Solutions Inc.</h3>
-                <span className="text-primary text-xs font-bold uppercase tracking-wider mb-2">Gold Tier</span>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">Renewal Date: Dec 15, 2023</p>
-                <button className="w-full py-2 px-4 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                  View Details
-                </button>
-              </div>
+              ) : (
+                <div className="text-center py-4">
+                  <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">handshake</span>
+                  <p className="text-gray-500 text-sm">No sponsors yet</p>
+                  <Link href="/admin/sponsors" className="text-primary text-sm font-bold hover:underline">
+                    Add a sponsor
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Upcoming Events */}
@@ -221,22 +318,29 @@ export default function AdminDashboard() {
                   View All
                 </Link>
               </div>
-              <div className="flex flex-col gap-4">
-                {upcomingEvents.map((event, index) => (
-                  <div key={index} className="flex gap-3">
-                    <div className="text-center shrink-0">
-                      <div className="text-primary text-xs font-bold">{event.month}</div>
-                      <div className="text-[#181411] dark:text-white text-xl font-bold">{event.day}</div>
+              {upcomingEventsList.length === 0 ? (
+                <div className="text-center py-4">
+                  <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">event</span>
+                  <p className="text-gray-500 text-sm">No upcoming events</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {upcomingEventsList.map((event) => (
+                    <div key={event.id} className="flex gap-3">
+                      <div className="text-center shrink-0">
+                        <div className="text-primary text-xs font-bold">{event.month}</div>
+                        <div className="text-[#181411] dark:text-white text-xl font-bold">{event.day}</div>
+                      </div>
+                      <div>
+                        <p className="font-bold text-[#181411] dark:text-white text-sm">{event.title}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">
+                          {event.time} • {event.location}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-[#181411] dark:text-white text-sm">{event.title}</p>
-                      <p className="text-gray-500 dark:text-gray-400 text-xs">
-                        {event.time} • {event.location}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

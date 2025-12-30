@@ -1,44 +1,72 @@
-export default function NewsPage() {
-  const recentUpdates = [
-    {
-      id: 1,
-      category: 'Sponsors',
-      date: 'Oct 05, 2023',
-      title: "Sponsor Spotlight: Joe's Pizza",
-      excerpt: "A huge thank you to our Gold Sponsor for providing lunch for the teachers! We...",
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDl-hTl5tGPQ6HIfL0gBVdYqPZD1aChLEhMQ4SV',
-    },
-    {
-      id: 2,
-      category: 'Meeting Minutes',
-      date: 'Sept 28, 2023',
-      title: 'PTA Meeting Recap - September',
-      excerpt: "Here are the minutes from last Tuesday's meeting covering the budget and...",
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD0_t7hJk9YmLUq3XWE8EoNK5rWE4hFGQ9Md7s',
-    },
-    {
-      id: 3,
-      category: 'Community',
-      date: 'Sept 20, 2023',
-      title: 'Volunteer Opportunities Needed',
-      excerpt: 'We need help with the upcoming book fair. Sign up for a slot today! We need parents...',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAB3x8nQPz9KvRq5WKF8tLhNR6V2dCjMQ7Nx4A',
-    },
-    {
-      id: 4,
-      category: 'Fundraiser',
-      date: 'Sept 15, 2023',
-      title: 'Wildcat Fun Run Total is In!',
-      excerpt: 'We crushed our goal this year! Thanks to everyone who participated in the annual...',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_g5rT8kL2MN3xYWZ7tUvQ6hJk9aRbCdE4Of5',
-    },
-  ];
+'use client';
 
-  const upcomingEvents = [
-    { month: 'OCT', day: '12', title: 'Fall Carnival', time: '4:00 PM - 7:00 PM', location: 'School Grounds' },
-    { month: 'OCT', day: '20', title: 'No School - Teacher Prep', time: 'All Day', location: '' },
-    { month: 'OCT', day: '28', title: 'Trunk or Treat', time: '5:30 PM - 8:00 PM', location: 'Parking Lot B' },
-  ];
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { getNews, getEvents, getSponsors, NewsArticle, Event, Sponsor } from '@/lib/api';
+
+export default function NewsPage() {
+  const [news, setNews] = useState<NewsArticle[]>([]);
+  const [featuredArticle, setFeaturedArticle] = useState<NewsArticle | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [newsData, eventsData, sponsorsData] = await Promise.all([
+          getNews({ status: 'published' }),
+          getEvents({ upcoming: true }),
+          getSponsors(),
+        ]);
+        
+        // Set featured article (first one) and rest as recent updates
+        if (newsData && newsData.length > 0) {
+          setFeaturedArticle(newsData[0]);
+          setNews(newsData.slice(1, 5));
+        }
+        setEvents(eventsData?.slice(0, 3) || []);
+        setSponsors(sponsorsData?.slice(0, 4) || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+  };
+
+  const getDateParts = (dateString: string) => {
+    const date = new Date(dateString);
+    return {
+      month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+      day: date.getDate().toString().padStart(2, '0'),
+    };
+  };
+
+  const filteredNews = news.filter((article) =>
+    article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    article.content?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <main className="layout-container flex h-full grow flex-col">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-gray-500">Loading news...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="layout-container flex h-full grow flex-col">
@@ -69,7 +97,9 @@ export default function NewsPage() {
                     </div>
                     <input
                       className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-[#181411] dark:text-white focus:outline-0 focus:ring-0 border-none bg-[#f5f2f0] dark:bg-gray-800 focus:border-none h-full placeholder:text-[#8a7560] px-4 rounded-r-none border-r-0 pr-2 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal"
-                      placeholder="Search news or enter email..."
+                      placeholder="Search news..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <div className="flex items-center justify-center rounded-r-xl border-l-0 border-none bg-[#f5f2f0] dark:bg-gray-800 pr-2">
                       <button className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-orange-600 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
@@ -82,8 +112,9 @@ export default function NewsPage() {
               <div
                 className="w-full md:w-1/2 aspect-video rounded-xl bg-cover bg-center shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-500"
                 style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBcm_al54BDQA3ZLawV_0GKKDiXRvICjn8IlsB_Q9LFp3XW-cp8T9uUkj6KHPQd_DaROrSZORTtHHRQEdMFl9RduwcC9MNkdXdlh9PvR2qzLr1X9yD_qEwAwAsI5M9pwakl0Po_Sj1lVtSwp1jrmG4Lttr7AKtfEgMtose9ASE88_gTfnPwjvWH93BCmaD_sO-5VwE5yD4RQcsYXRuPGQ-1sBvs1NBWHv11skEHkF8V83i497Hnsud58hUiwA81flm7d3RLqoSRiPzy")',
+                  backgroundImage: featuredArticle?.featured_image
+                    ? `url("${featuredArticle.featured_image}")`
+                    : 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBcm_al54BDQA3ZLawV_0GKKDiXRvICjn8IlsB_Q9LFp3XW-cp8T9uUkj6KHPQd_DaROrSZORTtHHRQEdMFl9RduwcC9MNkdXdlh9PvR2qzLr1X9yD_qEwAwAsI5M9pwakl0Po_Sj1lVtSwp1jrmG4Lttr7AKtfEgMtose9ASE88_gTfnPwjvWH93BCmaD_sO-5VwE5yD4RQcsYXRuPGQ-1sBvs1NBWHv11skEHkF8V83i497Hnsud58hUiwA81flm7d3RLqoSRiPzy")',
                 }}
               ></div>
             </div>
@@ -94,46 +125,50 @@ export default function NewsPage() {
             {/* Left Column - News Content */}
             <div className="flex-1 flex flex-col gap-8">
               {/* Featured Story */}
-              <section>
-                <div className="flex items-center gap-2 px-4 pb-3">
-                  <span className="material-symbols-outlined text-primary">campaign</span>
-                  <h3 className="text-[#181411] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
-                    Featured Story
-                  </h3>
-                </div>
-                <a
-                  className="group flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2a221b] border border-transparent dark:border-gray-800 hover:border-primary/30 transition-all overflow-hidden"
-                  href="/news/fall-carnival"
-                >
-                  <div
-                    className="w-full bg-center bg-no-repeat aspect-video bg-cover group-hover:scale-105 transition-transform duration-700"
-                    style={{
-                      backgroundImage:
-                        'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB-iTqD6UqcDkwHfyfQjNvO96I-__Aeruw9AVO3mvUxiLYxmO9YX6G5TB1u-UuCfvbY_8xJ9T8LZ-G1yan3MRjfxPon0HAUahU_cvT13Q7Gl2LgI3FHabgJYUtaKChXF45t04y6QNQ3Oks9y1jvQDSLf80jXSs2vcp5JGgHqzVH0TiseH9qvPDdOngWfydxYytPLNYBP8kM1Kau30tDc3EA7VJVFPJxMkJ5MXUAYs8fLS447LyD9J4YC15PxobvMqg3d3XtgkRlUjDd")',
-                    }}
-                  ></div>
-                  <div className="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 p-6 relative bg-white dark:bg-[#2a221b]">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="px-2 py-1 rounded bg-primary/10 text-primary text-xs font-bold uppercase">
-                        Events
-                      </span>
-                      <span className="text-[#8a7560] dark:text-gray-400 text-sm font-normal">Oct 12, 2023</span>
-                    </div>
-                    <h2 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] mb-2 group-hover:text-primary transition-colors">
-                      Fall Carnival is Coming Soon!
-                    </h2>
-                    <p className="text-[#8a7560] dark:text-gray-300 text-base font-normal leading-relaxed mb-4">
-                      Get ready for the biggest event of the year! Join us for games, food trucks, and fun for the whole
-                      family. Tickets go on sale next week at the front office and online.
-                    </p>
-                    <div className="flex items-center justify-start">
-                      <span className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary hover:bg-orange-600 text-white text-sm font-bold leading-normal transition-colors">
-                        Read Full Story
-                      </span>
-                    </div>
+              {featuredArticle && (
+                <section>
+                  <div className="flex items-center gap-2 px-4 pb-3">
+                    <span className="material-symbols-outlined text-primary">campaign</span>
+                    <h3 className="text-[#181411] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+                      Featured Story
+                    </h3>
                   </div>
-                </a>
-              </section>
+                  <Link
+                    href={`/news/${featuredArticle.id}`}
+                    className="group flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-[#2a221b] border border-transparent dark:border-gray-800 hover:border-primary/30 transition-all overflow-hidden"
+                  >
+                    <div
+                      className="w-full bg-center bg-no-repeat aspect-video bg-cover group-hover:scale-105 transition-transform duration-700"
+                      style={{
+                        backgroundImage: featuredArticle.featured_image
+                          ? `url("${featuredArticle.featured_image}")`
+                          : 'linear-gradient(135deg, #f27f0d20, #f27f0d40)',
+                      }}
+                    ></div>
+                    <div className="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-1 p-6 relative bg-white dark:bg-[#2a221b]">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="px-2 py-1 rounded bg-primary/10 text-primary text-xs font-bold uppercase">
+                          {featuredArticle.category || 'News'}
+                        </span>
+                        <span className="text-[#8a7560] dark:text-gray-400 text-sm font-normal">
+                          {formatDate(featuredArticle.published_at || featuredArticle.created_at)}
+                        </span>
+                      </div>
+                      <h2 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] mb-2 group-hover:text-primary transition-colors">
+                        {featuredArticle.title}
+                      </h2>
+                      <p className="text-[#8a7560] dark:text-gray-300 text-base font-normal leading-relaxed mb-4 line-clamp-3">
+                        {featuredArticle.excerpt || featuredArticle.content?.substring(0, 200)}
+                      </p>
+                      <div className="flex items-center justify-start">
+                        <span className="flex min-w-[84px] items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary hover:bg-orange-600 text-white text-sm font-bold leading-normal transition-colors">
+                          Read Full Story
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </section>
+              )}
 
               {/* Recent Updates */}
               <section>
@@ -144,38 +179,53 @@ export default function NewsPage() {
                       Recent Updates
                     </h3>
                   </div>
-                  <a className="text-primary text-sm font-bold hover:underline" href="#">
+                  <Link className="text-primary text-sm font-bold hover:underline" href="/news">
                     View All
-                  </a>
+                  </Link>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {recentUpdates.map((article) => (
-                    <a
-                      key={article.id}
-                      href={`/news/${article.id}`}
-                      className="group flex flex-col bg-white dark:bg-[#2a221a] rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow"
-                    >
-                      <div
-                        className="w-full aspect-video bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
-                        style={{
-                          backgroundImage: `url("${article.image}")`,
-                          backgroundColor: '#e5e5e5',
-                        }}
-                      ></div>
-                      <div className="p-4 flex flex-col gap-2">
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="font-bold text-gray-500 dark:text-gray-400 uppercase">{article.category}</span>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-gray-500 dark:text-gray-400">{article.date}</span>
+                {filteredNews.length === 0 ? (
+                  <div className="text-center py-12">
+                    <span className="material-symbols-outlined text-4xl text-gray-300 mb-4">article</span>
+                    <p className="text-gray-500">No news articles found.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {filteredNews.map((article) => (
+                      <Link
+                        key={article.id}
+                        href={`/news/${article.id}`}
+                        className="group flex flex-col bg-white dark:bg-[#2a221a] rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow"
+                      >
+                        <div
+                          className="w-full aspect-video bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                          style={{
+                            backgroundImage: article.featured_image
+                              ? `url("${article.featured_image}")`
+                              : 'linear-gradient(135deg, #f27f0d20, #f27f0d40)',
+                            backgroundColor: '#e5e5e5',
+                          }}
+                        ></div>
+                        <div className="p-4 flex flex-col gap-2">
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="font-bold text-gray-500 dark:text-gray-400 uppercase">
+                              {article.category || 'News'}
+                            </span>
+                            <span className="text-gray-400">•</span>
+                            <span className="text-gray-500 dark:text-gray-400">
+                              {formatDate(article.published_at || article.created_at)}
+                            </span>
+                          </div>
+                          <h4 className="text-[#181411] dark:text-white font-bold text-lg group-hover:text-primary transition-colors">
+                            {article.title}
+                          </h4>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
+                            {article.excerpt || article.content?.substring(0, 150)}
+                          </p>
                         </div>
-                        <h4 className="text-[#181411] dark:text-white font-bold text-lg group-hover:text-primary transition-colors">
-                          {article.title}
-                        </h4>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">{article.excerpt}</p>
-                      </div>
-                    </a>
-                  ))}
-                </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </section>
 
               {/* Load More */}
@@ -195,29 +245,36 @@ export default function NewsPage() {
                   <span className="material-symbols-outlined text-primary">event</span>
                   <h4 className="font-bold text-[#181411] dark:text-white">Upcoming Events</h4>
                 </div>
-                <div className="flex flex-col gap-4">
-                  {upcomingEvents.map((event, index) => (
-                    <div key={index} className="flex gap-3">
-                      <div className="text-center shrink-0">
-                        <div className="text-primary text-xs font-bold">{event.month}</div>
-                        <div className="text-[#181411] dark:text-white text-xl font-bold">{event.day}</div>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-[#181411] dark:text-white text-sm">{event.title}</span>
-                        <span className="text-gray-500 dark:text-gray-400 text-xs">{event.time}</span>
-                        {event.location && (
-                          <span className="text-gray-400 dark:text-gray-500 text-xs">{event.location}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <a
+                {events.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No upcoming events.</p>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {events.map((event) => {
+                      const { month, day } = getDateParts(event.date);
+                      return (
+                        <div key={event.id} className="flex gap-3">
+                          <div className="text-center shrink-0">
+                            <div className="text-primary text-xs font-bold">{month}</div>
+                            <div className="text-[#181411] dark:text-white text-xl font-bold">{day}</div>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-bold text-[#181411] dark:text-white text-sm">{event.title}</span>
+                            <span className="text-gray-500 dark:text-gray-400 text-xs">{event.time}</span>
+                            {event.location && (
+                              <span className="text-gray-400 dark:text-gray-500 text-xs">{event.location}</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <Link
                   href="/events"
                   className="block mt-4 text-center text-primary text-sm font-bold hover:underline"
                 >
                   View Calendar
-                </a>
+                </Link>
               </div>
 
               {/* Our Sponsors */}
@@ -230,20 +287,39 @@ export default function NewsPage() {
                   Thanks to our amazing community partners for supporting our school!
                 </p>
                 <div className="grid grid-cols-2 gap-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="bg-gray-50 dark:bg-[#181411] rounded-lg p-3 flex items-center justify-center h-16"
-                    >
-                      <span className="material-symbols-outlined text-2xl text-gray-300">
-                        {i === 1 ? 'local_pizza' : i === 2 ? 'account_balance' : i === 3 ? 'store' : 'build'}
-                      </span>
-                    </div>
-                  ))}
+                  {sponsors.length === 0 ? (
+                    [1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="bg-gray-50 dark:bg-[#181411] rounded-lg p-3 flex items-center justify-center h-16"
+                      >
+                        <span className="material-symbols-outlined text-2xl text-gray-300">storefront</span>
+                      </div>
+                    ))
+                  ) : (
+                    sponsors.map((sponsor) => (
+                      <a
+                        key={sponsor.id}
+                        href={sponsor.website || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gray-50 dark:bg-[#181411] rounded-lg p-3 flex items-center justify-center h-16 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        {sponsor.logo ? (
+                          <img src={sponsor.logo} alt={sponsor.name} className="max-h-10 max-w-full object-contain" />
+                        ) : (
+                          <span className="text-xs font-bold text-gray-500 text-center">{sponsor.name}</span>
+                        )}
+                      </a>
+                    ))
+                  )}
                 </div>
-                <button className="w-full mt-4 bg-[#181411] dark:bg-white text-white dark:text-[#181411] py-2 px-4 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity">
+                <Link
+                  href="/sponsors"
+                  className="w-full mt-4 bg-[#181411] dark:bg-white text-white dark:text-[#181411] py-2 px-4 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity block text-center"
+                >
                   Become a Sponsor
-                </button>
+                </Link>
               </div>
 
               {/* Newsletter CTA */}
