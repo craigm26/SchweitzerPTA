@@ -1,11 +1,18 @@
 'use client';
 import { useState } from 'react';
-
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import getStripe from '@/utils/stripe';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname.startsWith(href);
+  };
+
   return (
     <header className="bg-background-dark sticky top-0 z-50 border-b-4 border-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,17 +30,48 @@ const Header = () => {
           {/* Desktop Nav */}
           <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
             <nav className="flex items-center gap-6">
-              <Link href="/" className="text-white/90 hover:text-primary transition-colors text-sm font-medium">
+              <Link
+                href="/"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                }`}
+              >
                 Home
               </Link>
-              <Link href="/news" className="text-primary font-bold text-sm">
+              <Link
+                href="/news"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/news') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                }`}
+              >
                 News
               </Link>
-              <Link href="/events" className="text-white/90 hover:text-primary transition-colors text-sm font-medium">
+              <Link
+                href="/events"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/events') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                }`}
+              >
                 Events
               </Link>
-              <Link href="/sponsors" className="text-white/90 hover:text-primary transition-colors text-sm font-medium">
+              <Link
+                href="/sponsors"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/sponsors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                }`}
+              >
                 Sponsors
+              </Link>
+              <Link
+                href="/board-review"
+                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  isActive('/board-review')
+                    ? 'text-amber-400 font-bold'
+                    : 'text-amber-400/80 hover:text-amber-400'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                Board Review
               </Link>
             </nav>
             <button
@@ -78,37 +116,57 @@ const Header = () => {
             <Link
               href="/"
               onClick={() => setIsMenuOpen(false)}
-              className="text-white text-2xl font-bold hover:text-primary transition-colors"
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
             >
               Home
             </Link>
             <Link
               href="/news"
               onClick={() => setIsMenuOpen(false)}
-              className="text-white text-2xl font-bold hover:text-primary transition-colors"
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/news') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
             >
               News
             </Link>
             <Link
               href="/events"
               onClick={() => setIsMenuOpen(false)}
-              className="text-white text-2xl font-bold hover:text-primary transition-colors"
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/events') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
             >
               Events
             </Link>
             <Link
               href="/sponsors"
               onClick={() => setIsMenuOpen(false)}
-              className="text-white text-2xl font-bold hover:text-primary transition-colors"
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/sponsors') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
             >
               Sponsors
             </Link>
             <Link
               href="/volunteer"
               onClick={() => setIsMenuOpen(false)}
-              className="text-white text-2xl font-bold hover:text-primary transition-colors"
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/volunteer') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
             >
               Volunteer
+            </Link>
+            <Link
+              href="/board-review"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors flex items-center gap-2 ${
+                isActive('/board-review') ? 'text-amber-400' : 'text-amber-400/80 hover:text-amber-400'
+              }`}
+            >
+              <span className="w-3 h-3 rounded-full bg-amber-400 animate-pulse" />
+              Board Review
             </Link>
             <button
               className="flex items-center justify-center overflow-hidden rounded-xl h-12 px-8 bg-primary hover:bg-orange-600 transition-colors text-white text-lg font-bold shadow-md w-full max-w-xs"
