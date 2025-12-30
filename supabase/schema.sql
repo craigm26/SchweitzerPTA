@@ -1,9 +1,6 @@
 -- Schweitzer PTA Database Schema for Supabase
 -- Run this in your Supabase SQL Editor: https://supabase.com/dashboard/project/_/sql
 
--- Enable Row Level Security
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
-
 -- ============================================
 -- PROFILES TABLE (extends Supabase auth.users)
 -- ============================================
