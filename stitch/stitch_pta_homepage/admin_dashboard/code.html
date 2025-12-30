@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Schweitzer Elementary PTA Admin Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;family=Noto+Sans:wght@300..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f27f0d",
+                        "primary-hover": "#d96e05",
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#221910",
+                        "surface-dark": "#2d241b",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181411] dark:text-[#f8f7f5] antialiased overflow-hidden">
+<div class="flex h-screen w-full flex-row overflow-hidden">
+<aside class="flex w-64 flex-col bg-background-dark text-white shadow-xl z-20 flex-shrink-0 transition-all duration-300">
+<div class="flex h-full flex-col justify-between p-4">
+<div class="flex flex-col gap-6">
+<div class="flex items-center gap-3 px-2 py-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-12 border-2 border-primary" data-alt="Wildcat mascot logo illustration, orange and black colors" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAu7vj70I12T4D-J83fj30bn611ZlDIMreUWSOiz56udTGH5iTqPhSizHzTnBmDoXYObYaKvgGKoRIfRKArPLhzNtg7iJMtqUvCD-0Ya4xsr7vFZp_iUplZ3g-nAW-hrQAVOv63bHBJ46s627iAfzZnzhB6k5L0_4nWCLhMS-HOluN36hovFIVT4vbAWYjN0QlBUYxbUGzm1uk_GkiElcsodsJpR_UbetytG7-drdv4XNFLJmanJgTIi6U5HnS-8UWJoTPfc_UFIOrM");'>
+</div>
+<div class="flex flex-col">
+<h1 class="text-white text-lg font-bold leading-tight tracking-wide">Schweitzer PTA</h1>
+<p class="text-primary text-xs font-medium uppercase tracking-wider">Admin Panel</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary shadow-md transition-colors group" href="#">
+<span class="material-symbols-outlined text-white">dashboard</span>
+<p class="text-white text-sm font-medium">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">newspaper</span>
+<p class="text-gray-300 group-hover:text-white text-sm font-medium transition-colors">News Management</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">handshake</span>
+<p class="text-gray-300 group-hover:text-white text-sm font-medium transition-colors">Sponsor Management</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">calendar_month</span>
+<p class="text-gray-300 group-hover:text-white text-sm font-medium transition-colors">Events Calendar</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">group</span>
+<p class="text-gray-300 group-hover:text-white text-sm font-medium transition-colors">User Management</p>
+</a>
+<div class="h-px bg-white/10 my-2 mx-3"></div>
+<a class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">settings</span>
+<p class="text-gray-300 group-hover:text-white text-sm font-medium transition-colors">Settings</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<button class="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 hover:bg-white/10 transition-colors text-left">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 bg-gray-600" data-alt="User avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDqVt-1eNnE7IU2hVvoE1sDNPJ2pyy8xt3KN6L_YaOjlQjBe5rScBgOUDOVcpJnO312fJC-2xrByq3z92HdxA9bZddV6q7MjF7bPlQsImwu0OVKSG--lALUsbBhMsFHcFiqKJrRsqlqFN14szYYVPdK8JrWu4vPu6-I5TCjq0tfaaEfhIFPBcXV4UrcxPaGj0VSh49gSp1IgKADyOi28DJa1V47w3x0hcbnMMulBQnF5RONOGUp1AeoB7wQEsahipyI-EF5Fv6f3S6g");'></div>
+<div class="flex flex-col overflow-hidden">
+<span class="truncate text-sm font-bold text-white">Sarah Jenkins</span>
+<span class="truncate text-xs text-gray-400">Administrator</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 ml-auto text-lg">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<header class="h-auto min-h-[72px] flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-4 bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5 gap-4">
+<div class="flex flex-wrap gap-2 items-center">
+<a class="text-gray-500 hover:text-primary text-sm font-medium transition-colors" href="#">Home</a>
+<span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+<span class="text-primary text-sm font-bold">Dashboard</span>
+</div>
+<div class="flex w-full sm:max-w-md">
+<div class="flex w-full items-center rounded-xl bg-background-light dark:bg-black/20 h-10 px-3 border border-transparent focus-within:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-gray-400">search</span>
+<input class="flex w-full bg-transparent border-none text-sm text-[#181411] dark:text-white placeholder:text-gray-400 focus:ring-0 px-3" placeholder="Search news, users, or sponsors..."/>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth">
+<div class="max-w-7xl mx-auto flex flex-col gap-8">
+<div class="flex flex-col gap-1">
+<h1 class="text-[#181411] dark:text-white text-3xl font-bold leading-tight tracking-tight">Welcome back, Sarah!</h1>
+<p class="text-gray-500 dark:text-gray-400">Here's what's happening at Schweitzer Elementary today.</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="flex flex-col gap-3 rounded-2xl p-5 bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-all group">
+<div class="flex justify-between items-start">
+<div class="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-xl text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined block">newspaper</span>
+</div>
+<span class="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 text-xs font-bold px-2 py-1 rounded-full">3 Pending</span>
+</div>
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">News Posts</p>
+<p class="text-[#181411] dark:text-white text-2xl font-bold mt-1">24 Total</p>
+</div>
+<button class="text-sm font-bold text-primary hover:text-primary-hover text-left mt-1 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                            Review Drafts <span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+</div>
+<div class="flex flex-col gap-3 rounded-2xl p-5 bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-all group">
+<div class="flex justify-between items-start">
+<div class="bg-orange-50 dark:bg-orange-900/20 p-2.5 rounded-xl text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined block">handshake</span>
+</div>
+<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-xs font-bold px-2 py-1 rounded-full">Active</span>
+</div>
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Sponsors</p>
+<p class="text-[#181411] dark:text-white text-2xl font-bold mt-1">12 Active</p>
+</div>
+<button class="text-sm font-bold text-primary hover:text-primary-hover text-left mt-1 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                            Manage Sponsors <span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+</div>
+<div class="flex flex-col gap-3 rounded-2xl p-5 bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-all group">
+<div class="flex justify-between items-start">
+<div class="bg-purple-50 dark:bg-purple-900/20 p-2.5 rounded-xl text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined block">event</span>
+</div>
+<span class="bg-gray-100 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300 text-xs font-bold px-2 py-1 rounded-full">Upcoming</span>
+</div>
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Events</p>
+<p class="text-[#181411] dark:text-white text-2xl font-bold mt-1">5 This Month</p>
+</div>
+<button class="text-sm font-bold text-primary hover:text-primary-hover text-left mt-1 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                            View Calendar <span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+</div>
+<div class="flex flex-col gap-3 rounded-2xl p-5 bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-all group">
+<div class="flex justify-between items-start">
+<div class="bg-teal-50 dark:bg-teal-900/20 p-2.5 rounded-xl text-teal-600 dark:text-teal-400">
+<span class="material-symbols-outlined block">group</span>
+</div>
+</div>
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Users</p>
+<p class="text-[#181411] dark:text-white text-2xl font-bold mt-1">156 Total</p>
+</div>
+<button class="text-sm font-bold text-primary hover:text-primary-hover text-left mt-1 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                            User Settings <span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+<div class="xl:col-span-2 flex flex-col gap-6">
+<div class="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden">
+<div class="p-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
+<h3 class="text-lg font-bold text-[#181411] dark:text-white">Recent News Drafts</h3>
+<button class="text-sm font-bold text-white bg-primary hover:bg-primary-hover px-4 py-2 rounded-lg transition-colors inline-flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">add</span> New Post
+                                </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm">
+<thead class="bg-background-light dark:bg-white/5 text-gray-500 dark:text-gray-400 font-medium">
+<tr>
+<th class="px-6 py-4 rounded-tl-lg">Title</th>
+<th class="px-6 py-4">Author</th>
+<th class="px-6 py-4">Last Modified</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 rounded-tr-lg text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-white/5">
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-medium text-[#181411] dark:text-white">Fall Festival Recap</td>
+<td class="px-6 py-4 text-gray-500 dark:text-gray-400">Sarah Jenkins</td>
+<td class="px-6 py-4 text-gray-500 dark:text-gray-400">2 hours ago</td>
+<td class="px-6 py-4"><span class="inline-block px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 text-xs font-bold">Draft</span></td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 group-hover:text-primary transition-colors"><span class="material-symbols-outlined">edit_square</span></button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-medium text-[#181411] dark:text-white">November Lunch Menu</td>
+<td class="px-6 py-4 text-gray-500 dark:text-gray-400">Mike Ross</td>
+<td class="px-6 py-4 text-gray-500 dark:text-gray-400">Yesterday</td>
+<td class="px-6 py-4"><span class="inline-block px-2 py-1 rounded-md bg-blue-100 text-blue-700 text-xs font-bold">Review</span></td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 group-hover:text-primary transition-colors"><span class="material-symbols-outlined">edit_square</span></button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-medium text-[#181411] dark:text-white">Teacher Appreciation Week</td>
+<td class="px-6 py-4 text-gray-500 dark:text-gray-400">Lisa Wong</td>
+<td class="px-6 py-4 text-gray-500 dark:text-gray-400">Oct 24, 2023</td>
+<td class="px-6 py-4"><span class="inline-block px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 text-xs font-bold">Draft</span></td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 group-hover:text-primary transition-colors"><span class="material-symbols-outlined">edit_square</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 border-t border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5">
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors flex items-center justify-center gap-2" href="#">
+                                    View All Drafts
+                                </a>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 p-6">
+<h3 class="text-lg font-bold text-[#181411] dark:text-white mb-4">Recent Activity</h3>
+<div class="flex flex-col gap-6">
+<div class="flex gap-4">
+<div class="relative flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 z-10 ring-4 ring-white dark:ring-surface-dark">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div class="w-0.5 bg-gray-200 dark:bg-gray-700 absolute top-10 h-full -z-0"></div>
+</div>
+<div class="pb-2">
+<p class="text-sm text-[#181411] dark:text-white"><span class="font-bold">Mike Ross</span> published the "Winter Concert" event.</p>
+<p class="text-xs text-gray-400 mt-1">10 minutes ago</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="relative flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 z-10 ring-4 ring-white dark:ring-surface-dark">
+<span class="material-symbols-outlined text-sm">person_add</span>
+</div>
+<div class="w-0.5 bg-gray-200 dark:bg-gray-700 absolute top-10 h-full -z-0"></div>
+</div>
+<div class="pb-2">
+<p class="text-sm text-[#181411] dark:text-white"><span class="font-bold">New User</span> "Emily Clark" registered as a volunteer.</p>
+<p class="text-xs text-gray-400 mt-1">45 minutes ago</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="relative flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 z-10 ring-4 ring-white dark:ring-surface-dark">
+<span class="material-symbols-outlined text-sm">edit</span>
+</div>
+</div>
+<div>
+<p class="text-sm text-[#181411] dark:text-white"><span class="font-bold">Sarah Jenkins</span> edited the sponsor "Local Pizza Co".</p>
+<p class="text-xs text-gray-400 mt-1">2 hours ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="xl:col-span-1 flex flex-col gap-6">
+<div class="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-9xl text-primary">verified</span>
+</div>
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-bold text-[#181411] dark:text-white">Sponsor Spotlight</h3>
+<button class="text-primary hover:text-primary-hover"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+<div class="flex flex-col items-center text-center gap-3">
+<div class="size-24 rounded-xl bg-gray-5 border border-gray-100 flex items-center justify-center p-4 bg-white" data-alt="Logo of Gold Sponsor, generic company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDu4KqX5klN97XPlc2K41THboCyei43vppYlHC6CEKTLtuAlwOlw593UmFesqNh7fAK9PhXUHIlfzfFVKycWjbulZoBlpZaeAIZX2mTnR7y0rsrOCP55CQQuIcgPjEIwL_NS0FDX25dzs4DoIeBzQY0lh0k4OKERgwHSU3z60Z0JsQbrGl7LsLMvREPypM7YpwElyv7k3i2gEFxxfESGtmGzPgpzNJxTkLO3Vou1a6grg7l2LuHFW_olwhrBvqOR1u6X9zqi83keC3-"); background-size: cover; background-position: center;'>
+</div>
+<div>
+<h4 class="font-bold text-[#181411] dark:text-white text-lg">Tech Solutions Inc.</h4>
+<span class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Gold Tier</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400">Renewal Date: <span class="text-[#181411] dark:text-white font-medium">Dec 15, 2023</span></p>
+<button class="w-full mt-2 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-sm font-bold transition-colors">View Details</button>
+</div>
+</div>
+<div class="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-bold text-[#181411] dark:text-white">Upcoming Events</h3>
+<a class="text-xs font-bold text-primary hover:underline" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex gap-3 items-center p-3 rounded-xl bg-background-light dark:bg-black/20 hover:bg-white dark:hover:bg-white/5 hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-white/5">
+<div class="flex flex-col items-center justify-center bg-white dark:bg-surface-dark rounded-lg w-12 h-12 shadow-sm border border-gray-100 dark:border-white/10 shrink-0">
+<span class="text-[10px] font-bold text-primary uppercase">Nov</span>
+<span class="text-lg font-bold text-[#181411] dark:text-white leading-none">12</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-[#181411] dark:text-white truncate">PTA General Meeting</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 truncate">7:00 PM • Library</p>
+</div>
+</div>
+<div class="flex gap-3 items-center p-3 rounded-xl bg-background-light dark:bg-black/20 hover:bg-white dark:hover:bg-white/5 hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-white/5">
+<div class="flex flex-col items-center justify-center bg-white dark:bg-surface-dark rounded-lg w-12 h-12 shadow-sm border border-gray-100 dark:border-white/10 shrink-0">
+<span class="text-[10px] font-bold text-primary uppercase">Nov</span>
+<span class="text-lg font-bold text-[#181411] dark:text-white leading-none">24</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-[#181411] dark:text-white truncate">Thanksgiving Feast</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 truncate">11:00 AM • Cafeteria</p>
+</div>
+</div>
+<div class="flex gap-3 items-center p-3 rounded-xl bg-background-light dark:bg-black/20 hover:bg-white dark:hover:bg-white/5 hover:shadow-md transition-all cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-white/5">
+<div class="flex flex-col items-center justify-center bg-white dark:bg-surface-dark rounded-lg w-12 h-12 shadow-sm border border-gray-100 dark:border-white/10 shrink-0">
+<span class="text-[10px] font-bold text-primary uppercase">Dec</span>
+<span class="text-lg font-bold text-[#181411] dark:text-white leading-none">05</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-bold text-[#181411] dark:text-white truncate">Winter Book Fair</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 truncate">8:00 AM • Gym</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-10 mb-4 text-center">
+<p class="text-xs text-gray-400">© 2023 Schweitzer Elementary PTA. Admin Dashboard v2.4</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Schweitzer Elementary PTA - Add Sponsor</title>
+<!-- Fonts and Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f27f0d", // School Orange
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#181411", // Deep warm dark background
+                        "surface-dark": "#221c16", // Slightly lighter for cards
+                        "input-dark": "#2c241d", // Input backgrounds
+                        "border-dark": "#3f332a", // Borders
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for better look in dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #181411;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f332a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f27f0d;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark min-h-screen flex flex-col antialiased selection:bg-primary selection:text-white">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-border-dark bg-background-dark/95 backdrop-blur supports-[backdrop-filter]:bg-background-dark/60">
+<div class="flex h-16 items-center px-4 sm:px-8 lg:px-12 max-w-[1400px] mx-auto justify-between">
+<div class="flex items-center gap-4 text-white">
+<div class="flex items-center justify-center size-10 rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-2xl">pets</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight hidden sm:block">Schweitzer Elementary PTA</h2>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-gray-400 hover:text-primary transition-colors text-sm font-medium" href="#">Dashboard</a>
+<a class="text-gray-400 hover:text-primary transition-colors text-sm font-medium" href="#">News</a>
+<a class="text-primary text-sm font-medium" href="#">Sponsors</a>
+<a class="text-gray-400 hover:text-primary transition-colors text-sm font-medium" href="#">Settings</a>
+</nav>
+<div class="flex items-center gap-4 border-l border-border-dark pl-6">
+<button class="text-gray-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-9 border-2 border-border-dark cursor-pointer hover:border-primary transition-colors" data-alt="Administrator profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCq25smLoGgSnYs7_DeYtkLDnmD79yr17EOetDjxJlhrmEl22vTIgJQHtGoJyO1apDSmXcuy2TqObAtjaNTg5_5O-8lfg5EIKIdTio0A1Dg9Yr5fZ1ZgiciA0xqZ9Kl1WCG6N4nXQ-BifWWC_vPdkEDSEpAGhiu8ZxgqFhFQpE4ORPnKGzVFCJef96drAlpvzmXtj3qyWAaPQt3u_gaI47XhxIwoY7BJgPAux3al2JyNrefzZUstK3h4_BgpiwVELmUW7hnvsms6wOa");'>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[1200px] mx-auto p-4 sm:p-8 lg:p-12">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 mb-8 text-sm">
+<a class="text-gray-500 hover:text-primary transition-colors" href="#">Admin Panel</a>
+<span class="text-gray-600">/</span>
+<a class="text-gray-500 hover:text-primary transition-colors" href="#">Sponsors</a>
+<span class="text-gray-600">/</span>
+<span class="text-primary font-medium">Add Sponsor</span>
+</div>
+<!-- Page Heading & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+<div>
+<h1 class="text-white text-3xl md:text-4xl font-black tracking-tight mb-2">Add New Sponsor</h1>
+<p class="text-gray-400 text-base max-w-2xl">Enter the details for the new sponsor below. These details will be visible on the public sponsor page.</p>
+</div>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-dark rounded-xl border border-border-dark overflow-hidden shadow-2xl relative">
+<!-- Decorative Mascot Watermark -->
+<div class="absolute -top-10 -right-10 opacity-[0.03] pointer-events-none">
+<span class="material-symbols-outlined text-[300px] text-primary">pets</span>
+</div>
+<form class="p-6 md:p-10 relative z-10">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+<!-- Left Column: Business & Contact Info -->
+<div class="lg:col-span-2 space-y-8">
+<!-- Section: Business Details -->
+<div>
+<h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">storefront</span>
+                                Business Details
+                            </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<label class="flex flex-col gap-2">
+<span class="text-gray-300 text-sm font-medium">Sponsor Name</span>
+<input class="form-input w-full rounded-lg bg-input-dark border-border-dark text-white placeholder-gray-500 focus:border-primary focus:ring-primary h-12" placeholder="e.g. Joe's Pizza" type="text"/>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-gray-300 text-sm font-medium">Website Link</span>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+<span class="material-symbols-outlined text-[20px]">link</span>
+</div>
+<input class="form-input w-full rounded-lg bg-input-dark border-border-dark text-white placeholder-gray-500 focus:border-primary focus:ring-primary pl-10 h-12" placeholder="https://..." type="url"/>
+</div>
+</label>
+<label class="flex flex-col gap-2 md:col-span-2">
+<span class="text-gray-300 text-sm font-medium">Sponsorship Level</span>
+<div class="relative">
+<select class="form-select w-full rounded-lg bg-input-dark border-border-dark text-white focus:border-primary focus:ring-primary h-12 appearance-none">
+<option disabled="" selected="" value="">Select a level...</option>
+<option value="platinum">Platinum (Wildcat Elite)</option>
+<option value="gold">Gold</option>
+<option value="silver">Silver</option>
+<option value="bronze">Bronze</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+<span class="material-symbols-outlined">unfold_more</span>
+</div>
+</div>
+</label>
+</div>
+</div>
+<div class="h-px bg-border-dark w-full"></div>
+<!-- Section: Contact Person -->
+<div>
+<h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">person</span>
+                                Contact Information
+                            </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<label class="flex flex-col gap-2">
+<span class="text-gray-300 text-sm font-medium">Contact Person</span>
+<input class="form-input w-full rounded-lg bg-input-dark border-border-dark text-white placeholder-gray-500 focus:border-primary focus:ring-primary h-12" placeholder="John Doe" type="text"/>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-gray-300 text-sm font-medium">Contact Email</span>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<input class="form-input w-full rounded-lg bg-input-dark border-border-dark text-white placeholder-gray-500 focus:border-primary focus:ring-primary pl-10 h-12" placeholder="email@example.com" type="email"/>
+</div>
+</label>
+</div>
+</div>
+</div>
+<!-- Right Column: Logo Upload -->
+<div class="lg:col-span-1">
+<div class="bg-input-dark/30 rounded-xl p-6 border border-border-dark h-full flex flex-col">
+<h3 class="text-white text-lg font-bold mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">image</span>
+                                Sponsor Logo
+                            </h3>
+<p class="text-gray-400 text-sm mb-4">Upload a high-resolution logo (PNG or SVG preferred).</p>
+<!-- Upload Area -->
+<div class="flex-1 border-2 border-dashed border-border-dark hover:border-primary rounded-lg transition-colors cursor-pointer group flex flex-col items-center justify-center p-6 text-center bg-input-dark">
+<div class="size-16 rounded-full bg-background-dark flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
+<span class="material-symbols-outlined text-3xl text-primary">cloud_upload</span>
+</div>
+<p class="text-white font-medium mb-1 group-hover:text-primary transition-colors">Click to upload</p>
+<p class="text-gray-500 text-xs">or drag and drop</p>
+<p class="text-gray-600 text-xs mt-4">SVG, PNG, JPG or GIF (max. 2MB)</p>
+</div>
+<!-- Preview (Hidden by default or shown as example state) -->
+<div class="mt-4 hidden">
+<div class="relative group/image">
+<img class="w-full h-auto rounded-lg border border-border-dark bg-white/5 object-contain p-2" data-alt="Preview of uploaded sponsor logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4snMAiHuPCJhSdtahrHFGpd0G6xZDuWjcJ7awuN_A7TF6oGX3_OwrQnbUtPiqB-LhpiHuxI2rplLxpQ5OwH4TqHnv_B6Em6LQ05Df_tj964j-VE03W9bZynA0ua0qkNPy1MTit70dpjf0hCBNwQBop8HJM5d1rOgROAq90KvOGBWP1fzG9jFSGXE-f3dcCcxHA46Y9hkUB5VMdqvTe1GfajBvoA88Uc-Cdrz60waEAu8jA1Se_xwdk8Dwz7AYknemYeN5ZIGZ2xE-"/>
+<button class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-md opacity-0 group-hover/image:opacity-100 transition-opacity" title="Remove image">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer Actions for Mobile / Static for Desktop -->
+<div class="mt-10 pt-6 border-t border-border-dark flex flex-col sm:flex-row items-center justify-end gap-4">
+<button class="w-full sm:w-auto px-6 py-3 rounded-lg text-gray-300 font-medium hover:text-white hover:bg-white/5 transition-colors" type="button">
+                        Cancel
+                    </button>
+<button class="w-full sm:w-auto px-8 py-3 rounded-lg bg-primary hover:bg-orange-600 text-white font-bold shadow-lg shadow-primary/20 transition-all transform active:scale-95 flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined">save</span>
+                        Save Sponsor
+                    </button>
+</div>
+</form>
+</div>
+</main>
+</body></html>

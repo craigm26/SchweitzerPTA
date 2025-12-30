@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+@theme {
+    --font-sans: var(--font-inter);
+    --font-display: var(--font-lexend);
+
+    --color-primary: #f27f0d;
+    --color-background-light: #f8f7f5;
+    --color-background-dark: #221910;
+
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+}

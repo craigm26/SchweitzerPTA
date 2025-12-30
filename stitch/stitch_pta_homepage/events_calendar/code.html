@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Schweitzer Elementary PTA - Events Calendar</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f27f0d", // Orange school color
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#221910",
+                        "wildcat-black": "#181411", // Black school color
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-wildcat-black antialiased overflow-x-hidden">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e6e0db] bg-white/95 backdrop-blur-sm px-4 lg:px-10 py-3 shadow-sm">
+<div class="flex items-center gap-4 text-wildcat-black">
+<div class="size-10 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-2xl">pets</span>
+</div>
+<div class="flex flex-col">
+<h2 class="text-wildcat-black text-lg font-bold leading-tight tracking-[-0.015em]">Schweitzer Elementary PTA</h2>
+<span class="text-xs font-medium text-gray-500">Home of the Wildcats</span>
+</div>
+</div>
+<div class="hidden lg:flex flex-1 justify-end gap-8">
+<div class="flex items-center gap-9">
+<a class="text-wildcat-black text-sm font-medium hover:text-primary transition-colors leading-normal" href="#">Home</a>
+<a class="text-primary text-sm font-bold leading-normal" href="#">Calendar</a>
+<a class="text-wildcat-black text-sm font-medium hover:text-primary transition-colors leading-normal" href="#">Membership</a>
+<a class="text-wildcat-black text-sm font-medium hover:text-primary transition-colors leading-normal" href="#">Volunteer</a>
+</div>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-6 bg-primary hover:bg-orange-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-lg shadow-orange-200">
+<span class="truncate">Donate</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white shadow-md cursor-pointer" data-alt="User profile picture placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBUfsZKq-gaX0fvLgPgOTwqJ42OUOmg21AidW1XN0vROMH5xhRAvQcI6RhE-C4VDSnQuZlqtJ3EcTxEeAIejQCuYF8K5KfaR-9DZJZhoBIhpg3fO2GWJ_5i4CBIF6OSo_sYecyqaM3PxB2Wfrwee5m7He4BEM72eAsuevzHIIu2zuSh2umvSPNv_4amQROk7mqTmtEGEJklFUkpdvIPzumrZaaMyPacYT-5Ao2bkfH93p229z-3uFN8GxcIWKOp8WCMugm44SJvox_N");'></div>
+</div>
+<div class="lg:hidden flex items-center">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</div>
+</header>
+<main class="layout-container flex h-full grow flex-col pb-20">
+<div class="w-full bg-wildcat-black">
+<div class="relative w-full h-[320px] flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-center bg-cover opacity-40 mix-blend-overlay" data-alt="School playground with children playing" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDe6jw42NH7O6HBK4-_pDgetxwbKwV4vkea4ZUWqNCs5GTreR5TneieFr-c-uwq6-FlXAybVI_T9Dl5_2n1GREGYCuVNkF5dBWrhs37Sd7cZvgea7YLD8y7wyqFwcRuVLTHWiuNmT5cB5Ge9d3Okuys58iW_ifv7uxNGzxJRNjbfGv56j6yiD3FTrEkymsy-hC3jltB2ZHsVuMX6TJG3Yril76y4wq5nwnvI9820utJK1HM3-Hv4KddLzchnVvhCL0FskaRtoU5q-dQ");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-wildcat-black via-transparent to-transparent"></div>
+<div class="relative z-10 flex flex-col items-center gap-4 text-center px-4 max-w-4xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-2">
+<span class="material-symbols-outlined text-sm">event</span> School Year 2023-2024
+                    </div>
+<h1 class="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
+                        Upcoming Events &amp; Activities
+                    </h1>
+<h2 class="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
+                        Join us for PTA meetings, school spirit events, and community fundraisers! Stay involved and help our Wildcats roar.
+                    </h2>
+<div class="mt-4 flex gap-3">
+<button class="flex cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-orange-600 text-white text-base font-bold transition-all shadow-lg shadow-orange-900/50">
+<span class="mr-2 material-symbols-outlined text-[20px]">calendar_add_on</span>
+                            Subscribe to Calendar
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
+<div class="flex flex-col lg:flex-row gap-8 max-w-[1400px] w-full">
+<div class="flex-1 flex flex-col gap-6">
+<div class="flex flex-wrap gap-3 items-center justify-between pb-4 border-b border-gray-200">
+<h3 class="text-2xl font-bold text-wildcat-black hidden md:block">October 2023</h3>
+<div class="flex gap-2 flex-wrap">
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-wildcat-black text-white pl-4 pr-4 transition-all hover:shadow-md">
+<span class="text-sm font-bold">All Events</span>
+</button>
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 text-wildcat-black pl-4 pr-4 transition-all hover:bg-gray-50 hover:border-gray-300">
+<span class="text-sm font-medium">PTA Meetings</span>
+</button>
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 text-wildcat-black pl-4 pr-4 transition-all hover:bg-gray-50 hover:border-gray-300">
+<span class="text-sm font-medium">Fundraisers</span>
+</button>
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 text-wildcat-black pl-4 pr-4 transition-all hover:bg-gray-50 hover:border-gray-300">
+<span class="text-sm font-medium">Social</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-5 gap-8">
+<div class="xl:col-span-2 order-2 xl:order-1">
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
+<div class="flex items-center justify-between mb-6">
+<button class="p-2 hover:bg-gray-100 rounded-full text-wildcat-black transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<p class="text-wildcat-black text-lg font-bold">October 2023</p>
+<button class="p-2 hover:bg-gray-100 rounded-full text-wildcat-black transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-7 gap-y-4 mb-2">
+<div class="text-center text-xs font-bold text-gray-400">S</div>
+<div class="text-center text-xs font-bold text-gray-400">M</div>
+<div class="text-center text-xs font-bold text-gray-400">T</div>
+<div class="text-center text-xs font-bold text-gray-400">W</div>
+<div class="text-center text-xs font-bold text-gray-400">T</div>
+<div class="text-center text-xs font-bold text-gray-400">F</div>
+<div class="text-center text-xs font-bold text-gray-400">S</div>
+</div>
+<div class="grid grid-cols-7 gap-y-2">
+<div class="h-10 w-10"></div>
+<div class="h-10 w-10"></div>
+<div class="h-10 w-10"></div>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">1</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">2</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">3</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">4</button>
+<button class="h-10 w-10 flex flex-col items-center justify-center rounded-full bg-primary text-white shadow-md shadow-orange-200">
+<span class="text-sm font-bold">5</span>
+</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">6</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">7</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">8</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">9</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">10</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">11</button>
+<button class="h-10 w-10 flex flex-col items-center justify-center rounded-full text-sm hover:bg-gray-50 relative text-wildcat-black font-bold">
+                                        12
+                                        <span class="absolute bottom-1 w-1 h-1 bg-wildcat-black rounded-full"></span>
+</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">13</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">14</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">15</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">16</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">17</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">18</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">19</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">20</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">21</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">22</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">23</button>
+<button class="h-10 w-10 flex flex-col items-center justify-center rounded-full text-sm hover:bg-gray-50 relative text-primary font-bold">
+                                        24
+                                        <span class="absolute bottom-1 w-1 h-1 bg-primary rounded-full"></span>
+</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">25</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">26</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">27</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">28</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">29</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">30</button>
+<button class="h-10 w-10 flex items-center justify-center rounded-full text-sm hover:bg-gray-50 text-gray-700">31</button>
+</div>
+<div class="mt-6 p-4 bg-orange-50 rounded-xl border border-orange-100">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-primary mt-1">lightbulb</span>
+<div>
+<h4 class="text-sm font-bold text-wildcat-black">Did you know?</h4>
+<p class="text-xs text-gray-600 mt-1 leading-relaxed">You can sync these events directly to your phone calendar by clicking "Subscribe".</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="xl:col-span-3 order-1 xl:order-2 flex flex-col gap-5">
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+<div class="flex gap-4 items-start">
+<div class="flex flex-col items-center justify-center bg-orange-50 rounded-xl w-16 h-16 shrink-0 border border-orange-100">
+<span class="text-primary text-xs font-bold uppercase">Oct</span>
+<span class="text-wildcat-black text-2xl font-black">05</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-lg font-bold text-wildcat-black group-hover:text-primary transition-colors">General PTA Meeting</h4>
+</div>
+<div class="flex items-center gap-2 mt-2 text-sm text-gray-500">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span>6:00 PM - 7:30 PM</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-sm text-gray-500">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span>School Library</span>
+</div>
+<p class="text-sm text-gray-600 mt-3 leading-normal">
+                                            Join us to discuss upcoming budget plans and the winter carnival. Childcare provided in the gym.
+                                        </p>
+<div class="mt-4 flex gap-3">
+<button class="flex-1 bg-primary text-white text-sm font-bold py-2.5 rounded-lg hover:bg-orange-600 transition-colors">
+                                                RSVP Now
+                                            </button>
+<button class="px-3 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
+<span class="material-symbols-outlined text-[20px] leading-none">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+<div class="flex gap-4 items-start">
+<div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl w-16 h-16 shrink-0 border border-gray-100">
+<span class="text-gray-500 text-xs font-bold uppercase">Oct</span>
+<span class="text-wildcat-black text-2xl font-black">12</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-lg font-bold text-wildcat-black group-hover:text-primary transition-colors">Fall Harvest Festival</h4>
+<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Fundraiser</span>
+</div>
+<div class="flex items-center gap-2 mt-2 text-sm text-gray-500">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span>4:00 PM - 8:00 PM</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-sm text-gray-500">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span>School Playground</span>
+</div>
+<p class="text-sm text-gray-600 mt-3 leading-normal">
+                                            Games, prizes, food trucks, and the famous pumpkin walk! All proceeds go to the new science lab.
+                                        </p>
+<div class="mt-4 flex gap-3">
+<button class="flex-1 bg-wildcat-black text-white text-sm font-bold py-2.5 rounded-lg hover:bg-gray-800 transition-colors">
+                                                Buy Tickets
+                                            </button>
+<button class="px-3 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
+<span class="material-symbols-outlined text-[20px] leading-none">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+<div class="flex gap-4 items-start">
+<div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl w-16 h-16 shrink-0 border border-gray-100">
+<span class="text-gray-500 text-xs font-bold uppercase">Oct</span>
+<span class="text-wildcat-black text-2xl font-black">24</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-lg font-bold text-wildcat-black group-hover:text-primary transition-colors">Parent-Teacher Coffee</h4>
+</div>
+<div class="flex items-center gap-2 mt-2 text-sm text-gray-500">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span>8:30 AM - 9:30 AM</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-sm text-gray-500">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span>Cafeteria</span>
+</div>
+<p class="text-sm text-gray-600 mt-3 leading-normal">
+                                            Casual meetup with Principal Johnson. Coffee and donuts provided by StarCafe.
+                                        </p>
+<div class="mt-4 flex gap-3">
+<button class="flex-1 border-2 border-primary text-primary text-sm font-bold py-2.5 rounded-lg hover:bg-orange-50 transition-colors">
+                                                Add to Calendar
+                                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:w-80 shrink-0 flex flex-col gap-6">
+<div class="bg-wildcat-black rounded-2xl p-6 text-center shadow-lg relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none"></div>
+<div class="relative z-10">
+<div class="inline-flex items-center justify-center p-2 bg-primary rounded-full mb-4 shadow-lg shadow-orange-900/50">
+<span class="material-symbols-outlined text-white">volunteer_activism</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-2">Community Partners</h3>
+<p class="text-gray-400 text-sm mb-6">A huge thank you to our 2023-2024 Platinum Sponsors for supporting our Wildcats!</p>
+<div class="flex flex-col gap-3">
+<div class="bg-white rounded-xl p-4 flex items-center justify-center h-20 shadow-md hover:scale-105 transition-transform cursor-pointer">
+<img alt="Logo of Local Bank Sponsor" class="max-h-12 w-auto opacity-80 hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASFPZiJA4duvXfdnJPcXX6GTj6H0GvTd5AySjmN8zUbQlnZ3mXaHvJvCNhpIAyylsAtTqbSHVi8O5ZHKnh9E6fO3mZ-PMSCivor1BAWSQRChy2f5Sp9rnzsSnuidZK2Y2PeD5Ct9jQ-EGi43oLxAWXofsa88hN5XR9Pu6EnMI1xlDUPimdI36ZIvCDy4NFlhDP_SYx3gVa1uSFwTSK_X7OkX_5bU7LuahLIDT_dfHcYRabcZpzKRhmJ4hw8wk3Vau6XN0CMBh6aep3"/>
+</div>
+<div class="bg-white rounded-xl p-4 flex items-center justify-center h-20 shadow-md hover:scale-105 transition-transform cursor-pointer">
+<img alt="Logo of City Realty Sponsor" class="max-h-12 w-auto opacity-80 hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYr90EKjBtGsEKMNMBgzbVYauy8586Kalglk1lTHQd8C5PQxXNNTDUyHGUeqYPCfOSI2hrU6bcH43z-n4Nvw1aT5BSkZY8jsS5OZD01rvTXQsubqA0-gVHdaanuh0D7396ujkbHYYh8qfpr1iyc5M7Jad68QrAz7fwWpjHzGVW8U2tfP85bZyUpI5D4Cj2TAQAEtWQPcOlVJGhhBSv37A6CRioWakSyKtxTgl4EG-FRpTpc7grcfPXVP9PhSYpRKVfdfu7nxwfQ6Bh"/>
+</div>
+<div class="bg-white rounded-xl p-4 flex items-center justify-center h-20 shadow-md hover:scale-105 transition-transform cursor-pointer">
+<img alt="Logo of Tech Solutions Sponsor" class="max-h-12 w-auto opacity-80 hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiEG2WCKecksDgj7rMtyO9DZiduTnQA3i6nrllYFHOMq4JRpqnJe92kIzt9io8j6onWh-3KGiYy9fsVIQSKs0xRyw931aV391oc_NG457_dEXJXh6pcvtR54-vFggD4GNTOL2hHB1ln5AaqnUW_Tuww0Kt-WB3HWyGCdn-svOpoIgj834sfgh2-7cqalJZL2S6Sjqtbpl7bvYTaqAg0T__QXHz9S6wTeGVz2dBT1WjNOtIe8GgXzuqlk7TZYr6FyymLdj_6K2HIzWa"/>
+</div>
+</div>
+<button class="mt-6 text-primary text-sm font-bold hover:text-white transition-colors flex items-center justify-center gap-1 mx-auto">
+                                Become a Sponsor <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="bg-orange-50 border border-orange-100 rounded-2xl p-6">
+<h4 class="font-bold text-wildcat-black mb-2">Stay in the Loop</h4>
+<p class="text-sm text-gray-600 mb-4">Get the weekly Wildcat Tales newsletter delivered to your inbox.</p>
+<div class="flex flex-col gap-2">
+<input class="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Parent's Email" type="email"/>
+<button class="w-full bg-wildcat-black text-white font-bold py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+                                Subscribe
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-white border-t border-gray-100 py-10 px-4 md:px-10 lg:px-40">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col gap-2">
+<h5 class="text-wildcat-black font-bold">Schweitzer Elementary PTA</h5>
+<p class="text-sm text-gray-500">© 2023 Schweitzer PTA. All rights reserved.</p>
+</div>
+<div class="flex gap-6">
+<a class="text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">social_leaderboard</span>
+</a>
+<a class="text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">photo_camera</span>
+</a>
+<a class="text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">mail</span>
+</a>
+</div>
+</div>
+</footer>
+</div>
+
+</body></html>
