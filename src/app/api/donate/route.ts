@@ -2,11 +2,20 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 // TODO: Replace with your actual Stripe secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2024-06-20' as any,
+  })
+  : null;
 
 export async function POST(request: Request) {
+  if (!stripe) {
+    return NextResponse.json(
+      { error: { message: 'Stripe Secret Key is missing' } },
+      { status: 500 }
+    );
+  }
+
   const { amount } = await request.json();
 
   try {

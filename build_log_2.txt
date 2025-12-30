@@ -1,0 +1,46 @@
+
+> pta-website-temp@0.1.0 build
+> next build
+
+ΓÜá You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+ΓÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\CraigM\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\CraigM\source\repos\SchweitzerPTA\package-lock.json
+
+Γû▓ Next.js 16.1.1 (Turbopack)
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./source/repos/SchweitzerPTA/src/app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.win32-x64-msvc.node'
+Require stack:
+- C:\Users\CraigM\source\repos\SchweitzerPTA\node_modules\lightningcss\node\index.js
+- C:\Users\CraigM\source\repos\SchweitzerPTA\node_modules\@tailwindcss\node\dist\index.js
+- C:\Users\CraigM\source\repos\SchweitzerPTA\node_modules\@tailwindcss\postcss\dist\index.js
+- C:\Users\CraigM\source\repos\SchweitzerPTA\.next\build\chunks\[root-of-the-server]__0b78be5d._.js
+- C:\Users\CraigM\source\repos\SchweitzerPTA\.next\build\chunks\[turbopack]_runtime.js
+- C:\Users\CraigM\source\repos\SchweitzerPTA\.next\build\postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)]
+    [at Function._load (node:internal/modules/cjs/loader:1055:27)]
+    [at TracingChannel.traceSync (node:diagnostics_channel:322:14)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:220:24)]
+    [at Module.require (node:internal/modules/cjs/loader:1311:12)]
+    [at require (node:internal/modules/helpers:136:16)]
+    [at Object.<anonymous> (C:\Users\CraigM\source\repos\SchweitzerPTA\node_modules\lightningcss\node\index.js:22:22)]
+    [at Module._compile (node:internal/modules/cjs/loader:1554:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1706:10)]
+    [at Module.load (node:internal/modules/cjs/loader:1289:32)]
+
+Import trace:
+  Client Component Browser:
+    ./source/repos/SchweitzerPTA/src/app/globals.css [Client Component Browser]
+    ./source/repos/SchweitzerPTA/src/app/layout.tsx [Server Component]
+
+
+    at ignore-listed frames

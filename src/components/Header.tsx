@@ -46,7 +46,7 @@ const Header = () => {
                 });
                 const { id } = await res.json();
                 const stripe = await getStripe();
-                stripe?.redirectToCheckout({ sessionId: id });
+                (stripe as any)?.redirectToCheckout({ sessionId: id });
               }}
             >
               <span>Donate</span>
