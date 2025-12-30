@@ -101,13 +101,13 @@ export default function BoardReviewPage() {
 
   const domainInfo = {
     options: [
-      { domain: 'schweitzerpta.org', price: '~$12-15/year', recommended: true },
-      { domain: 'schweitzerpta.com', price: '~$12-15/year', recommended: false },
+      { domain: 'schweitzerpta.org', price: '~$12-15/year', recommended: false },
+      { domain: 'schweitzerpta.com', price: '~$12-15/year', recommended: true },
       { domain: 'schweitzer-pta.org', price: '~$12-15/year', recommended: false },
     ],
     registrars: [
       { name: 'Namecheap', price: 'Cheapest option', link: 'https://namecheap.com' },
-      { name: 'Google Domains', price: 'Simple, Google-backed', link: 'https://domains.google' },
+      { name: 'Vercel Domains', price: 'At-cost pricing', link: 'https://domains.vercel.com' },
       { name: 'Cloudflare', price: 'At-cost pricing', link: 'https://cloudflare.com/products/registrar' },
     ],
     steps: [
