@@ -118,11 +118,20 @@ export async function getDonors(options?: { includeInactive?: boolean }) {
   const params = new URLSearchParams();
   if (options?.includeInactive) params.set('includeInactive', 'true');
   
-  const res = await fetch(`${API_BASE}/api/donors?${params}`, {
-    cache: 'no-store', // Always fetch fresh data from Supabase
-  });
-  if (!res.ok) throw new Error('Failed to fetch donors');
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/donors?${params}`, {
+      cache: 'no-store', // Always fetch fresh data from Supabase
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`Failed to fetch donors: ${res.status} ${errorData.error || res.statusText}`);
+    }
+    return res.json();
+  } catch (error) {
+    console.error('Error in getDonors:', error);
+    // Return empty array instead of throwing to prevent page crashes
+    return [];
+  }
 }
 
 export async function createDonor(data: {

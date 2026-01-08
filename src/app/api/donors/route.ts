@@ -6,27 +6,39 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
-  const { searchParams } = new URL(request.url);
-  const includeInactive = searchParams.get('includeInactive') === 'true';
+  try {
+    const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const includeInactive = searchParams.get('includeInactive') === 'true';
 
-  let query = supabase
-    .from('donors')
-    .select('*')
-    .order('name', { ascending: true });
+    let query = supabase
+      .from('donors')
+      .select('*')
+      .order('name', { ascending: true });
 
-  if (!includeInactive) {
-    query = query.eq('is_active', true);
+    if (!includeInactive) {
+      query = query.eq('is_active', true);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching donors:', error);
+      return NextResponse.json({ 
+        error: error.message,
+        details: error.details,
+        hint: error.hint
+      }, { status: 500 });
+    }
+
+    return NextResponse.json(data || []);
+  } catch (error: any) {
+    console.error('Error in donors API route:', error);
+    return NextResponse.json({ 
+      error: error.message || 'Failed to connect to Supabase',
+      details: error.cause?.message || error.stack
+    }, { status: 500 });
   }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching donors:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
