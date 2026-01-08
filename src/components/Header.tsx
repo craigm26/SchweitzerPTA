@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import getStripe from '@/utils/stripe';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -52,15 +51,7 @@ const Header = () => {
                   isActive('/events') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
                 }`}
               >
-                Events
-              </Link>
-              <Link
-                href="/sponsors"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/sponsors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                }`}
-              >
-                Sponsors
+                Calendar
               </Link>
               <Link
                 href="/resources"
@@ -79,45 +70,14 @@ const Header = () => {
                 Auction
               </Link>
               <Link
-                href="/donations"
+                href="/sponsors"
                 className={`text-sm font-medium transition-colors ${
-                  isActive('/donations') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  isActive('/sponsors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
                 }`}
               >
-                Donations
-              </Link>
-              <Link
-                href="/board-review"
-                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  isActive('/board-review')
-                    ? 'text-amber-400 font-bold'
-                    : 'text-amber-400/80 hover:text-amber-400'
-                }`}
-              >
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                Board Review
+                Sponsors
               </Link>
             </nav>
-            <button
-              className="flex items-center justify-center overflow-hidden rounded-lg h-9 px-5 bg-primary hover:bg-orange-600 transition-colors text-white text-sm font-bold shadow-md"
-              onClick={async () => {
-                const res = await fetch('/api/donate', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ amount: 50 }),
-                });
-                const { id } = await res.json();
-                const stripe = await getStripe();
-                (stripe as any)?.redirectToCheckout({ sessionId: id });
-              }}
-            >
-              <span>Donate</span>
-            </button>
-            <Link href="/admin" className="text-white/90 hover:text-primary transition-colors text-sm font-medium">
-              Admin Login
-            </Link>
           </div>
           {/* Mobile Menu Button */}
           <div className="md:hidden">
@@ -162,16 +122,7 @@ const Header = () => {
                 isActive('/events') ? 'text-primary' : 'text-white hover:text-primary'
               }`}
             >
-              Events
-            </Link>
-            <Link
-              href="/sponsors"
-              onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/sponsors') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
-            >
-              Sponsors
+              Calendar
             </Link>
             <Link
               href="/resources"
@@ -192,13 +143,13 @@ const Header = () => {
               Auction
             </Link>
             <Link
-              href="/donations"
+              href="/sponsors"
               onClick={() => setIsMenuOpen(false)}
               className={`text-2xl font-bold transition-colors ${
-                isActive('/donations') ? 'text-primary' : 'text-white hover:text-primary'
+                isActive('/sponsors') ? 'text-primary' : 'text-white hover:text-primary'
               }`}
             >
-              Donations
+              Sponsors
             </Link>
             <Link
               href="/volunteer"
@@ -208,41 +159,6 @@ const Header = () => {
               }`}
             >
               Volunteer
-            </Link>
-            <Link
-              href="/board-review"
-              onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors flex items-center gap-2 ${
-                isActive('/board-review') ? 'text-amber-400' : 'text-amber-400/80 hover:text-amber-400'
-              }`}
-            >
-              <span className="w-3 h-3 rounded-full bg-amber-400 animate-pulse" />
-              Board Review
-            </Link>
-            <button
-              className="flex items-center justify-center overflow-hidden rounded-xl h-12 px-8 bg-primary hover:bg-orange-600 transition-colors text-white text-lg font-bold shadow-md w-full max-w-xs"
-              onClick={async () => {
-                setIsMenuOpen(false);
-                const res = await fetch('/api/donate', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ amount: 50 }),
-                });
-                const { id } = await res.json();
-                const stripe = await getStripe();
-                (stripe as any)?.redirectToCheckout({ sessionId: id });
-              }}
-            >
-              <span>Donate</span>
-            </button>
-            <Link
-              href="/admin"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-white/60 text-sm font-medium hover:text-white mt-8"
-            >
-              Admin Login
             </Link>
           </nav>
         </div>

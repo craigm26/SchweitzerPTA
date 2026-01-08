@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 const Footer = () => {
   return (
     <footer className="bg-background-dark text-white border-t border-primary/30 mt-auto">
@@ -11,7 +13,7 @@ const Footer = () => {
               <h3 className="text-xl font-bold">Schweitzer Elementary PTA</h3>
             </div>
             <p className="text-gray-400 max-w-sm mb-6">
-              Dedicated to promoting the welfare of children and youth in home, school, community, and place of worship.
+              Dedicated to promoting the welfare of children and youth in home, school, and community. Go Wildcats!
             </p>
             <div className="flex gap-4">
               <a href="https://www.facebook.com/schweitzer.elementary/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors">
@@ -27,10 +29,11 @@ const Footer = () => {
           <div>
             <h4 className="font-bold mb-4 text-white">Quick Links</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-primary transition-colors">About the PTA</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Membership</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Volunteer Opportunities</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">School Calendar</a></li>
+              <li><Link href="/about" className="hover:text-primary transition-colors">About the PTA</Link></li>
+              <li><Link href="/about" className="hover:text-primary transition-colors">Membership</Link></li>
+              <li><Link href="/volunteer" className="hover:text-primary transition-colors">Volunteer Opportunities</Link></li>
+              <li><Link href="/events" className="hover:text-primary transition-colors">School Calendar</Link></li>
+              <li><Link href="/admin" className="hover:text-primary transition-colors">Administrator Login</Link></li>
             </ul>
           </div>
           <div>

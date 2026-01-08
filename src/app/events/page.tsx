@@ -117,7 +117,7 @@ export default function EventsPage() {
               <span className="material-symbols-outlined text-sm">event</span> School Year {new Date().getFullYear()}-{new Date().getFullYear() + 1}
             </div>
             <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
-              Upcoming Events &amp; Activities
+              Calendar
             </h1>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
               Join us for PTA meetings, school spirit events, and community fundraisers! Stay involved and help our

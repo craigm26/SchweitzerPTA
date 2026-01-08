@@ -18,12 +18,6 @@ export default function VolunteerPage() {
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
-  const stats = [
-    { icon: 'schedule', value: '1,200+', label: 'Hours Volunteered' },
-    { icon: 'groups', value: '450', label: 'Parents Involved' },
-    { icon: 'celebration', value: '25', label: 'Events Supported' },
-  ];
-
   useEffect(() => {
     async function fetchData() {
       try {
@@ -150,21 +144,6 @@ export default function VolunteerPage() {
               Learn More
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Stats Bar */}
-      <section className="w-full px-4 md:px-10 flex justify-center -mt-10 relative z-10">
-        <div className="w-full max-w-[900px] bg-white dark:bg-[#2a221a] rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800">
-          {stats.map((stat, index) => (
-            <div key={index} className="flex flex-col items-center py-6 px-4">
-              <span className="material-symbols-outlined text-primary text-2xl mb-2">{stat.icon}</span>
-              <span className="text-[#181411] dark:text-white text-2xl md:text-3xl font-bold">{stat.value}</span>
-              <span className="text-gray-500 dark:text-gray-400 text-xs md:text-sm uppercase tracking-wider mt-1">
-                {stat.label}
-              </span>
-            </div>
-          ))}
         </div>
       </section>
 

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { submitContactForm } from '@/lib/api';
+import { submitContactForm, getSponsors, Sponsor } from '@/lib/api';
 
 export default function AboutPage() {
   const [contactForm, setContactForm] = useState({
@@ -14,6 +14,8 @@ export default function AboutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [goldSponsors, setGoldSponsors] = useState<Sponsor[]>([]);
+  const [sponsorsLoading, setSponsorsLoading] = useState(true);
 
   const boardMembers = [
     { name: 'Jane Doe', role: 'President' },
@@ -22,12 +24,19 @@ export default function AboutPage() {
     { name: 'Robert Lee', role: 'Secretary' },
   ];
 
-  const goldSponsors = [
-    { name: 'Alpha Realty', logo: '🏠' },
-    { name: 'Local Market', logo: '🛒' },
-    { name: 'TechSol', logo: '💎' },
-    { name: 'The Diner', logo: '🍽️' },
-  ];
+  useEffect(() => {
+    async function fetchSponsors() {
+      try {
+        const sponsors = await getSponsors({ level: 'gold' });
+        setGoldSponsors(sponsors || []);
+      } catch (error) {
+        console.error('Error fetching sponsors:', error);
+      } finally {
+        setSponsorsLoading(false);
+      }
+    }
+    fetchSponsors();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -312,14 +321,32 @@ export default function AboutPage() {
           {/* Gold Sponsors Section */}
           <section className="flex flex-col items-center gap-8 py-8">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-500">Thank You to Our Gold Sponsors</p>
-            <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-              {goldSponsors.map((sponsor, index) => (
-                <div key={index} className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <span className="text-2xl grayscale opacity-60">{sponsor.logo}</span>
-                  <span className="font-bold text-lg">{sponsor.name}</span>
-                </div>
-              ))}
-            </div>
+            {sponsorsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : goldSponsors.length === 0 ? (
+              <p className="text-gray-500 text-sm italic">No gold sponsors at this time.</p>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-8 md:gap-12">
+                {goldSponsors.map((sponsor) => (
+                  <a
+                    key={sponsor.id}
+                    href={sponsor.website || '#'}
+                    target={sponsor.website ? '_blank' : undefined}
+                    rel={sponsor.website ? 'noopener noreferrer' : undefined}
+                    className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
+                  >
+                    {sponsor.logo ? (
+                      <span className="text-2xl">{sponsor.logo}</span>
+                    ) : (
+                      <span className="text-2xl grayscale opacity-60">🏢</span>
+                    )}
+                    <span className="font-bold text-lg">{sponsor.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </div>
