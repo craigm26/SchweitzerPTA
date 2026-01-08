@@ -11,9 +11,9 @@
 
 ## Phase 2: Backend API Development
 - [~] Task: Create/Update Donor API Routes
-    - [~] Sub-task: Write Tests for GET /api/donors (List)
-    - [ ] Sub-task: Implement GET /api/donors to fetch paginated list with filters.
-    - [ ] Sub-task: Write Tests for POST /api/donors (Create)
+    - [x] Sub-task: Write Tests for GET /api/donors (List)
+    - [x] Sub-task: Implement GET /api/donors to fetch paginated list with filters.
+    - [~] Sub-task: Write Tests for POST /api/donors (Create)
     - [ ] Sub-task: Implement POST /api/donors to handle text data.
     - [ ] Sub-task: Write Tests for PUT /api/donors/[id] (Update)
     - [ ] Sub-task: Implement PUT /api/donors/[id] to update details.

@@ -10,17 +10,24 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const includeInactive = searchParams.get('includeInactive') === 'true';
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
     let query = supabase
       .from('donors')
-      .select('*')
-      .order('name', { ascending: true });
+      .select('*', { count: 'exact' });
 
     if (!includeInactive) {
       query = query.eq('is_active', true);
     }
 
-    const { data, error } = await query;
+    query = query
+      .order('name', { ascending: true })
+      .range(from, to);
+
+    const { data, error, count } = await query;
 
     if (error) {
       console.error('Error fetching donors:', error);
@@ -31,7 +38,13 @@ export async function GET(request: Request) {
       }, { status: 500 });
     }
 
-    return NextResponse.json(data || []);
+    return NextResponse.json({
+      data: data || [],
+      count: count || 0,
+      page,
+      limit,
+      totalPages: count ? Math.ceil(count / limit) : 0
+    });
   } catch (error: any) {
     console.error('Error in donors API route:', error);
     return NextResponse.json({ 
