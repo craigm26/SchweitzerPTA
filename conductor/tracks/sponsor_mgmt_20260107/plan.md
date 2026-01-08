@@ -10,15 +10,15 @@
 - [x] Task: Conductor - User Manual Verification 'Setup and Infrastructure' (Protocol in workflow.md) 39a6652
 
 ## Phase 2: Backend API Development
-- [~] Task: Create/Update Sponsor API Routes
-    - [ ] Sub-task: Write Tests for GET /api/sponsors (List)
-    - [ ] Sub-task: Implement GET /api/sponsors to fetch paginated list with filters.
-    - [ ] Sub-task: Write Tests for POST /api/sponsors (Create)
-    - [ ] Sub-task: Implement POST /api/sponsors to handle text data.
-    - [ ] Sub-task: Write Tests for PUT /api/sponsors/[id] (Update)
-    - [ ] Sub-task: Implement PUT /api/sponsors/[id] to update details.
-    - [ ] Sub-task: Write Tests for DELETE /api/sponsors/[id] (Delete)
-    - [ ] Sub-task: Implement DELETE /api/sponsors/[id].
+- [~] Task: Create/Update Donor API Routes
+    - [~] Sub-task: Write Tests for GET /api/donors (List)
+    - [ ] Sub-task: Implement GET /api/donors to fetch paginated list with filters.
+    - [ ] Sub-task: Write Tests for POST /api/donors (Create)
+    - [ ] Sub-task: Implement POST /api/donors to handle text data.
+    - [ ] Sub-task: Write Tests for PUT /api/donors/[id] (Update)
+    - [ ] Sub-task: Implement PUT /api/donors/[id] to update details.
+    - [ ] Sub-task: Write Tests for DELETE /api/donors/[id] (Delete)
+    - [ ] Sub-task: Implement DELETE /api/donors/[id].
 - [ ] Task: Implement Image Upload Logic
     - [ ] Sub-task: Create a utility function or API route to handle file uploads to Supabase Storage.
     - [ ] Sub-task: Ensure the returned URL is valid and accessible.

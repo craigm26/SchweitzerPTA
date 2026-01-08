@@ -33,6 +33,28 @@ describe('Donors API', () => {
       expect(res.status).toBe(200);
       expect(data).toEqual(mockData);
     });
+
+    it('should support pagination and filtering', async () => {
+      const mockData = [{ id: 2, name: 'Donor B', is_active: false }];
+      // Mock the chain: from -> select -> range -> eq -> order
+      const mockOrder = vi.fn().mockResolvedValue({ data: mockData, error: null });
+      const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
+      const mockRange = vi.fn().mockReturnValue({ eq: mockEq, order: mockOrder }); // Allow eq to be optional or chained
+      const mockSelect = vi.fn().mockReturnValue({ range: mockRange });
+      
+      mockSupabase.from.mockReturnValue({
+        select: mockSelect,
+      });
+
+      const req = new NextRequest('http://localhost:3000/api/donors?page=2&limit=10&includeInactive=true');
+      const res = await GET(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data).toEqual(mockData);
+      expect(mockSelect).toHaveBeenCalled();
+      expect(mockRange).toHaveBeenCalledWith(10, 19); // (page - 1) * limit, page * limit - 1
+    });
   });
 
   describe('POST', () => {
