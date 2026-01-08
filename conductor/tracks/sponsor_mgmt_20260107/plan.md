@@ -1,13 +1,13 @@
 # Implementation Plan - Enhance Sponsor Management
 
-## Phase 1: Setup and Infrastructure
+## Phase 1: Setup and Infrastructure [checkpoint: 39a6652]
 - [x] Task: Create Supabase Storage Bucket for Logos 6fc99f1
-    - [ ] Sub-task: Check if a public storage bucket for images exists; if not, create one (e.g., `sponsor-logos`).
-    - [ ] Sub-task: Configure storage policies to allow public read access and authenticated upload/delete access.
+    - [x] Sub-task: Check if a public storage bucket for images exists; if not, create one (e.g., `sponsor-logos`).
+    - [x] Sub-task: Configure storage policies to allow public read access and authenticated upload/delete access.
 - [x] Task: Verify Database Schema 98c8e98
-    - [ ] Sub-task: Ensure the `sponsors` table exists and has the necessary columns (`name`, `description`, `website_url`, `tier`, `is_active`, `logo_url`).
-    - [ ] Sub-task: Add any missing columns if necessary via a migration script or SQL command.
-- [ ] Task: Conductor - User Manual Verification 'Setup and Infrastructure' (Protocol in workflow.md)
+    - [x] Sub-task: Ensure the `sponsors` table exists and has the necessary columns (`name`, `description`, `website_url`, `tier`, `is_active`, `logo_url`).
+    - [x] Sub-task: Add any missing columns if necessary via a migration script or SQL command.
+- [x] Task: Conductor - User Manual Verification 'Setup and Infrastructure' (Protocol in workflow.md) 39a6652
 
 ## Phase 2: Backend API Development
 - [ ] Task: Create/Update Sponsor API Routes
