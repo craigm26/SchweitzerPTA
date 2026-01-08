@@ -179,7 +179,7 @@ export default function DonorManagementPage() {
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#2a221a] shadow-sm">
           {filteredDonors.length === 0 ? (
             <div className="p-12 text-center">
-              <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">handshake</span>
+              <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">volunteer_activism</span>
               <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No donors found</h3>
               <p className="text-gray-500 mb-4">Add your first donor to get started.</p>
               <button
@@ -221,7 +221,7 @@ export default function DonorManagementPage() {
                               {donor.logo ? (
                                 <img src={donor.logo} alt={donor.name} className="max-h-10 max-w-10 object-contain" />
                               ) : (
-                                <span className="material-symbols-outlined text-2xl text-gray-400">storefront</span>
+                                <span className="material-symbols-outlined text-2xl text-gray-400">volunteer_activism</span>
                               )}
                             </div>
                           </td>

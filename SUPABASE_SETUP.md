@@ -69,7 +69,7 @@ WHERE email = 'your-email@example.com';
 
 ## 7. Add Sample Data (Optional)
 
-Uncomment the seed data section at the bottom of `supabase/schema.sql` and run it to populate the database with sample sponsors, events, and volunteer opportunities.
+Uncomment the seed data section at the bottom of `supabase/schema.sql` and run it to populate the database with sample donors, events, and volunteer opportunities.
 
 ## Database Tables Overview
 
@@ -78,7 +78,7 @@ Uncomment the seed data section at the bottom of `supabase/schema.sql` and run i
 | `profiles` | User profiles with roles (admin, editor, member) |
 | `news` | News articles with status (draft, published, archived) |
 | `events` | Upcoming events and activities |
-| `sponsors` | Business sponsors by tier (platinum, gold, silver, bronze) |
+| `donors` | Business donors and community partners |
 | `volunteer_opportunities` | Volunteer positions available |
 | `volunteer_signups` | People who signed up for volunteer spots |
 | `contact_submissions` | Contact form submissions |
@@ -87,7 +87,7 @@ Uncomment the seed data section at the bottom of `supabase/schema.sql` and run i
 
 All tables have Row Level Security enabled:
 
-- **Public data** (published news, active sponsors, events) is readable by everyone
+- **Public data** (published news, active donors, events) is readable by everyone
 - **Admin data** (drafts, all users, submissions) requires authentication
 - **Write operations** require appropriate role (admin or editor)
 
@@ -97,7 +97,7 @@ All tables have Row Level Security enabled:
 |----------|---------|---------------|-------------|
 | `/api/news` | GET, POST, PUT, DELETE | Write: Yes | Manage news articles |
 | `/api/calendar` | GET, POST, PUT, DELETE | Write: Yes | Manage events |
-| `/api/sponsors` | GET, POST, PUT, DELETE | Write: Yes | Manage sponsors |
+| `/api/donors` | GET, POST, PUT, DELETE | Write: Yes | Manage donors |
 | `/api/volunteers` | GET, POST | Write: Yes | Manage volunteer opportunities |
 | `/api/volunteers/signup` | POST | No | Submit volunteer signup |
 | `/api/contact` | GET, POST | Read: Yes | Contact form submissions |

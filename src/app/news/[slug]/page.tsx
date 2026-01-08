@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export default async function NewsArticlePage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+  await params;
   
   const communityDonors = [
     { name: 'Main Street Pizza', description: 'Providing lunch for volunteers' },

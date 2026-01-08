@@ -221,7 +221,7 @@ export default function AboutPage() {
                 <div className="flex flex-col items-center justify-center h-full py-12">
                   <span className="material-symbols-outlined text-6xl text-green-500 mb-4">check_circle</span>
                   <h3 className="text-xl font-bold text-[#181411] dark:text-white mb-2">Message Sent!</h3>
-                  <p className="text-gray-500 text-center">Thank you for reaching out. We'll get back to you soon.</p>
+                  <p className="text-gray-500 text-center">Thank you for reaching out. We&apos;ll get back to you soon.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">

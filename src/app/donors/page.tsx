@@ -118,7 +118,7 @@ export default function DonorsPage() {
             <span className="material-symbols-outlined text-7xl text-gray-300 mb-4 animate-pulse">volunteer_activism</span>
             <h3 className="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">No donors listed yet</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              We're getting ready to showcase our amazing community partners. Be the first to support our school!
+              We&apos;re getting ready to showcase our amazing community partners. Be the first to support our school!
             </p>
             <Link 
               href="/about" 

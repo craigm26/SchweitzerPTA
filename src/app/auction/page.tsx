@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-
 export default function AuctionPage() {
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">

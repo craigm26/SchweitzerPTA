@@ -54,7 +54,7 @@ npm start
 Files to know:
 - `src/lib/supabase/client.ts` — client creation using `NEXT_PUBLIC_SUPABASE_*` env vars.
 - `src/app/admin` — UI and pages for site administrators.
-- `src/app/news`, `src/app/calendar`, `src/app/sponsors`, `src/app/volunteer` — content pages and admin APIs.
+- `src/app/news`, `src/app/calendar`, `src/app/donors`, `src/app/volunteer` — content pages and admin APIs.
 
 ## Admin responsibilities
 
@@ -67,7 +67,7 @@ Files to know:
    - Or run SQL: `UPDATE public.profiles SET role = 'admin' WHERE email = 'admin@example.com';`
 
 3. Managing content
-   - Editors/admins can use the admin UI (`/admin`) to create/update news, events, sponsors, and volunteers.
+   - Editors/admins can use the admin UI (`/admin`) to create/update news, events, donors, and volunteers.
    - Server API routes under `src/app/api/*` provide endpoints used by the admin UI. Use them for scripted imports or integrations.
 
 4. Row Level Security (RLS)

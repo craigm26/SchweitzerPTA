@@ -308,8 +308,8 @@ export default function VolunteerPage() {
             {signupSuccess ? (
               <div className="text-center py-8">
                 <span className="material-symbols-outlined text-6xl text-green-500 mb-4">check_circle</span>
-                <h3 className="text-xl font-bold text-[#181411] dark:text-white mb-2">You're signed up!</h3>
-                <p className="text-gray-500">We'll send you more details soon.</p>
+                <h3 className="text-xl font-bold text-[#181411] dark:text-white mb-2">You&apos;re signed up!</h3>
+                <p className="text-gray-500">We&apos;ll send you more details soon.</p>
               </div>
             ) : (
               <>
