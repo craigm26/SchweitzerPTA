@@ -4,24 +4,21 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
-import { getNews, getEvents, getSponsors, NewsArticle, Event, Sponsor } from '@/lib/api';
+import { getNews, getSponsors, NewsArticle, Sponsor } from '@/lib/api';
 
 export default function Home() {
   const [news, setNews] = useState<NewsArticle[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [newsData, eventsData, sponsorsData] = await Promise.all([
+        const [newsData, sponsorsData] = await Promise.all([
           getNews({ status: 'published', limit: 3 }),
-          getEvents({ upcoming: true }),
           getSponsors({ level: 'platinum' }),
         ]);
         setNews(newsData?.slice(0, 3) || []);
-        setEvents(eventsData?.slice(0, 3) || []);
         setSponsors(sponsorsData?.slice(0, 4) || []);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -62,11 +59,45 @@ export default function Home() {
                   <span className="text-xs font-bold uppercase tracking-wide">Wildcat Pride</span>
                 </div>
                 <h1 className="text-[#181411] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl lg:text-6xl">
-                  Welcome to the <span className="text-primary">Wildcat&apos;s Den</span>
+                  Welcome Albert Schweitzer Families, Friends, and Wildcat Supporters!
                 </h1>
-                <h2 className="text-[#181411]/80 dark:text-gray-300 text-base font-normal leading-relaxed max-w-xl">
-                  Supporting every child, every day. Join the Schweitzer Elementary PTA to make a tangible difference in our classrooms and community.
-                </h2>
+                <div className="text-[#181411]/80 dark:text-gray-300 text-base font-normal leading-relaxed max-w-xl space-y-4">
+                  <p>
+                    The Albert Schweitzer Elementary PTA is a dedicated and enthusiastic group of parents
+                    and teachers who work together to support and enrich every Wildcat&apos;s school
+                    experience. Our goal is simple: help create a fun, inclusive, and well-rounded
+                    environment where students can thrive both inside and outside the classroom.
+                  </p>
+                  <p>
+                    Through our efforts, we organize engaging school events, raise funds for essential
+                    programs, and build strong connections between families and staff. Everything we do is
+                    focused on helping our Wildcats learn, grow, and succeed.
+                  </p>
+                  <p>
+                    Some of our favorite traditions include the Fall Festival, a lively and family-friendly
+                    celebration for all ages, and our Annual Auction, a popular adults-only evening that
+                    raises critical funds directly benefiting our school.
+                  </p>
+                  <p>
+                    None of this would be possible without our amazing community. Whether you have an
+                    hour to spare, a skill to share, or want to be involved throughout the year, your time and
+                    ideas truly make a difference. There&apos;s a place for everyone in our PTA, and we&apos;d love to
+                    have you join us.
+                  </p>
+                  <p>
+                    If you&apos;re interested in volunteering, getting involved, or learning more about what we do,
+                    please reach out to us at{' '}
+                    <a href="mailto:AlbertSchweitzerPTA@gmail.com" className="text-primary font-bold hover:underline">
+                      AlbertSchweitzerPTA@gmail.com
+                    </a>.
+                  </p>
+                  <p className="font-semibold">
+                    Thank you for supporting Albert Schweitzer Elementary and our incredible Wildcats.
+                  </p>
+                  <p className="font-bold text-primary">
+                    Once a Wildcat, always a Wildcat!
+                  </p>
+                </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/about">

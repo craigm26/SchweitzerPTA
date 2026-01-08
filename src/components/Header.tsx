@@ -63,6 +63,30 @@ const Header = () => {
                 Sponsors
               </Link>
               <Link
+                href="/resources"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/resources') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                }`}
+              >
+                Resources
+              </Link>
+              <Link
+                href="/auction"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/auction') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                }`}
+              >
+                Auction
+              </Link>
+              <Link
+                href="/donations"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/donations') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                }`}
+              >
+                Donations
+              </Link>
+              <Link
                 href="/board-review"
                 className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   isActive('/board-review')
@@ -148,6 +172,33 @@ const Header = () => {
               }`}
             >
               Sponsors
+            </Link>
+            <Link
+              href="/resources"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/resources') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
+            >
+              Resources
+            </Link>
+            <Link
+              href="/auction"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/auction') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
+            >
+              Auction
+            </Link>
+            <Link
+              href="/donations"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/donations') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
+            >
+              Donations
             </Link>
             <Link
               href="/volunteer"

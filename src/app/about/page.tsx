@@ -75,22 +75,27 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Our Mission Section */}
+          {/* Join PTA Section */}
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="flex flex-col gap-6">
-              <h2 className="text-[#181411] dark:text-white text-3xl font-bold leading-tight">Our Mission</h2>
+              <h2 className="text-[#181411] dark:text-white text-3xl font-bold leading-tight">Join PTA</h2>
               <div className="flex flex-col gap-4 text-[#181411]/80 dark:text-gray-300">
-                <p className="text-base leading-relaxed">
-                  The Schweitzer PTA is committed to enhancing the educational experience for every child. We bridge
-                  the gap between home and school by recruiting volunteers, sponsoring enrichment programs, and
-                  fundraising for school improvements.
+                <p className="text-base leading-relaxed font-semibold">
+                  Who can join? Parents, Guardians, Grandparents, Teachers/Staff, Alumni, Friends, and Family.
                 </p>
                 <p className="text-base leading-relaxed">
-                  We believe that when parents and teachers work together, our &quot;Little Wildcats&quot; can achieve anything.
+                  The PTA uses membership fees and fundraising dollars to directly enhance student
+                  learning – supporting classroom stipends, field trips, performing arts, campus
+                  improvements, and technology upgrades.
                 </p>
               </div>
-              <a href="#" className="text-primary font-bold hover:underline flex items-center gap-1 w-fit">
-                Read our full Bylaws <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              <a 
+                href="https://jointotem.com/ca/carmichael/albert-schweitzer-elementary-pta" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-bold hover:underline flex items-center gap-1 w-fit"
+              >
+                Join Now <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </a>
             </div>
             <div className="rounded-xl overflow-hidden shadow-lg">

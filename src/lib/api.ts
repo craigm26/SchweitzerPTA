@@ -9,7 +9,7 @@ export async function getNews(options?: { status?: string; limit?: number }) {
   if (options?.limit) params.set('limit', options.limit.toString());
   
   const res = await fetch(`${API_BASE}/api/news?${params}`, {
-    next: { revalidate: 60 }, // Revalidate every 60 seconds
+    cache: 'no-store', // Always fetch fresh data from Supabase
   });
   if (!res.ok) throw new Error('Failed to fetch news');
   return res.json();
@@ -17,7 +17,7 @@ export async function getNews(options?: { status?: string; limit?: number }) {
 
 export async function getNewsArticle(id: string) {
   const res = await fetch(`${API_BASE}/api/news?id=${id}`, {
-    next: { revalidate: 60 },
+    cache: 'no-store', // Always fetch fresh data from Supabase
   });
   if (!res.ok) throw new Error('Failed to fetch article');
   const data = await res.json();
@@ -69,7 +69,7 @@ export async function getEvents(options?: { category?: string; featured?: boolea
   if (options?.upcoming) params.set('upcoming', 'true');
   
   const res = await fetch(`${API_BASE}/api/events?${params}`, {
-    next: { revalidate: 60 },
+    cache: 'no-store', // Always fetch fresh data from Supabase
   });
   if (!res.ok) throw new Error('Failed to fetch events');
   return res.json();
@@ -120,7 +120,7 @@ export async function getSponsors(options?: { level?: string; includeInactive?: 
   if (options?.includeInactive) params.set('includeInactive', 'true');
   
   const res = await fetch(`${API_BASE}/api/sponsors?${params}`, {
-    next: { revalidate: 60 },
+    cache: 'no-store', // Always fetch fresh data from Supabase
   });
   if (!res.ok) throw new Error('Failed to fetch sponsors');
   return res.json();
@@ -168,7 +168,7 @@ export async function getVolunteerOpportunities(options?: { category?: string; a
   if (options?.activeOnly !== false) params.set('activeOnly', 'true');
   
   const res = await fetch(`${API_BASE}/api/volunteers?${params}`, {
-    next: { revalidate: 60 },
+    cache: 'no-store', // Always fetch fresh data from Supabase
   });
   if (!res.ok) throw new Error('Failed to fetch volunteer opportunities');
   return res.json();

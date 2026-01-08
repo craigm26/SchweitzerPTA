@@ -1,38 +1,50 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// Force dynamic rendering and disable caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: Request) {
-  const supabase = await createClient();
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category');
-  const featured = searchParams.get('featured');
-  const upcoming = searchParams.get('upcoming');
+  try {
+    const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const featured = searchParams.get('featured');
+    const upcoming = searchParams.get('upcoming');
 
-  let query = supabase
-    .from('events')
-    .select('*')
-    .order('date', { ascending: true });
+    let query = supabase
+      .from('events')
+      .select('*')
+      .order('date', { ascending: true });
 
-  if (category) {
-    query = query.eq('category', category);
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    if (featured === 'true') {
+      query = query.eq('is_featured', true);
+    }
+
+    if (upcoming === 'true') {
+      query = query.gte('date', new Date().toISOString().split('T')[0]);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching events:', error);
+      return NextResponse.json({ error: error.message, details: error.details, hint: error.hint }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error('Error in events API route:', error);
+    return NextResponse.json({ 
+      error: error.message || 'Failed to connect to Supabase',
+      details: error.cause?.message || error.stack
+    }, { status: 500 });
   }
-
-  if (featured === 'true') {
-    query = query.eq('is_featured', true);
-  }
-
-  if (upcoming === 'true') {
-    query = query.gte('date', new Date().toISOString().split('T')[0]);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching events:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
