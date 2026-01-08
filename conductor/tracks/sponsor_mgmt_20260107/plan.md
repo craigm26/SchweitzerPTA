@@ -4,7 +4,7 @@
 - [x] Task: Create Supabase Storage Bucket for Logos 6fc99f1
     - [ ] Sub-task: Check if a public storage bucket for images exists; if not, create one (e.g., `sponsor-logos`).
     - [ ] Sub-task: Configure storage policies to allow public read access and authenticated upload/delete access.
-- [ ] Task: Verify Database Schema
+- [x] Task: Verify Database Schema da9cd68
     - [ ] Sub-task: Ensure the `sponsors` table exists and has the necessary columns (`name`, `description`, `website_url`, `tier`, `is_active`, `logo_url`).
     - [ ] Sub-task: Add any missing columns if necessary via a migration script or SQL command.
 - [ ] Task: Conductor - User Manual Verification 'Setup and Infrastructure' (Protocol in workflow.md)
