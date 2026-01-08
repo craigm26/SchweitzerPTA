@@ -1,4 +1,4 @@
-export default function AddSponsorPage() {
+export default function AddDonorPage() {
   return (
     <main className="flex-1 w-full max-w-[1200px] mx-auto p-4 sm:p-8 lg:p-12">
       <div className="flex items-center gap-2 mb-8 text-sm">
@@ -6,17 +6,17 @@ export default function AddSponsorPage() {
           Admin Panel
         </a>
         <span className="text-gray-600">/</span>
-        <a className="text-gray-500 hover:text-primary transition-colors" href="/admin/sponsors">
-          Sponsors
+        <a className="text-gray-500 hover:text-primary transition-colors" href="/admin/donors">
+          Donors
         </a>
         <span className="text-gray-600">/</span>
-        <span className="text-primary font-medium">Add Sponsor</span>
+        <span className="text-primary font-medium">Add Donor</span>
       </div>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
         <div>
-          <h1 className="text-white text-3xl md:text-4xl font-black tracking-tight mb-2">Add New Sponsor</h1>
+          <h1 className="text-white text-3xl md:text-4xl font-black tracking-tight mb-2">Add New Donor</h1>
           <p className="text-gray-400 text-base max-w-2xl">
-            Enter the details for the new sponsor below. These details will be visible on the public sponsor page.
+            Enter the details for the new donor below. These details will be visible on the public donor page.
           </p>
         </div>
       </div>
@@ -26,8 +26,8 @@ export default function AddSponsorPage() {
             <div className="lg:col-span-2 space-y-8">
               <div>
                 <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">storefront</span>
-                  Business Details
+                  <span className="material-symbols-outlined text-primary">volunteer_activism</span>
+                  Donor Details
                 </h3>
                 {/* Form fields */}
               </div>
@@ -48,7 +48,7 @@ export default function AddSponsorPage() {
               type="submit"
             >
               <span className="material-symbols-outlined">save</span>
-              Save Sponsor
+              Save Donor
             </button>
           </div>
         </form>

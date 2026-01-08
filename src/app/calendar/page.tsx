@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getEvents, getDonors, Event, Donor } from '@/lib/api';
-import React from 'react';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -21,7 +20,7 @@ export default function EventsPage() {
         setEvents(eventsData || []);
         setDonors(donorsData?.slice(0, 3) || []);
       } catch (error) {
-        console.error('Error fetching events data:', error);
+        console.error('Error fetching calendar data:', error);
       } finally {
         setLoading(false);
       }

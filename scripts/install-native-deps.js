@@ -31,18 +31,24 @@ if (platform === 'win32' && arch === 'x64') {
 }
 
 if (packages.length > 0) {
-  console.log(`Installing: ${packages.join(', ')}`);
+  console.log(`Installing native dependencies for ${platform}-${arch}...`);
+  console.log(`Packages: ${packages.join(', ')}`);
   try {
-    execSync(`npm install ${packages.join(' ')} --no-save`, { 
+    execSync(`npm install ${packages.join(' ')} --no-save --legacy-peer-deps`, { 
       stdio: 'inherit',
-      env: { ...process.env, npm_config_ignore_scripts: 'true' }
+      env: { ...process.env, npm_config_ignore_scripts: 'true' },
+      cwd: process.cwd()
     });
-    console.log('Native dependencies installed successfully!');
+    console.log('✓ Native dependencies installed successfully!');
   } catch (error) {
-    console.error('Failed to install native dependencies:', error.message);
+    console.error('✗ Failed to install native dependencies');
+    console.error('Error:', error.message);
+    console.error('This will cause build failures. Please ensure npm has proper permissions.');
     process.exit(1);
   }
 } else {
-  console.log(`No native dependencies configured for ${platform}-${arch}`);
+  console.log(`No native dependencies required for ${platform}-${arch}`);
+  console.log('Note: If you encounter build errors related to tailwindcss or lightningcss,');
+  console.log('you may need to add support for this platform in install-native-deps.js');
 }
 

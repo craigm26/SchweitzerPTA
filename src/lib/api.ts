@@ -68,7 +68,7 @@ export async function getEvents(options?: { category?: string; featured?: boolea
   if (options?.featured) params.set('featured', 'true');
   if (options?.upcoming) params.set('upcoming', 'true');
   
-  const res = await fetch(`${API_BASE}/api/events?${params}`, {
+  const res = await fetch(`${API_BASE}/api/calendar?${params}`, {
     cache: 'no-store', // Always fetch fresh data from Supabase
   });
   if (!res.ok) throw new Error('Failed to fetch events');
@@ -86,7 +86,7 @@ export async function createEvent(data: {
   image?: string;
   is_featured?: boolean;
 }) {
-  const res = await fetch(`${API_BASE}/api/events`, {
+  const res = await fetch(`${API_BASE}/api/calendar`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -96,7 +96,7 @@ export async function createEvent(data: {
 }
 
 export async function updateEvent(id: number, data: Record<string, unknown>) {
-  const res = await fetch(`${API_BASE}/api/events`, {
+  const res = await fetch(`${API_BASE}/api/calendar`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, ...data }),
@@ -106,58 +106,56 @@ export async function updateEvent(id: number, data: Record<string, unknown>) {
 }
 
 export async function deleteEvent(id: number) {
-  const res = await fetch(`${API_BASE}/api/events?id=${id}`, {
+  const res = await fetch(`${API_BASE}/api/calendar?id=${id}`, {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete event');
   return res.json();
 }
 
-// Sponsors API
-export async function getSponsors(options?: { level?: string; includeInactive?: boolean }) {
+// Donors API
+export async function getDonors(options?: { includeInactive?: boolean }) {
   const params = new URLSearchParams();
-  if (options?.level) params.set('level', options.level);
   if (options?.includeInactive) params.set('includeInactive', 'true');
   
-  const res = await fetch(`${API_BASE}/api/sponsors?${params}`, {
+  const res = await fetch(`${API_BASE}/api/donors?${params}`, {
     cache: 'no-store', // Always fetch fresh data from Supabase
   });
-  if (!res.ok) throw new Error('Failed to fetch sponsors');
+  if (!res.ok) throw new Error('Failed to fetch donors');
   return res.json();
 }
 
-export async function createSponsor(data: {
+export async function createDonor(data: {
   name: string;
   website: string;
-  level: string;
   logo?: string;
   description?: string;
   is_active?: boolean;
 }) {
-  const res = await fetch(`${API_BASE}/api/sponsors`, {
+  const res = await fetch(`${API_BASE}/api/donors`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to create sponsor');
+  if (!res.ok) throw new Error('Failed to create donor');
   return res.json();
 }
 
-export async function updateSponsor(id: number, data: Record<string, unknown>) {
-  const res = await fetch(`${API_BASE}/api/sponsors`, {
+export async function updateDonor(id: number, data: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE}/api/donors`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, ...data }),
   });
-  if (!res.ok) throw new Error('Failed to update sponsor');
+  if (!res.ok) throw new Error('Failed to update donor');
   return res.json();
 }
 
-export async function deleteSponsor(id: number) {
-  const res = await fetch(`${API_BASE}/api/sponsors?id=${id}`, {
+export async function deleteDonor(id: number) {
+  const res = await fetch(`${API_BASE}/api/donors?id=${id}`, {
     method: 'DELETE',
   });
-  if (!res.ok) throw new Error('Failed to delete sponsor');
+  if (!res.ok) throw new Error('Failed to delete donor');
   return res.json();
 }
 
@@ -258,11 +256,10 @@ export interface Event {
   updated_at: string;
 }
 
-export interface Sponsor {
+export interface Donor {
   id: number;
   name: string;
   website: string;
-  level: 'platinum' | 'gold' | 'silver' | 'bronze';
   logo: string | null;
   description: string | null;
   is_active: boolean;

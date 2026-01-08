@@ -54,7 +54,7 @@ npm start
 Files to know:
 - `src/lib/supabase/client.ts` — client creation using `NEXT_PUBLIC_SUPABASE_*` env vars.
 - `src/app/admin` — UI and pages for site administrators.
-- `src/app/news`, `src/app/events`, `src/app/sponsors`, `src/app/volunteer` — content pages and admin APIs.
+- `src/app/news`, `src/app/calendar`, `src/app/sponsors`, `src/app/volunteer` — content pages and admin APIs.
 
 ## Admin responsibilities
 

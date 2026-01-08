@@ -8,7 +8,7 @@
 
 ## Backend & Infrastructure
 - **Backend-as-a-Service:** [Supabase](https://supabase.com/) (Used for Authentication and as a PostgreSQL Database)
-- **Payment Processing:** [Stripe](https://stripe.com/) (For managing secure donations and sponsorships)
+- **Payment Processing:** [Stripe](https://stripe.com/) (For managing secure donations and community support)
 - **Deployment & Analytics:** [Vercel](https://vercel.com/) (For hosting and integrated performance analytics)
 
 ## Development & Testing

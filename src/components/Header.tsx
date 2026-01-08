@@ -46,9 +46,9 @@ const Header = () => {
                 News
               </Link>
               <Link
-                href="/events"
+                href="/calendar"
                 className={`text-sm font-medium transition-colors ${
-                  isActive('/events') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  isActive('/calendar') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
                 }`}
               >
                 Calendar
@@ -69,15 +69,14 @@ const Header = () => {
               >
                 Auction
               </Link>
-              <Link
-                href="/sponsors"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/sponsors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                }`}
-              >
-                Sponsors
-              </Link>
-            </nav>
+                          <Link
+                            href="/donors"
+                            className={`text-sm font-medium transition-colors ${
+                              isActive('/donors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                            }`}
+                          >
+                            Donors
+                          </Link>            </nav>
           </div>
           {/* Mobile Menu Button */}
           <div className="md:hidden">
@@ -116,10 +115,10 @@ const Header = () => {
               News
             </Link>
             <Link
-              href="/events"
+              href="/calendar"
               onClick={() => setIsMenuOpen(false)}
               className={`text-2xl font-bold transition-colors ${
-                isActive('/events') ? 'text-primary' : 'text-white hover:text-primary'
+                isActive('/calendar') ? 'text-primary' : 'text-white hover:text-primary'
               }`}
             >
               Calendar
@@ -143,13 +142,13 @@ const Header = () => {
               Auction
             </Link>
             <Link
-              href="/sponsors"
+              href="/donors"
               onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/sponsors') ? 'text-primary' : 'text-white hover:text-primary'
+              className={`text-base font-bold transition-colors ${
+                isActive('/donors') ? 'text-primary' : 'text-white hover:text-primary'
               }`}
             >
-              Sponsors
+              Donors
             </Link>
             <Link
               href="/volunteer"

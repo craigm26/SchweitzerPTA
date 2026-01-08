@@ -2,24 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
-import { getNews, getSponsors, NewsArticle, Sponsor } from '@/lib/api';
+import { getNews, getDonors, NewsArticle, Donor } from '@/lib/api';
 
 export default function Home() {
   const [news, setNews] = useState<NewsArticle[]>([]);
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [newsData, sponsorsData] = await Promise.all([
+        const [newsData, donorsData] = await Promise.all([
           getNews({ status: 'published', limit: 3 }),
-          getSponsors({ level: 'platinum' }),
+          getDonors(),
         ]);
         setNews(newsData?.slice(0, 3) || []);
-        setSponsors(sponsorsData?.slice(0, 4) || []);
+        setDonors(donorsData?.slice(0, 4) || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -103,23 +104,23 @@ export default function Home() {
                 <Link href="/about">
                   <Button size="large">Join the PTA</Button>
                 </Link>
-                <Link href="/events">
+                <Link href="/calendar">
                   <Button size="large" variant="secondary">
                     View Calendar
                   </Button>
                 </Link>
               </div>
             </div>
-            <div className="w-full flex-1 aspect-[4/3] rounded-xl overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-800 relative group">
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAapI-GMZA_9rxkQISpwd3j2o0gWezGfJE-sl2cpM3HadqCSZ05h4xDdHlGl_II7d3x4U6RWHMUSZgzLoB4fdF0adeDrbAGGhibYL12SPB0xhA0tGlzizThO8UCkXdSD7Tr1i0P1Fi_-ZUcTKEddfSh_2aqmBpnoyO2s60TSygJccD_Aslm2L6XaurJrgMnEVzogsPE2L4uCuOI88akRwDWy0hZPoc3uyyUm6Ll5pSnfCLw59jUhehXF0iwiZtl51ScmEAJuR38rsE5")',
-                }}
-              ></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-              <div className="absolute bottom-6 left-6 text-white font-bold text-xl drop-shadow-md flex items-center gap-2">
+            <div className="w-full flex-1 rounded-xl overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-800 relative group flex items-center justify-center min-h-[400px]">
+              <Image
+                src="/AlbertSchweitzerElementaryLogo.png"
+                alt="Albert Schweitzer Elementary School Mascot"
+                width={800}
+                height={600}
+                className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
+              <div className="absolute bottom-6 left-6 text-white font-bold text-xl drop-shadow-md flex items-center gap-2 pointer-events-none">
                 <span className="material-symbols-outlined">campaign</span> Go Wildcats!
               </div>
             </div>
@@ -139,7 +140,7 @@ export default function Home() {
         </a>
         <Link
           className="flex flex-col items-center justify-center gap-3 p-6 bg-white dark:bg-[#2a221a] rounded-xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all border border-gray-100 dark:border-gray-800 group"
-          href="/events"
+          href="/calendar"
         >
           <div className="size-12 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
             <span className="material-symbols-outlined">calendar_month</span>
@@ -243,10 +244,10 @@ export default function Home() {
                 <span className="text-xs font-bold uppercase tracking-wide">Community Support</span>
               </div>
               <h2 className="text-white text-3xl font-bold leading-tight tracking-tight">
-                Thank You to Our Platinum Sponsors
+                Thank You to Our Donors
               </h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
-                Our local business partners help make our programs possible. Please support them!
+                Our community partners help make our programs possible. Please support them!
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl mx-auto">
@@ -256,36 +257,36 @@ export default function Home() {
                     <div className="w-16 h-8 bg-gray-200 rounded"></div>
                   </div>
                 ))
-              ) : sponsors.length === 0 ? (
+              ) : donors.length === 0 ? (
                 [1, 2, 3, 4].map((i) => (
                   <div key={i} className="bg-white rounded-xl p-6 flex items-center justify-center h-24">
-                    <span className="material-symbols-outlined text-3xl text-gray-300">storefront</span>
+                    <span className="material-symbols-outlined text-3xl text-gray-300">volunteer_activism</span>
                   </div>
                 ))
               ) : (
-                sponsors.map((sponsor) => (
+                donors.map((donor) => (
                   <a
-                    key={sponsor.id}
-                    href={sponsor.website || '#'}
+                    key={donor.id}
+                    href={donor.website || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-white rounded-xl p-6 flex items-center justify-center h-24 hover:scale-105 transition-transform cursor-pointer shadow-lg"
                   >
-                    {sponsor.logo ? (
+                    {donor.logo ? (
                       <img
-                        src={sponsor.logo}
-                        alt={sponsor.name}
+                        src={donor.logo}
+                        alt={donor.name}
                         className="max-h-12 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity"
                       />
                     ) : (
-                      <span className="text-gray-600 font-bold text-sm text-center">{sponsor.name}</span>
+                      <span className="text-gray-600 font-bold text-sm text-center">{donor.name}</span>
                     )}
                   </a>
                 ))
               )}
             </div>
-            <Link href="/sponsors" className="mt-4 text-white/80 hover:text-white underline text-sm">
-              Become a Sponsor
+            <Link href="/donors" className="mt-4 text-white/80 hover:text-white underline text-sm">
+              Become a Donor
             </Link>
           </div>
         </div>

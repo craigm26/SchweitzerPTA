@@ -100,41 +100,39 @@ export interface Database {
           updated_at?: string;
         };
       };
-      sponsors: {
+      donors: {
         Row: {
-          id: number;
-          name: string;
-          website: string;
-          level: 'platinum' | 'gold' | 'silver' | 'bronze';
-          logo: string | null;
-          description: string | null;
-          is_active: boolean;
-          created_at: string;
-          updated_at: string;
-        };
+          created_at: string
+          description: string | null
+          id: number
+          is_active: boolean
+          logo: string | null
+          name: string
+          updated_at: string
+          website: string
+        }
         Insert: {
-          id?: number;
-          name: string;
-          website: string;
-          level: 'platinum' | 'gold' | 'silver' | 'bronze';
-          logo?: string | null;
-          description?: string | null;
-          is_active?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
+          created_at?: string
+          description?: string | null
+          id?: number
+          is_active?: boolean
+          logo?: string | null
+          name: string
+          updated_at?: string
+          website: string
+        }
         Update: {
-          id?: number;
-          name?: string;
-          website?: string;
-          level?: 'platinum' | 'gold' | 'silver' | 'bronze';
-          logo?: string | null;
-          description?: string | null;
-          is_active?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
+          created_at?: string
+          description?: string | null
+          id?: number
+          is_active?: boolean
+          logo?: string | null
+          name?: string
+          updated_at?: string
+          website?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           id: string;

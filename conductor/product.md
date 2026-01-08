@@ -6,18 +6,18 @@ The user wants to build a website for the Schweitzer PTA.
 ## Target Users
 - **Parents and Guardians:** To stay informed about school events and news.
 - **Teachers and School Staff:** To coordinate with the PTA and share updates.
-- **Community Members and Local Businesses:** To support the school through sponsorships and donations.
-- **PTA Administrators:** To manage content, volunteers, and financial partnerships efficiently.
+- **Community Members and Local Businesses:** To support the school through donations.
+- **PTA Board Members:** To manage content, coordinate volunteers, and track contributions.
 
-## Primary Goals
-- **Communication Hub:** Centralize school news, updates, and calendars to ensure the community is well-informed.
-- **Volunteer Coordination:** Simplify the process of recruiting and managing volunteers for school events.
-- **Fundraising & Support:** Facilitate financial support through integrated donation tools and a dedicated sponsorship program.
-- **Administrative Efficiency:** Provide a robust backend for managing news, sponsors, and user roles.
+## Goals & Objectives
+- **Centralized Information:** A single source of truth for all Schweitzer PTA news and events.
+- **Volunteer Engagement:** Streamline the volunteer signup process and increase participation.
+- **Fundraising & Support:** Facilitate financial support through integrated donation tools.
+- **Administrative Efficiency:** Provide a robust backend for managing news, donors, and user roles.
 
 ## Key Features
-- **News & Updates System:** A dynamic blogging and announcement platform with an administrative editor.
-- **Volunteer Portal:** An interactive system for event sign-ups and volunteer tracking.
-- **Sponsorship Management:** A dedicated area for local businesses to partner with the PTA and gain visibility.
-- **Donation Processing:** Secure integration for one-time or recurring donations.
-- **Admin Dashboard:** A secure portal for managing the platform's core content and user permissions.
+- **News Feed:** Real-time updates and announcements for the school community.
+- **Interactive Calendar:** Filterable calendar of all PTA and school-related events.
+- **Donor Recognition:** A dedicated area for community partners to be recognized for their support.
+- **Volunteer Portal:** List of opportunities with easy online signup and tracking.
+- **Admin Dashboard:** Secure portal for content management and user role assignment.

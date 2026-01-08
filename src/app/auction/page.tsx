@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 export default function AuctionPage() {
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
@@ -54,7 +56,7 @@ export default function AuctionPage() {
                 className="w-full aspect-[4/3] bg-cover bg-center"
                 style={{
                   backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0eL0H-mVWQQ9PJlC3xqXx8JmC3xqXx8JmC3xqXx8JmC3xqXx8Jm")',
+                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0eL0H-mVWQQ9PJlC3xqXx8JmC3xqXx8JmC3xqXx8Jm")',
                   backgroundColor: '#f27f0d20',
                 }}
               >
@@ -121,9 +123,9 @@ export default function AuctionPage() {
             <div className="flex flex-col gap-4 text-[#181411]/80 dark:text-gray-300">
               <p className="text-base leading-relaxed">
                 We kindly ask you to consider donating an item, experience, gift certificate, or
-                sponsorship for this year&apos;s event. Your generosity strengthens our auction offerings and
+                direct contribution for this year&apos;s event. Your generosity strengthens our auction offerings and
                 provides valuable visibility among families and community members who appreciate
-                businesses that support their local schools.
+                supporters of their local schools.
               </p>
             </div>
           </section>
@@ -201,11 +203,11 @@ export default function AuctionPage() {
               </div>
               <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-4">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-2xl">sponsor</span>
+                  <span className="material-symbols-outlined text-2xl">volunteer_activism</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   <h3 className="text-[#181411] dark:text-white text-lg font-bold leading-tight">
-                    Event Sponsorships
+                    Community Donations
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm leading-normal">
                     Help offset food, décor, and entertainment costs
@@ -274,4 +276,3 @@ export default function AuctionPage() {
     </main>
   );
 }
-

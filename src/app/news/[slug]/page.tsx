@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default async function NewsArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   
-  const goldSponsors = [
+  const communityDonors = [
     { name: 'Main Street Pizza', description: 'Providing lunch for volunteers' },
     { name: 'First National Bank', description: 'Matching donation partner' },
     { name: 'Schweitzer Realty Group', description: 'Community support' },
@@ -115,7 +115,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
               support.&quot; - Sarah Jenkins, PTA President
             </blockquote>
             <p>
-              We want to extend a special thank you to the local businesses who sponsored water stations and provided
+              We want to extend a special thank you to the local businesses who supported water stations and provided
               snacks for the runners. Without your logistical support, this event would not have been possible.
             </p>
           </article>
@@ -136,44 +136,44 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
 
         {/* Sidebar */}
         <aside className="lg:col-span-4 space-y-6">
-          {/* Become a Sponsor CTA */}
+          {/* Become a Donor CTA */}
           <div className="bg-primary rounded-xl p-5 text-white">
-            <h4 className="font-bold text-lg mb-2">Become a Sponsor</h4>
+            <h4 className="font-bold text-lg mb-2">Become a Donor</h4>
             <p className="text-white/80 text-sm mb-4">
-              Support Schweitzer Elementary and get your business featured in our newsletter and events.
+              Support Schweitzer Elementary and help our Wildcats roar!
             </p>
             <Link
-              href="/sponsors"
+              href="/donors"
               className="block w-full bg-white text-primary py-2 px-4 rounded-lg font-bold text-sm text-center hover:bg-gray-100 transition-colors"
             >
-              View Sponsor Packages
+              How to Give
             </Link>
           </div>
 
-          {/* Gold Sponsors */}
+          {/* Community Donors */}
           <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-amber-500">workspace_premium</span>
-              <h4 className="font-bold text-[#181411] dark:text-white">Gold Sponsors</h4>
+              <span className="material-symbols-outlined text-primary">volunteer_activism</span>
+              <h4 className="font-bold text-[#181411] dark:text-white">Community Donors</h4>
             </div>
             <div className="flex flex-col gap-4">
-              {goldSponsors.map((sponsor, index) => (
+              {communityDonors.map((donor, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-amber-600 text-lg">storefront</span>
+                  <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-700">
+                    <span className="material-symbols-outlined text-gray-400 text-lg">volunteer_activism</span>
                   </div>
                   <div>
-                    <p className="font-medium text-[#181411] dark:text-white text-sm">{sponsor.name}</p>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs">{sponsor.description}</p>
+                    <p className="font-medium text-[#181411] dark:text-white text-sm">{donor.name}</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-xs">{donor.description}</p>
                   </div>
                 </div>
               ))}
             </div>
             <Link
-              href="/sponsors"
+              href="/donors"
               className="block mt-4 text-center text-primary text-sm font-bold hover:underline"
             >
-              View All Sponsors →
+              View All Donors →
             </Link>
           </div>
         </aside>

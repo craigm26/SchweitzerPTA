@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { submitContactForm, getSponsors, Sponsor } from '@/lib/api';
+import { submitContactForm, getDonors, Donor } from '@/lib/api';
 
 export default function AboutPage() {
   const [contactForm, setContactForm] = useState({
@@ -14,8 +14,8 @@ export default function AboutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [goldSponsors, setGoldSponsors] = useState<Sponsor[]>([]);
-  const [sponsorsLoading, setSponsorsLoading] = useState(true);
+  const [donors, setDonors] = useState<Donor[]>([]);
+  const [donorsLoading, setDonorsLoading] = useState(true);
 
   const boardMembers = [
     { name: 'Jane Doe', role: 'President' },
@@ -25,17 +25,17 @@ export default function AboutPage() {
   ];
 
   useEffect(() => {
-    async function fetchSponsors() {
+    async function fetchDonors() {
       try {
-        const sponsors = await getSponsors({ level: 'gold' });
-        setGoldSponsors(sponsors || []);
+        const data = await getDonors();
+        setDonors(data || []);
       } catch (error) {
-        console.error('Error fetching sponsors:', error);
+        console.error('Error fetching donors:', error);
       } finally {
-        setSponsorsLoading(false);
+        setDonorsLoading(false);
       }
     }
-    fetchSponsors();
+    fetchDonors();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,7 +112,7 @@ export default function AboutPage() {
                 className="w-full aspect-[4/3] bg-cover bg-center"
                 style={{
                   backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0eL0H-mVWQQ9PJlC3xqXx8JmC3xqXx8JmC3xqXx8JmC3xqXx8Jm")',
+                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0eL0H-mVWQQ9PJlC3xqXx8JmC3xqXx8JmC3xqXx8Jm")',
                   backgroundColor: '#f27f0d20',
                 }}
               >
@@ -309,7 +309,7 @@ export default function AboutPage() {
                   Become a Volunteer
                 </Link>
                 <Link
-                  href="/events"
+                  href="/calendar"
                   className="bg-white hover:bg-gray-100 text-primary font-bold py-3 px-6 rounded-lg transition-colors border-2 border-white"
                 >
                   View Calendar
@@ -318,31 +318,31 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* Gold Sponsors Section */}
+          {/* Donors Section */}
           <section className="flex flex-col items-center gap-8 py-8">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-500">Thank You to Our Gold Sponsors</p>
-            {sponsorsLoading ? (
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-500">Thank You to Our Donors</p>
+            {donorsLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
               </div>
-            ) : goldSponsors.length === 0 ? (
-              <p className="text-gray-500 text-sm italic">No gold sponsors at this time.</p>
+            ) : donors.length === 0 ? (
+              <p className="text-gray-500 text-sm italic">Join our community of supporters!</p>
             ) : (
               <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-                {goldSponsors.map((sponsor) => (
+                {donors.map((donor) => (
                   <a
-                    key={sponsor.id}
-                    href={sponsor.website || '#'}
-                    target={sponsor.website ? '_blank' : undefined}
-                    rel={sponsor.website ? 'noopener noreferrer' : undefined}
+                    key={donor.id}
+                    href={donor.website || '#'}
+                    target={donor.website ? '_blank' : undefined}
+                    rel={donor.website ? 'noopener noreferrer' : undefined}
                     className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary transition-colors"
                   >
-                    {sponsor.logo ? (
-                      <span className="text-2xl">{sponsor.logo}</span>
+                    {donor.logo ? (
+                      <span className="text-2xl">{donor.logo}</span>
                     ) : (
-                      <span className="text-2xl grayscale opacity-60">🏢</span>
+                      <span className="material-symbols-outlined text-gray-300">volunteer_activism</span>
                     )}
-                    <span className="font-bold text-lg">{sponsor.name}</span>
+                    <span className="font-bold text-lg">{donor.name}</span>
                   </a>
                 ))}
               </div>

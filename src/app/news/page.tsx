@@ -2,23 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getNews, getEvents, getSponsors, NewsArticle, Event, Sponsor } from '@/lib/api';
+import { getNews, getEvents, getDonors, NewsArticle, Event, Donor } from '@/lib/api';
 
 export default function NewsPage() {
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [featuredArticle, setFeaturedArticle] = useState<NewsArticle | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [newsData, eventsData, sponsorsData] = await Promise.all([
+        const [newsData, eventsData, donorsData] = await Promise.all([
           getNews({ status: 'published' }),
           getEvents({ upcoming: true }),
-          getSponsors(),
+          getDonors(),
         ]);
         
         // Set featured article (first one) and rest as recent updates
@@ -27,7 +27,7 @@ export default function NewsPage() {
           setNews(newsData.slice(1, 5));
         }
         setEvents(eventsData?.slice(0, 3) || []);
-        setSponsors(sponsorsData?.slice(0, 4) || []);
+        setDonors(donorsData?.slice(0, 4) || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -270,55 +270,55 @@ export default function NewsPage() {
                   </div>
                 )}
                 <Link
-                  href="/events"
+                  href="/calendar"
                   className="block mt-4 text-center text-primary text-sm font-bold hover:underline"
                 >
                   View Calendar
                 </Link>
               </div>
 
-              {/* Our Sponsors */}
+              {/* Our Donors */}
               <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="material-symbols-outlined text-primary">volunteer_activism</span>
-                  <h4 className="font-bold text-[#181411] dark:text-white">Our Sponsors</h4>
+                  <h4 className="font-bold text-[#181411] dark:text-white">Our Donors</h4>
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
                   Thanks to our amazing community partners for supporting our school!
                 </p>
                 <div className="grid grid-cols-2 gap-3">
-                  {sponsors.length === 0 ? (
+                  {donors.length === 0 ? (
                     [1, 2, 3, 4].map((i) => (
                       <div
                         key={i}
                         className="bg-gray-50 dark:bg-[#181411] rounded-lg p-3 flex items-center justify-center h-16"
                       >
-                        <span className="material-symbols-outlined text-2xl text-gray-300">storefront</span>
+                        <span className="material-symbols-outlined text-2xl text-gray-400">volunteer_activism</span>
                       </div>
                     ))
                   ) : (
-                    sponsors.map((sponsor) => (
+                    donors.map((donor) => (
                       <a
-                        key={sponsor.id}
-                        href={sponsor.website || '#'}
+                        key={donor.id}
+                        href={donor.website || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-gray-50 dark:bg-[#181411] rounded-lg p-3 flex items-center justify-center h-16 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       >
-                        {sponsor.logo ? (
-                          <img src={sponsor.logo} alt={sponsor.name} className="max-h-10 max-w-full object-contain" />
+                        {donor.logo ? (
+                          <img src={donor.logo} alt={donor.name} className="max-h-10 max-w-full object-contain" />
                         ) : (
-                          <span className="text-xs font-bold text-gray-500 text-center">{sponsor.name}</span>
+                          <span className="text-xs font-bold text-gray-500 text-center">{donor.name}</span>
                         )}
                       </a>
                     ))
                   )}
                 </div>
                 <Link
-                  href="/sponsors"
+                  href="/donors"
                   className="w-full mt-4 bg-[#181411] dark:bg-white text-white dark:text-[#181411] py-2 px-4 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity block text-center"
                 >
-                  Become a Sponsor
+                  Become a Donor
                 </Link>
               </div>
 

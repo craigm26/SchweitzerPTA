@@ -8,27 +8,21 @@ export const revalidate = 0;
 export async function GET(request: Request) {
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
-  const level = searchParams.get('level');
   const includeInactive = searchParams.get('includeInactive') === 'true';
 
   let query = supabase
-    .from('sponsors')
+    .from('donors')
     .select('*')
-    .order('level', { ascending: true })
     .order('name', { ascending: true });
 
   if (!includeInactive) {
     query = query.eq('is_active', true);
   }
 
-  if (level) {
-    query = query.eq('level', level);
-  }
-
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching sponsors:', error);
+    console.error('Error fetching donors:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -47,11 +41,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     
     const { data, error } = await supabase
-      .from('sponsors')
+      .from('donors')
       .insert({
         name: body.name,
         website: body.website,
-        level: body.level,
         logo: body.logo,
         description: body.description,
         is_active: body.is_active ?? true,
@@ -60,7 +53,7 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      console.error('Error creating sponsor:', error);
+      console.error('Error creating donor:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -88,14 +81,14 @@ export async function PUT(request: Request) {
     }
 
     const { data, error } = await supabase
-      .from('sponsors')
+      .from('donors')
       .update(updateData)
       .eq('id', id)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating sponsor:', error);
+      console.error('Error updating donor:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -122,12 +115,12 @@ export async function DELETE(request: Request) {
   }
 
   const { error } = await supabase
-    .from('sponsors')
+    .from('donors')
     .delete()
     .eq('id', id);
 
   if (error) {
-    console.error('Error deleting sponsor:', error);
+    console.error('Error deleting donor:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

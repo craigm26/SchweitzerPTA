@@ -2,35 +2,33 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getSponsors, createSponsor, updateSponsor, deleteSponsor, Sponsor } from '@/lib/api';
+import { getDonors, createDonor, updateDonor, deleteDonor, Donor } from '@/lib/api';
 
-export default function SponsorManagementPage() {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+export default function DonorManagementPage() {
+  const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [levelFilter, setLevelFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
+  const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     website: '',
-    level: 'bronze',
     logo: '',
     description: '',
     is_active: true,
   });
 
   useEffect(() => {
-    fetchSponsors();
+    fetchDonors();
   }, []);
 
-  async function fetchSponsors() {
+  async function fetchDonors() {
     try {
-      const data = await getSponsors({ includeInactive: true });
-      setSponsors(data || []);
+      const data = await getDonors({ includeInactive: true });
+      setDonors(data || []);
     } catch (error) {
-      console.error('Error fetching sponsors:', error);
+      console.error('Error fetching donors:', error);
     } finally {
       setLoading(false);
     }
@@ -41,107 +39,90 @@ export default function SponsorManagementPage() {
     setActionLoading(-1);
 
     try {
-      if (editingSponsor) {
-        await updateSponsor(editingSponsor.id, formData);
-        setSponsors((prev) =>
-          prev.map((s) => (s.id === editingSponsor.id ? { ...s, ...formData } as Sponsor : s))
+      if (editingDonor) {
+        await updateDonor(editingDonor.id, formData);
+        setDonors((prev) =>
+          prev.map((d) => (d.id === editingDonor.id ? { ...d, ...formData } as Donor : d))
         );
       } else {
-        const newSponsor = await createSponsor(formData);
-        setSponsors((prev) => [newSponsor, ...prev]);
+        const newDonor = await createDonor(formData);
+        setDonors((prev) => [newDonor, ...prev]);
       }
       closeModal();
     } catch (error) {
-      console.error('Error saving sponsor:', error);
-      alert('Failed to save sponsor');
+      console.error('Error saving donor:', error);
+      alert('Failed to save donor');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this sponsor?')) return;
+    if (!confirm('Are you sure you want to delete this donor?')) return;
 
     setActionLoading(id);
     try {
-      await deleteSponsor(id);
-      setSponsors((prev) => prev.filter((s) => s.id !== id));
+      await deleteDonor(id);
+      setDonors((prev) => prev.filter((d) => d.id !== id));
     } catch (error) {
-      console.error('Error deleting sponsor:', error);
-      alert('Failed to delete sponsor');
+      console.error('Error deleting donor:', error);
+      alert('Failed to delete donor');
     } finally {
       setActionLoading(null);
     }
   };
 
-  const toggleActive = async (sponsor: Sponsor) => {
-    setActionLoading(sponsor.id);
+  const toggleActive = async (donor: Donor) => {
+    setActionLoading(donor.id);
     try {
-      await updateSponsor(sponsor.id, { is_active: !sponsor.is_active });
-      setSponsors((prev) =>
-        prev.map((s) => (s.id === sponsor.id ? { ...s, is_active: !s.is_active } : s))
+      await updateDonor(donor.id, { is_active: !donor.is_active });
+      setDonors((prev) =>
+        prev.map((d) => (d.id === donor.id ? { ...d, is_active: !d.is_active } : d))
       );
     } catch (error) {
-      console.error('Error updating sponsor:', error);
-      alert('Failed to update sponsor');
+      console.error('Error updating donor:', error);
+      alert('Failed to update donor');
     } finally {
       setActionLoading(null);
     }
   };
 
   const openAddModal = () => {
-    setFormData({ name: '', website: '', level: 'bronze', logo: '', description: '', is_active: true });
-    setEditingSponsor(null);
+    setFormData({ name: '', website: '', logo: '', description: '', is_active: true });
+    setEditingDonor(null);
     setShowAddModal(true);
   };
 
-  const openEditModal = (sponsor: Sponsor) => {
+  const openEditModal = (donor: Donor) => {
     setFormData({
-      name: sponsor.name,
-      website: sponsor.website,
-      level: sponsor.level,
-      logo: sponsor.logo || '',
-      description: sponsor.description || '',
-      is_active: sponsor.is_active,
+      name: donor.name,
+      website: donor.website,
+      logo: donor.logo || '',
+      description: donor.description || '',
+      is_active: donor.is_active,
     });
-    setEditingSponsor(sponsor);
+    setEditingDonor(donor);
     setShowAddModal(true);
   };
 
   const closeModal = () => {
     setShowAddModal(false);
-    setEditingSponsor(null);
-    setFormData({ name: '', website: '', level: 'bronze', logo: '', description: '', is_active: true });
+    setEditingDonor(null);
+    setFormData({ name: '', website: '', logo: '', description: '', is_active: true });
   };
 
-  // Filter sponsors
-  const filteredSponsors = sponsors.filter((sponsor) => {
-    const matchesSearch = sponsor.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLevel = levelFilter === 'all' || sponsor.level === levelFilter;
-    return matchesSearch && matchesLevel;
+  // Filter donors
+  const filteredDonors = donors.filter((donor) => {
+    const matchesSearch = donor.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'platinum':
-        return 'bg-purple-100 text-purple-600';
-      case 'gold':
-        return 'bg-amber-100 text-amber-600';
-      case 'silver':
-        return 'bg-gray-200 text-gray-600';
-      case 'bronze':
-        return 'bg-orange-100 text-orange-600';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  };
 
   if (loading) {
     return (
       <div className="p-6 lg:p-10 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500">Loading sponsors...</p>
+          <p className="text-gray-500">Loading donors...</p>
         </div>
       </div>
     );
@@ -157,15 +138,15 @@ export default function SponsorManagementPage() {
               Admin
             </Link>
             <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-            <span className="font-medium text-gray-900 dark:text-white">Sponsors</span>
+            <span className="font-medium text-gray-900 dark:text-white">Donors</span>
           </div>
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-                Sponsor Management
+                Donor Management
               </h2>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Manage partnerships, track contributions, and update sponsor visibility.
+                Manage partnerships, track contributions, and update donor visibility.
               </p>
             </div>
             <button
@@ -173,7 +154,7 @@ export default function SponsorManagementPage() {
               className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <span className="material-symbols-outlined">add</span>
-              Add New Sponsor
+              Add New Donor
             </button>
           </div>
         </div>
@@ -186,38 +167,27 @@ export default function SponsorManagementPage() {
             </span>
             <input
               type="text"
-              placeholder="Search sponsors by name..."
+              placeholder="Search donors by name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
-          <select
-            value={levelFilter}
-            onChange={(e) => setLevelFilter(e.target.value)}
-            className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            <option value="all">All Levels</option>
-            <option value="platinum">Platinum</option>
-            <option value="gold">Gold</option>
-            <option value="silver">Silver</option>
-            <option value="bronze">Bronze</option>
-          </select>
         </div>
 
         {/* Table */}
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#2a221a] shadow-sm">
-          {filteredSponsors.length === 0 ? (
+          {filteredDonors.length === 0 ? (
             <div className="p-12 text-center">
               <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">handshake</span>
-              <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No sponsors found</h3>
-              <p className="text-gray-500 mb-4">Add your first sponsor to get started.</p>
+              <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No donors found</h3>
+              <p className="text-gray-500 mb-4">Add your first donor to get started.</p>
               <button
                 onClick={openAddModal}
                 className="inline-flex items-center gap-2 bg-primary hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold transition-colors"
               >
                 <span className="material-symbols-outlined">add</span>
-                Add Sponsor
+                Add Donor
               </button>
             </div>
           ) : (
@@ -228,76 +198,70 @@ export default function SponsorManagementPage() {
                     <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-[#181411]">
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Logo</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Sponsor Name
+                        Donor Name
                       </th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Website</th>
-                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Level</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredSponsors.map((sponsor) => {
-                      const isLoading = actionLoading === sponsor.id;
+                    {filteredDonors.map((donor) => {
+                      const isLoading = actionLoading === donor.id;
 
                       return (
                         <tr
-                          key={sponsor.id}
+                          key={donor.id}
                           className={`border-b border-gray-50 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-[#181411] transition-colors ${
                             isLoading ? 'opacity-50' : ''
                           }`}
                         >
                           <td className="px-6 py-4">
                             <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                              {sponsor.logo ? (
-                                <img src={sponsor.logo} alt={sponsor.name} className="max-h-10 max-w-10 object-contain" />
+                              {donor.logo ? (
+                                <img src={donor.logo} alt={donor.name} className="max-h-10 max-w-10 object-contain" />
                               ) : (
                                 <span className="material-symbols-outlined text-2xl text-gray-400">storefront</span>
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm font-medium text-[#181411] dark:text-white">{sponsor.name}</td>
+                          <td className="px-6 py-4 text-sm font-medium text-[#181411] dark:text-white">{donor.name}</td>
                           <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
-                            {sponsor.website ? (
+                            {donor.website ? (
                               <a
-                                href={sponsor.website.startsWith('http') ? sponsor.website : `https://${sponsor.website}`}
+                                href={donor.website.startsWith('http') ? donor.website : `https://${donor.website}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline"
                               >
-                                {sponsor.website.replace(/^https?:\/\//, '')}
+                                {donor.website.replace(/^https?:\/\//, '')}
                               </a>
                             ) : (
                               <span className="text-gray-400">--</span>
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`text-xs font-bold px-2 py-1 rounded capitalize ${getLevelColor(sponsor.level)}`}>
-                              {sponsor.level}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
                             <button
-                              onClick={() => toggleActive(sponsor)}
+                              onClick={() => toggleActive(donor)}
                               disabled={isLoading}
                               className={`text-xs font-bold px-2 py-1 rounded ${
-                                sponsor.is_active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                                donor.is_active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
                               }`}
                             >
-                              {sponsor.is_active ? 'Active' : 'Inactive'}
+                              {donor.is_active ? 'Active' : 'Inactive'}
                             </button>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <button
-                                onClick={() => openEditModal(sponsor)}
+                                onClick={() => openEditModal(donor)}
                                 disabled={isLoading}
                                 className="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                               >
                                 <span className="material-symbols-outlined text-lg">edit</span>
                               </button>
                               <button
-                                onClick={() => handleDelete(sponsor.id)}
+                                onClick={() => handleDelete(donor.id)}
                                 disabled={isLoading}
                                 className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                               >
@@ -312,7 +276,7 @@ export default function SponsorManagementPage() {
                 </table>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
-                Showing {filteredSponsors.length} of {sponsors.length} sponsors
+                Showing {filteredDonors.length} of {donors.length} donors
               </div>
             </>
           )}
@@ -325,7 +289,7 @@ export default function SponsorManagementPage() {
           <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 max-w-md w-full shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-[#181411] dark:text-white">
-                {editingSponsor ? 'Edit Sponsor' : 'Add New Sponsor'}
+                {editingDonor ? 'Edit Donor' : 'Add New Donor'}
               </h3>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                 <span className="material-symbols-outlined">close</span>
@@ -333,7 +297,7 @@ export default function SponsorManagementPage() {
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Sponsor Name *</label>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Donor Name *</label>
                 <input
                   type="text"
                   required
@@ -354,20 +318,6 @@ export default function SponsorManagementPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Level *</label>
-                <select
-                  required
-                  value={formData.level}
-                  onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value="platinum">Platinum</option>
-                  <option value="gold">Gold</option>
-                  <option value="silver">Silver</option>
-                  <option value="bronze">Bronze</option>
-                </select>
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Logo URL</label>
                 <input
                   type="url"
@@ -384,7 +334,7 @@ export default function SponsorManagementPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                  placeholder="Brief description of the sponsor..."
+                  placeholder="Brief description of the donor..."
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -412,7 +362,7 @@ export default function SponsorManagementPage() {
                   disabled={actionLoading === -1}
                   className="flex-1 py-3 px-4 rounded-lg bg-primary hover:bg-orange-600 text-white font-bold transition-colors disabled:opacity-50"
                 >
-                  {actionLoading === -1 ? 'Saving...' : editingSponsor ? 'Update' : 'Add Sponsor'}
+                  {actionLoading === -1 ? 'Saving...' : editingDonor ? 'Update' : 'Add Donor'}
                 </button>
               </div>
             </form>

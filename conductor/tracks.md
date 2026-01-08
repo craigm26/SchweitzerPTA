@@ -6,3 +6,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ## [~] Track: Enhance Sponsor Management
 *Link: [./conductor/tracks/sponsor_mgmt_20260107/](./conductor/tracks/sponsor_mgmt_20260107/)*
+
+---
+
+## [~] Track: Global Rename "Sponsors" to "Donors"
+*Link: [./conductor/tracks/donor_rename_20260107/](./conductor/tracks/donor_rename_20260107/)*

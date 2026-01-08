@@ -10,7 +10,7 @@
 - [x] Task: Conductor - User Manual Verification 'Setup and Infrastructure' (Protocol in workflow.md) 39a6652
 
 ## Phase 2: Backend API Development
-- [ ] Task: Create/Update Sponsor API Routes
+- [~] Task: Create/Update Sponsor API Routes
     - [ ] Sub-task: Write Tests for GET /api/sponsors (List)
     - [ ] Sub-task: Implement GET /api/sponsors to fetch paginated list with filters.
     - [ ] Sub-task: Write Tests for POST /api/sponsors (Create)

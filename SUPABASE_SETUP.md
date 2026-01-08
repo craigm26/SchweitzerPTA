@@ -96,7 +96,7 @@ All tables have Row Level Security enabled:
 | Endpoint | Methods | Auth Required | Description |
 |----------|---------|---------------|-------------|
 | `/api/news` | GET, POST, PUT, DELETE | Write: Yes | Manage news articles |
-| `/api/events` | GET, POST, PUT, DELETE | Write: Yes | Manage events |
+| `/api/calendar` | GET, POST, PUT, DELETE | Write: Yes | Manage events |
 | `/api/sponsors` | GET, POST, PUT, DELETE | Write: Yes | Manage sponsors |
 | `/api/volunteers` | GET, POST | Write: Yes | Manage volunteer opportunities |
 | `/api/volunteers/signup` | POST | No | Submit volunteer signup |

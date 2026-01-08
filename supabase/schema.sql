@@ -137,13 +137,12 @@ CREATE POLICY "Editors and admins can manage events" ON public.events
   );
 
 -- ============================================
--- SPONSORS TABLE
+-- DONORS TABLE
 -- ============================================
-CREATE TABLE IF NOT EXISTS public.sponsors (
+CREATE TABLE IF NOT EXISTS public.donors (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   website TEXT NOT NULL,
-  level TEXT NOT NULL CHECK (level IN ('platinum', 'gold', 'silver', 'bronze')),
   logo TEXT,
   description TEXT,
   is_active BOOLEAN DEFAULT TRUE,
@@ -152,13 +151,13 @@ CREATE TABLE IF NOT EXISTS public.sponsors (
 );
 
 -- Enable RLS
-ALTER TABLE public.sponsors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.donors ENABLE ROW LEVEL SECURITY;
 
--- Policies for sponsors
-CREATE POLICY "Active sponsors are viewable by everyone" ON public.sponsors
+-- Policies for donors
+CREATE POLICY "Active donors are viewable by everyone" ON public.donors
   FOR SELECT USING (is_active = TRUE OR auth.uid() IS NOT NULL);
 
-CREATE POLICY "Admins can manage sponsors" ON public.sponsors
+CREATE POLICY "Admins can manage donors" ON public.donors
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM public.profiles
@@ -286,7 +285,7 @@ CREATE TRIGGER update_news_updated_at BEFORE UPDATE ON public.news
 CREATE TRIGGER update_events_updated_at BEFORE UPDATE ON public.events
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_sponsors_updated_at BEFORE UPDATE ON public.sponsors
+CREATE TRIGGER update_donors_updated_at BEFORE UPDATE ON public.donors
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 CREATE TRIGGER update_volunteer_opportunities_updated_at BEFORE UPDATE ON public.volunteer_opportunities
@@ -298,14 +297,14 @@ CREATE TRIGGER update_volunteer_opportunities_updated_at BEFORE UPDATE ON public
 -- Uncomment below to add sample data
 
 /*
--- Sample sponsors
-INSERT INTO public.sponsors (name, website, level, logo, description, is_active) VALUES
-  ('Tech Solutions Inc.', 'https://techsolutions.example.com', 'gold', '🏢', 'Local technology partner', true),
-  ('Main Street Pizza', 'https://mainstreetpizza.example.com', 'gold', '🍕', 'Providing lunch for volunteers', true),
-  ('First National Bank', 'https://fnb.example.com', 'gold', '🏦', 'Matching donation partner', true),
-  ('Schweitzer Realty Group', 'https://schweitzerrealty.example.com', 'silver', '🏠', 'Community support', true),
-  ('Local Market', 'https://localmarket.example.com', 'silver', '🛒', 'School supplies sponsor', true),
-  ('The Diner', 'https://thediner.example.com', 'bronze', '🍽️', 'Teacher appreciation lunches', true);
+-- Sample donors
+INSERT INTO public.donors (name, website, logo, description, is_active) VALUES
+  ('Tech Solutions Inc.', 'https://techsolutions.example.com', '🏢', 'Local technology partner', true),
+  ('Main Street Pizza', 'https://mainstreetpizza.example.com', '🍕', 'Providing lunch for volunteers', true),
+  ('First National Bank', 'https://fnb.example.com', '🏦', 'Matching donation partner', true),
+  ('Schweitzer Realty Group', 'https://schweitzerrealty.example.com', '🏠', 'Community support', true),
+  ('Local Market', 'https://localmarket.example.com', '🛒', 'School supplies donor', true),
+  ('The Diner', 'https://thediner.example.com', '🍽️', 'Teacher appreciation lunches', true);
 
 -- Sample events
 INSERT INTO public.events (title, description, date, time, location, category, is_featured) VALUES

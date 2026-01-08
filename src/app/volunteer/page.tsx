@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getVolunteerOpportunities, getSponsors, signUpForVolunteer, VolunteerOpportunity, Sponsor } from '@/lib/api';
+import { getVolunteerOpportunities, getDonors, signUpForVolunteer, VolunteerOpportunity, Donor } from '@/lib/api';
 
 export default function VolunteerPage() {
   const [opportunities, setOpportunities] = useState<VolunteerOpportunity[]>([]);
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -21,12 +21,12 @@ export default function VolunteerPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [opportunitiesData, sponsorsData] = await Promise.all([
+        const [opportunitiesData, donorsData] = await Promise.all([
           getVolunteerOpportunities(),
-          getSponsors({ level: 'platinum' }),
+          getDonors(),
         ]);
         setOpportunities(opportunitiesData || []);
-        setSponsors(sponsorsData?.slice(0, 5) || []);
+        setDonors(donorsData?.slice(0, 5) || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -261,38 +261,38 @@ export default function VolunteerPage() {
         </div>
       </section>
 
-      {/* Platinum Sponsors Section */}
+      {/* Donors Section */}
       <section className="w-full px-4 py-12 md:px-10 bg-gray-50 dark:bg-[#181411]/50">
         <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-8">
           <div className="text-center">
             <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2">Community Partners</p>
             <h2 className="text-[#181411] dark:text-white text-2xl md:text-3xl font-bold">
-              Thank You to Our Platinum Sponsors
+              Thank You to Our Donors
             </h2>
           </div>
           <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-            {sponsors.length === 0 ? (
+            {donors.length === 0 ? (
               [1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
                   className="w-20 h-20 rounded-lg bg-white dark:bg-[#2a221a] shadow-sm flex items-center justify-center"
                 >
-                  <span className="material-symbols-outlined text-2xl text-gray-400">storefront</span>
+                  <span className="material-symbols-outlined text-2xl text-gray-400">volunteer_activism</span>
                 </div>
               ))
             ) : (
-              sponsors.map((sponsor) => (
+              donors.map((donor) => (
                 <a
-                  key={sponsor.id}
-                  href={sponsor.website || '#'}
+                  key={donor.id}
+                  href={donor.website || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-20 h-20 rounded-lg bg-white dark:bg-[#2a221a] shadow-sm flex items-center justify-center hover:shadow-md transition-shadow"
                 >
-                  {sponsor.logo ? (
-                    <img src={sponsor.logo} alt={sponsor.name} className="max-h-12 max-w-12 object-contain" />
+                  {donor.logo ? (
+                    <img src={donor.logo} alt={donor.name} className="max-h-12 max-w-12 object-contain" />
                   ) : (
-                    <span className="material-symbols-outlined text-2xl text-gray-400">storefront</span>
+                    <span className="material-symbols-outlined text-2xl text-gray-400">volunteer_activism</span>
                   )}
                 </a>
               ))

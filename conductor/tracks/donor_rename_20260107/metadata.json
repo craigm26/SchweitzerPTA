@@ -1,0 +1,8 @@
+{
+  "track_id": "donor_rename_20260107",
+  "type": "refactor",
+  "status": "new",
+  "created_at": "2026-01-07T19:24:00Z",
+  "updated_at": "2026-01-07T19:24:00Z",
+  "description": "replace 'sponsors' with 'donors' throughout the system"
+}

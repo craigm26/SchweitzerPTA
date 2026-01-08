@@ -3,26 +3,26 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
-import { getNews, getEvents, getSponsors, NewsArticle, Event, Sponsor } from '@/lib/api';
+import { getNews, getEvents, getDonors, NewsArticle, Event, Donor } from '@/lib/api';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [newsData, eventsData, sponsorsData] = await Promise.all([
+        const [newsData, eventsData, donorsData] = await Promise.all([
           getNews(),
           getEvents({ upcoming: true }),
-          getSponsors({ includeInactive: true }),
+          getDonors({ includeInactive: true }),
         ]);
         setNews(newsData || []);
         setEvents(eventsData || []);
-        setSponsors(sponsorsData || []);
+        setDonors(donorsData || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -33,9 +33,8 @@ export default function AdminDashboard() {
   }, []);
 
   // Calculate stats from real data
-  const publishedNews = news.filter((n) => n.status === 'published').length;
   const draftNews = news.filter((n) => n.status === 'draft').length;
-  const activeSponsors = sponsors.filter((s) => s.is_active).length;
+  const activeDonors = donors.filter((d) => d.is_active).length;
   const upcomingEvents = events.length;
 
   const stats = [
@@ -53,11 +52,11 @@ export default function AdminDashboard() {
       icon: 'handshake',
       iconBg: 'bg-amber-100 dark:bg-amber-900/30',
       iconColor: 'text-amber-600 dark:text-amber-400',
-      label: 'Sponsors',
-      value: `${activeSponsors} Active`,
+      label: 'Donors',
+      value: `${activeDonors} Active`,
       badge: 'Active',
       badgeColor: 'bg-green-100 text-green-600',
-      link: { href: '/admin/sponsors', label: 'Manage Sponsors' },
+      link: { href: '/admin/donors', label: 'Manage Donors' },
     },
     {
       icon: 'event',
@@ -67,7 +66,7 @@ export default function AdminDashboard() {
       value: `${upcomingEvents} Upcoming`,
       badge: 'Upcoming',
       badgeColor: 'bg-blue-100 text-blue-600',
-      link: { href: '/events', label: 'View Calendar' },
+      link: { href: '/calendar', label: 'View Calendar' },
     },
     {
       icon: 'group',
@@ -103,8 +102,7 @@ export default function AdminDashboard() {
     };
   });
 
-  const featuredSponsor = sponsors.filter((s) => s.is_active && s.level === 'gold')[0] ||
-    sponsors.filter((s) => s.is_active)[0];
+  const featuredDonor = donors.filter((d) => d.is_active)[0];
 
   function getRelativeTime(dateString: string) {
     const date = new Date(dateString);
@@ -245,11 +243,11 @@ export default function AdminDashboard() {
                   <span className="text-sm font-medium text-[#181411] dark:text-white">New Article</span>
                 </Link>
                 <Link
-                  href="/admin/sponsors"
+                  href="/admin/donors"
                   className="flex flex-col items-center gap-2 p-4 rounded-lg bg-gray-50 dark:bg-[#181411] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   <span className="material-symbols-outlined text-amber-500 text-2xl">handshake</span>
-                  <span className="text-sm font-medium text-[#181411] dark:text-white">Add Sponsor</span>
+                  <span className="text-sm font-medium text-[#181411] dark:text-white">Add Donor</span>
                 </Link>
                 <Link
                   href="/admin/users"
@@ -271,40 +269,37 @@ export default function AdminDashboard() {
 
           {/* Right Column */}
           <div className="xl:col-span-1 flex flex-col gap-6">
-            {/* Sponsor Spotlight */}
+            {/* Donor Spotlight */}
             <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[#181411] dark:text-white text-lg font-bold">Sponsor Spotlight</h2>
-                <Link href="/admin/sponsors" className="text-gray-400 hover:text-gray-600">
+                <h2 className="text-[#181411] dark:text-white text-lg font-bold">Donor Spotlight</h2>
+                <Link href="/admin/donors" className="text-gray-400 hover:text-gray-600">
                   <span className="material-symbols-outlined">more_horiz</span>
                 </Link>
               </div>
-              {featuredSponsor ? (
+              {featuredDonor ? (
                 <div className="flex flex-col items-center text-center">
                   <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mb-4">
-                    {featuredSponsor.logo ? (
-                      <img src={featuredSponsor.logo} alt={featuredSponsor.name} className="max-h-16 max-w-16 object-contain" />
+                    {featuredDonor.logo ? (
+                      <img src={featuredDonor.logo} alt={featuredDonor.name} className="max-h-16 max-w-16 object-contain" />
                     ) : (
-                      <span className="text-white text-xs font-bold uppercase">{featuredSponsor.level}</span>
+                      <span className="material-symbols-outlined text-4xl text-white">volunteer_activism</span>
                     )}
                   </div>
-                  <h3 className="text-[#181411] dark:text-white font-bold text-lg">{featuredSponsor.name}</h3>
-                  <span className="text-primary text-xs font-bold uppercase tracking-wider mb-2">
-                    {featuredSponsor.level} Tier
-                  </span>
+                  <h3 className="text-[#181411] dark:text-white font-bold text-lg">{featuredDonor.name}</h3>
                   <Link
-                    href="/admin/sponsors"
-                    className="w-full py-2 px-4 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center"
+                    href="/admin/donors"
+                    className="w-full mt-4 py-2 px-4 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center"
                   >
                     View Details
                   </Link>
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">handshake</span>
-                  <p className="text-gray-500 text-sm">No sponsors yet</p>
-                  <Link href="/admin/sponsors" className="text-primary text-sm font-bold hover:underline">
-                    Add a sponsor
+                  <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">volunteer_activism</span>
+                  <p className="text-gray-500 text-sm">No donors yet</p>
+                  <Link href="/admin/donors" className="text-primary text-sm font-bold hover:underline">
+                    Add a donor
                   </Link>
                 </div>
               )}
@@ -314,7 +309,7 @@ export default function AdminDashboard() {
             <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-[#181411] dark:text-white text-lg font-bold">Upcoming Events</h2>
-                <Link href="/events" className="text-primary text-sm font-bold hover:underline">
+                <Link href="/calendar" className="text-primary text-sm font-bold hover:underline">
                   View All
                 </Link>
               </div>
