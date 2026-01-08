@@ -10,41 +10,41 @@
 - [x] Task: Conductor - User Manual Verification 'Setup and Infrastructure' (Protocol in workflow.md) 39a6652
 
 ## Phase 2: Backend API Development
-- [~] Task: Create/Update Donor API Routes
+- [x] Task: Create/Update Donor API Routes
     - [x] Sub-task: Write Tests for GET /api/donors (List)
     - [x] Sub-task: Implement GET /api/donors to fetch paginated list with filters.
-    - [~] Sub-task: Write Tests for POST /api/donors (Create)
-    - [ ] Sub-task: Implement POST /api/donors to handle text data.
-    - [ ] Sub-task: Write Tests for PUT /api/donors/[id] (Update)
-    - [ ] Sub-task: Implement PUT /api/donors/[id] to update details.
-    - [ ] Sub-task: Write Tests for DELETE /api/donors/[id] (Delete)
-    - [ ] Sub-task: Implement DELETE /api/donors/[id].
-- [ ] Task: Implement Image Upload Logic
-    - [ ] Sub-task: Create a utility function or API route to handle file uploads to Supabase Storage.
-    - [ ] Sub-task: Ensure the returned URL is valid and accessible.
+    - [x] Sub-task: Write Tests for POST /api/donors (Create)
+    - [x] Sub-task: Implement POST /api/donors to handle text data.
+    - [x] Sub-task: Write Tests for PUT /api/donors/[id] (Update)
+    - [x] Sub-task: Implement PUT /api/donors/[id] to update details.
+    - [x] Sub-task: Write Tests for DELETE /api/donors/[id] (Delete)
+    - [x] Sub-task: Implement DELETE /api/donors/[id].
+- [x] Task: Implement Image Upload Logic
+    - [x] Sub-task: Create a utility function or API route to handle file uploads to Supabase Storage.
+    - [x] Sub-task: Ensure the returned URL is valid and accessible.
 - [ ] Task: Conductor - User Manual Verification 'Backend API Development' (Protocol in workflow.md)
 
 ## Phase 3: Frontend Implementation
-- [ ] Task: Sponsor List View (Admin)
-    - [ ] Sub-task: Write Tests for SponsorList Component.
-    - [ ] Sub-task: Build the table/grid view to display sponsors.
-    - [ ] Sub-task: Integrate with GET /api/sponsors.
-- [ ] Task: Add/Edit Sponsor Form
-    - [ ] Sub-task: Write Tests for SponsorForm Component.
-    - [ ] Sub-task: Create a reusable form component for creating and editing sponsors.
-    - [ ] Sub-task: Implement form validation (Zod/React Hook Form recommended).
-    - [ ] Sub-task: Integrate the file input for logo upload.
-- [ ] Task: Integrate Form with API
-    - [ ] Sub-task: Wire up the "Add Sponsor" action to the POST endpoint.
-    - [ ] Sub-task: Wire up the "Edit Sponsor" action to the PUT endpoint.
-    - [ ] Sub-task: Handle success/error states (toast notifications).
+- [x] Task: Donor List View (Admin)
+    - [x] Sub-task: Write Tests for DonorList Component.
+    - [x] Sub-task: Build the table/grid view to display donors.
+    - [x] Sub-task: Integrate with GET /api/donors.
+- [x] Task: Add/Edit Donor Form
+    - [x] Sub-task: Write Tests for DonorForm Component.
+    - [x] Sub-task: Create a reusable form component for creating and editing donors.
+    - [x] Sub-task: Implement form validation (Zod/React Hook Form recommended).
+    - [x] Sub-task: Integrate the file input for logo upload.
+- [x] Task: Integrate Form with API
+    - [x] Sub-task: Wire up the "Add Donor" action to the POST endpoint.
+    - [x] Sub-task: Wire up the "Edit Donor" action to the PUT endpoint.
+    - [x] Sub-task: Handle success/error states (toast notifications).
 - [ ] Task: Conductor - User Manual Verification 'Frontend Implementation' (Protocol in workflow.md)
 
 ## Phase 4: Quality Assurance and Polish
-- [ ] Task: End-to-End Testing
-    - [ ] Sub-task: Write a Playwright test spec for the full sponsor lifecycle (Create -> Read -> Update -> Delete).
-    - [ ] Sub-task: Verify image upload works in the E2E test.
-- [ ] Task: UI/UX Polish
-    - [ ] Sub-task: Ensure responsive design for the admin table and forms.
-    - [ ] Sub-task: Verify loading states and error messages are user-friendly.
+- [x] Task: End-to-End Testing
+    - [x] Sub-task: Write a Playwright test spec for the full sponsor lifecycle (Create -> Read -> Update -> Delete).
+    - [x] Sub-task: Verify image upload works in the E2E test.
+- [x] Task: UI/UX Polish
+    - [x] Sub-task: Ensure responsive design for the admin table and forms.
+    - [x] Sub-task: Verify loading states and error messages are user-friendly.
 - [ ] Task: Conductor - User Manual Verification 'Quality Assurance and Polish' (Protocol in workflow.md)
