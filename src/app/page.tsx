@@ -135,10 +135,6 @@ export default function Home() {
           ></div>
           <div className="relative z-10 flex flex-col items-center gap-8">
             <div className="flex flex-col gap-2">
-              <div className="inline-flex mx-auto items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/20 w-fit mb-2">
-                <span className="material-symbols-outlined text-sm">favorite</span>
-                <span className="text-xs font-bold uppercase tracking-wide">Community Support</span>
-              </div>
               <h2 className="text-white text-3xl font-bold leading-tight tracking-tight">
                 Thank You to Our Donors
               </h2>
