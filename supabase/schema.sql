@@ -111,12 +111,14 @@ CREATE TABLE IF NOT EXISTS public.events (
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   date DATE NOT NULL,
-  time TEXT NOT NULL,
+  end_date DATE,
+  time TEXT,
   end_time TEXT,
   location TEXT NOT NULL,
   category TEXT,
   image TEXT,
   is_featured BOOLEAN DEFAULT FALSE,
+  is_all_day BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

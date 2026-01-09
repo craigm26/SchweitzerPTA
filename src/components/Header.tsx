@@ -31,44 +31,39 @@ const Header = () => {
             <nav className="flex items-center gap-6">
               <Link
                 href="/"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                }`}
+                className={`text-sm font-medium transition-colors ${isActive('/') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
               >
                 Home
               </Link>
               <Link
                 href="/auction"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/auction') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                }`}
+                className={`text-sm font-medium transition-colors ${isActive('/auction') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
               >
                 Auction
               </Link>
               <Link
                 href="/calendar"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/calendar') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                }`}
+                className={`text-sm font-medium transition-colors ${isActive('/calendar') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
               >
                 Calendar
               </Link>
               <Link
                 href="/resources"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/resources') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                }`}
+                className={`text-sm font-medium transition-colors ${isActive('/resources') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
               >
                 Resources
               </Link>
               <Link
-                            href="/donors"
-                            className={`text-sm font-medium transition-colors ${
-                              isActive('/donors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                            }`}
-                          >
-                            Donors
-                          </Link>            </nav>
+                href="/donors"
+                className={`text-sm font-medium transition-colors ${isActive('/donors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
+              >
+                Donors
+              </Link>            </nav>
           </div>
           {/* Mobile Menu Button */}
           <div className="md:hidden">
@@ -91,54 +86,48 @@ const Header = () => {
             <Link
               href="/"
               onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
+              className={`text-2xl font-bold transition-colors ${isActive('/') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
             >
               Home
             </Link>
             <Link
               href="/auction"
               onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/auction') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
+              className={`text-2xl font-bold transition-colors ${isActive('/auction') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
             >
               Auction
             </Link>
             <Link
               href="/calendar"
               onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/calendar') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
+              className={`text-2xl font-bold transition-colors ${isActive('/calendar') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
             >
               Calendar
             </Link>
             <Link
               href="/resources"
               onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/resources') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
+              className={`text-2xl font-bold transition-colors ${isActive('/resources') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
             >
               Resources
             </Link>
             <Link
               href="/donors"
               onClick={() => setIsMenuOpen(false)}
-              className={`text-base font-bold transition-colors ${
-                isActive('/donors') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
+              className={`text-2xl font-bold transition-colors ${isActive('/donors') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
             >
               Donors
             </Link>
             <Link
               href="/volunteer"
               onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/volunteer') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
+              className={`text-2xl font-bold transition-colors ${isActive('/volunteer') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
             >
               Volunteer
             </Link>

@@ -57,19 +57,21 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    
+
     const { data, error } = await supabase
       .from('events')
       .insert({
         title: body.title,
         description: body.description,
         date: body.date,
-        time: body.time,
-        end_time: body.end_time,
+        end_date: body.end_date || null,
+        time: body.time || null,
+        end_time: body.end_time || null,
         location: body.location,
         category: body.category,
         image: body.image,
         is_featured: body.is_featured || false,
+        is_all_day: body.is_all_day || false,
       })
       .select()
       .single();

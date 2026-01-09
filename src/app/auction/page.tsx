@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 export default function AuctionPage() {
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
@@ -15,9 +17,6 @@ export default function AuctionPage() {
           ></div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#181411] via-transparent to-transparent"></div>
           <div className="relative z-10 flex flex-col items-center gap-4 text-center px-4 max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-2">
-              <span className="material-symbols-outlined text-sm">gavel</span> Annual Fundraiser
-            </div>
             <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
               9th Annual Adult-Only Dinner & Silent Auction
             </h1>
@@ -50,18 +49,14 @@ export default function AuctionPage() {
               </div>
             </div>
             <div className="rounded-xl overflow-hidden shadow-lg">
-              <div
-                className="w-full aspect-[4/3] bg-cover bg-center"
-                style={{
-                  backgroundImage:
-                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuB0eL0H-mVWQQ9PJlC3xqXx8JmC3xqXx8JmC3xqXx8Jm")',
-                  backgroundColor: '#f27f0d20',
-                }}
-              >
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/40">
-                  <span className="material-symbols-outlined text-8xl text-primary/60">celebration</span>
-                </div>
-              </div>
+              <Image
+                src="/auction-image.png"
+                alt="9th Annual Adult-Only Dinner & Silent Auction"
+                width={800}
+                height={600}
+                className="w-full h-auto object-cover"
+                priority
+              />
             </div>
           </section>
 

@@ -79,12 +79,14 @@ export async function createEvent(data: {
   title: string;
   description: string;
   date: string;
-  time: string;
-  end_time?: string;
+  end_date?: string | null;
+  time?: string | null;
+  end_time?: string | null;
   location: string;
   category?: string;
   image?: string;
   is_featured?: boolean;
+  is_all_day?: boolean;
 }) {
   const res = await fetch(`${API_BASE}/api/calendar`, {
     method: 'POST',
@@ -117,7 +119,7 @@ export async function deleteEvent(id: number) {
 export async function getDonors(options?: { includeInactive?: boolean }) {
   const params = new URLSearchParams();
   if (options?.includeInactive) params.set('includeInactive', 'true');
-  
+
   try {
     const res = await fetch(`${API_BASE}/api/donors?${params}`, {
       cache: 'no-store', // Always fetch fresh data from Supabase
@@ -126,7 +128,9 @@ export async function getDonors(options?: { includeInactive?: boolean }) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(`Failed to fetch donors: ${res.status} ${errorData.error || res.statusText}`);
     }
-    return res.json();
+    const result = await res.json();
+    // Handle paginated response - extract data array
+    return result.data || result || [];
   } catch (error) {
     console.error('Error in getDonors:', error);
     // Return empty array instead of throwing to prevent page crashes
@@ -255,12 +259,14 @@ export interface Event {
   title: string;
   description: string;
   date: string;
-  time: string;
+  end_date: string | null;
+  time: string | null;
   end_time: string | null;
   location: string;
   category: string | null;
   image: string | null;
   is_featured: boolean;
+  is_all_day: boolean;
   created_at: string;
   updated_at: string;
 }

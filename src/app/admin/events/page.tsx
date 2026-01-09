@@ -18,12 +18,14 @@ export default function EventManagementPage() {
     title: '',
     description: '',
     date: '',
+    end_date: '',
     time: '',
     end_time: '',
     location: '',
     category: 'general',
     image: '',
     is_featured: false,
+    is_all_day: false,
   });
 
   useEffect(() => {
@@ -45,10 +47,12 @@ export default function EventManagementPage() {
     e.preventDefault();
     setActionLoading(-1);
 
-    // Prepare data (handle optional end_time)
+    // Prepare data (handle optional fields and all-day events)
     const dataToSubmit = {
       ...formData,
-      end_time: formData.end_time || undefined,
+      time: formData.is_all_day ? null : (formData.time || null),
+      end_time: formData.is_all_day ? null : (formData.end_time || null),
+      end_date: formData.end_date || null,
     };
 
     try {
@@ -110,28 +114,35 @@ export default function EventManagementPage() {
       title: '',
       description: '',
       date: new Date().toISOString().split('T')[0], // Default to today
+      end_date: '',
       time: '18:00',
       end_time: '',
       location: '',
       category: 'meeting',
       image: '',
       is_featured: false,
+      is_all_day: false,
     });
     setEditingEvent(null);
     setShowAddModal(true);
   };
 
   const openEditModal = (event: Event) => {
+    // Check if time is a valid time format (HH:mm) or treat as all-day
+    const isValidTime = event.time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.time);
+    const isAllDay = !isValidTime || (event as any).is_all_day;
     setFormData({
       title: event.title,
       description: event.description,
       date: event.date,
-      time: event.time,
-      end_time: event.end_time || '',
+      end_date: (event as any).end_date || '',
+      time: isValidTime && event.time ? event.time : '',
+      end_time: event.end_time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.end_time) ? event.end_time : '',
       location: event.location,
       category: event.category || 'general',
       image: event.image || '',
       is_featured: event.is_featured,
+      is_all_day: isAllDay,
     });
     setEditingEvent(event);
     setShowAddModal(true);
@@ -280,10 +291,19 @@ export default function EventManagementPage() {
                             <div className="flex flex-col">
                               <span className={`font-bold ${isPast ? 'text-gray-500' : 'text-[#181411] dark:text-white'}`}>
                                 {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                {(event as any).end_date && (event as any).end_date !== event.date && (
+                                  <span className="font-normal"> - {new Date((event as any).end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                )}
                               </span>
                               <span className="text-sm text-gray-500">
-                                {new Date(`2000-01-01T${event.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                                {event.end_time && ` - ${new Date(`2000-01-01T${event.end_time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`}
+                                {event.time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.time) ? (
+                                  <>
+                                    {new Date(`2000-01-01T${event.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                                    {event.end_time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.end_time) && ` - ${new Date(`2000-01-01T${event.end_time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`}
+                                  </>
+                                ) : (
+                                  <span className="italic">All Day</span>
+                                )}
                               </span>
                             </div>
                           </td>
@@ -376,9 +396,21 @@ export default function EventManagementPage() {
                 />
               </div>
               
+              <div>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Location *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="e.g. School Cafeteria"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Date *</label>
+                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Start Date *</label>
                   <input
                     type="date"
                     required
@@ -388,36 +420,49 @@ export default function EventManagementPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Location *</label>
+                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">End Date (Optional)</label>
                   <input
-                    type="text"
-                    required
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    type="date"
+                    value={formData.end_date}
+                    min={formData.date}
+                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    placeholder="e.g. School Cafeteria"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 py-2">
+                <input
+                  type="checkbox"
+                  id="is_all_day"
+                  checked={formData.is_all_day}
+                  onChange={(e) => setFormData({ ...formData, is_all_day: e.target.checked })}
+                  className="rounded border-gray-300"
+                />
+                <label htmlFor="is_all_day" className="text-sm font-medium text-[#181411] dark:text-white">
+                  All Day Event
+                </label>
+              </div>
+
+              <div className={`grid grid-cols-2 gap-4 transition-opacity ${formData.is_all_day ? 'opacity-40 pointer-events-none' : ''}`}>
                 <div>
-                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Start Time *</label>
+                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Start Time</label>
                   <input
                     type="time"
-                    required
                     value={formData.time}
                     onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    disabled={formData.is_all_day}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">End Time (Optional)</label>
+                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">End Time</label>
                   <input
                     type="time"
                     value={formData.end_time}
                     onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    disabled={formData.is_all_day}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                   />
                 </div>
               </div>

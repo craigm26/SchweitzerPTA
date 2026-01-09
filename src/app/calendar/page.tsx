@@ -103,9 +103,6 @@ export default function EventsPage() {
           ></div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#181411] via-transparent to-transparent"></div>
           <div className="relative z-10 flex flex-col items-center gap-4 text-center px-4 max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-2">
-              <span className="material-symbols-outlined text-sm">event</span> School Year {new Date().getFullYear()}-{new Date().getFullYear() + 1}
-            </div>
             <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
               Calendar
             </h1>
