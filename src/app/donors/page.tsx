@@ -48,18 +48,12 @@ export default function DonorsPage() {
                 Schweitzer Elementary a wonderful place to learn and grow. Go Wildcats!
               </p>
               <div className="flex flex-col gap-4 sm:flex-row sm:justify-center md:justify-start">
-                <Link 
-                  href="/volunteer" 
+                <a 
+                  href="mailto:AlbertSchweitzerPTA@gmail.com" 
                   className="flex h-12 items-center justify-center rounded-xl bg-primary px-8 text-base font-bold text-white shadow-lg hover:bg-orange-600 transition-all transform hover:-translate-y-0.5"
                 >
-                  Become a Donor
-                </Link>
-                <Link 
-                  href="/about" 
-                  className="flex h-12 items-center justify-center rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-8 text-base font-bold text-[#181411] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  Contact Us
-                </Link>
+                  Email AlbertSchweitzerPTA@gmail.com
+                </a>
               </div>
             </div>
             <div className="flex-1">

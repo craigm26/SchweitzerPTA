@@ -10,6 +10,7 @@ interface Profile {
   full_name: string | null;
   role: 'admin' | 'editor' | 'member';
   avatar_url: string | null;
+  created_at: string | null;
 }
 
 interface AuthContextType {
