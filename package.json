@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -39,6 +39,7 @@
     "jsdom": "^27.4.0",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vercel": "^50.1.6",
     "vitest": "^4.0.16",
     "vitest-mock-extended": "^3.1.0"
   },

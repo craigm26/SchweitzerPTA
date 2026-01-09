@@ -29,10 +29,11 @@ const Footer = () => {
           <div>
             <h4 className="font-bold mb-4 text-white">Quick Links</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link href="/about" className="hover:text-primary transition-colors">About the PTA</Link></li>
-              <li><Link href="/about" className="hover:text-primary transition-colors">Membership</Link></li>
-              <li><Link href="/volunteer" className="hover:text-primary transition-colors">Volunteer Opportunities</Link></li>
-              <li><Link href="/calendar" className="hover:text-primary transition-colors">School Calendar</Link></li>
+              <li><Link href="/" className="hover:text-primary transition-colors">Home</Link></li>
+              <li><Link href="/auction" className="hover:text-primary transition-colors">Auction</Link></li>
+              <li><Link href="/calendar" className="hover:text-primary transition-colors">Calendar</Link></li>
+              <li><Link href="/resources" className="hover:text-primary transition-colors">Resources</Link></li>
+              <li><Link href="/donors" className="hover:text-primary transition-colors">Donors</Link></li>
               <li><Link href="/admin" className="hover:text-primary transition-colors">Administrator Login</Link></li>
             </ul>
           </div>
@@ -51,7 +52,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-xs text-gray-500">
-          © 2025 Schweitzer Elementary PTA. All rights reserved.
+          © 2026 Schweitzer Elementary PTA. All rights reserved.
         </div>
       </div>
     </footer>

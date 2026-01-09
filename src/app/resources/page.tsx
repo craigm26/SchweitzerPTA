@@ -10,6 +10,7 @@ export default function ResourcesPage() {
       href: '#',
       icon: 'description',
       category: 'Documents',
+      comingSoon: true,
     },
     {
       title: 'Teacher Reimbursement Form',
@@ -17,6 +18,7 @@ export default function ResourcesPage() {
       href: '#',
       icon: 'receipt_long',
       category: 'Forms',
+      comingSoon: true,
     },
     {
       title: 'General Reimbursement Form',
@@ -24,6 +26,7 @@ export default function ResourcesPage() {
       href: '#',
       icon: 'description',
       category: 'Forms',
+      comingSoon: true,
     },
     {
       title: 'PTA Instagram',
@@ -86,28 +89,22 @@ export default function ResourcesPage() {
           {/* Resources Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {resources.map((resource, index) => {
-              const LinkComponent = resource.external ? 'a' : Link;
-              const linkProps = resource.external
-                ? {
-                    href: resource.href,
-                    target: '_blank',
-                    rel: 'noopener noreferrer',
-                  }
-                : { href: resource.href };
-
-              return (
-                <LinkComponent
-                  key={index}
-                  {...linkProps}
-                  className="bg-white dark:bg-[#2a221a] rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md hover:-translate-y-1 transition-all flex flex-col gap-4 group"
-                >
+              const cardContent = (
+                <>
                   <div className="flex items-start justify-between gap-4">
                     <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
                       <span className="material-symbols-outlined text-2xl">{resource.icon}</span>
                     </div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
-                      {resource.category}
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
+                        {resource.category}
+                      </span>
+                      {resource.comingSoon && (
+                        <span className="text-xs font-bold uppercase tracking-wider text-primary px-2 py-1 bg-primary/10 dark:bg-primary/20 rounded border border-primary/20">
+                          Coming Soon
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-col gap-2 flex-1">
                     <h3 className="text-[#181411] dark:text-white text-lg font-bold leading-tight">
@@ -118,10 +115,54 @@ export default function ResourcesPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 text-primary font-bold text-sm group-hover:gap-3 transition-all">
-                    {resource.external ? 'Visit Link' : 'View Resource'}
-                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    {resource.comingSoon 
+                      ? 'Coming Soon' 
+                      : resource.external 
+                        ? 'Visit Link' 
+                        : 'View Resource'}
+                    {!resource.comingSoon && (
+                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    )}
                   </div>
-                </LinkComponent>
+                </>
+              );
+
+              const cardClassName = `bg-white dark:bg-[#2a221a] rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 transition-all flex flex-col gap-4 group ${
+                resource.comingSoon 
+                  ? 'opacity-75 cursor-not-allowed' 
+                  : 'hover:shadow-md hover:-translate-y-1'
+              }`;
+
+              if (resource.comingSoon) {
+                return (
+                  <div key={index} className={cardClassName}>
+                    {cardContent}
+                  </div>
+                );
+              }
+
+              if (resource.external) {
+                return (
+                  <a
+                    key={index}
+                    href={resource.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cardClassName}
+                  >
+                    {cardContent}
+                  </a>
+                );
+              }
+
+              return (
+                <Link
+                  key={index}
+                  href={resource.href}
+                  className={cardClassName}
+                >
+                  {cardContent}
+                </Link>
               );
             })}
           </div>

@@ -38,12 +38,12 @@ const Header = () => {
                 Home
               </Link>
               <Link
-                href="/news"
+                href="/auction"
                 className={`text-sm font-medium transition-colors ${
-                  isActive('/news') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  isActive('/auction') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
                 }`}
               >
-                News
+                Auction
               </Link>
               <Link
                 href="/calendar"
@@ -62,22 +62,6 @@ const Header = () => {
                 Resources
               </Link>
               <Link
-                href="/documents"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/documents') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                }`}
-              >
-                Documents
-              </Link>
-              <Link
-                href="/auction"
-                className={`text-sm font-medium transition-colors ${
-                  isActive('/auction') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                }`}
-              >
-                Auction
-              </Link>
-                          <Link
                             href="/donors"
                             className={`text-sm font-medium transition-colors ${
                               isActive('/donors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
@@ -114,13 +98,13 @@ const Header = () => {
               Home
             </Link>
             <Link
-              href="/news"
+              href="/auction"
               onClick={() => setIsMenuOpen(false)}
               className={`text-2xl font-bold transition-colors ${
-                isActive('/news') ? 'text-primary' : 'text-white hover:text-primary'
+                isActive('/auction') ? 'text-primary' : 'text-white hover:text-primary'
               }`}
             >
-              News
+              Auction
             </Link>
             <Link
               href="/calendar"
@@ -139,24 +123,6 @@ const Header = () => {
               }`}
             >
               Resources
-            </Link>
-            <Link
-              href="/documents"
-              onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/documents') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
-            >
-              Documents
-            </Link>
-            <Link
-              href="/auction"
-              onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive('/auction') ? 'text-primary' : 'text-white hover:text-primary'
-              }`}
-            >
-              Auction
             </Link>
             <Link
               href="/donors"
