@@ -123,35 +123,6 @@ export default function DonorsPage() {
           </div>
         )}
       </div>
-
-      {/* CTA Section */}
-      <section className="w-full bg-[#181411] py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold uppercase tracking-wider mb-4">
-            Wildcat Community
-          </div>
-          <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">
-            Interested in supporting Schweitzer Elementary?
-          </h2>
-          <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
-            Your contributions directly fund field trips, classroom supplies, and community events that make our school special.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/volunteer"
-              className="flex h-12 items-center justify-center rounded-xl bg-primary px-8 text-base font-bold text-white shadow-lg hover:bg-orange-600 transition-all"
-            >
-              Make a Donation
-            </Link>
-            <Link
-              href="/about"
-              className="flex h-12 items-center justify-center rounded-xl bg-gray-800 border border-gray-700 px-8 text-base font-bold text-white hover:bg-gray-700 transition-colors"
-            >
-              Contact PTA Board
-            </Link>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }

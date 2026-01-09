@@ -124,65 +124,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-8 mb-12">
-        <div className="rounded-2xl bg-[#181411] dark:bg-[#000] p-8 md:p-12 text-center relative overflow-hidden">
-          <div
-            className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none"
-            style={{
-              backgroundImage: 'radial-gradient(#f27f0d 1px, transparent 1px)',
-              backgroundSize: '20px 20px',
-            }}
-          ></div>
-          <div className="relative z-10 flex flex-col items-center gap-8">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-white text-3xl font-bold leading-tight tracking-tight">
-                Thank You to Our Donors
-              </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto">
-                Our community partners help make our programs possible. Please support them!
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl mx-auto">
-              {loading ? (
-                [1, 2, 3, 4].map((i) => (
-                  <div key={i} className="bg-white rounded-xl p-6 flex items-center justify-center h-24 animate-pulse">
-                    <div className="w-16 h-8 bg-gray-200 rounded"></div>
-                  </div>
-                ))
-              ) : donors.length === 0 ? (
-                [1, 2, 3, 4].map((i) => (
-                  <div key={i} className="bg-white rounded-xl p-6 flex items-center justify-center h-24">
-                    <span className="material-symbols-outlined text-3xl text-gray-300">volunteer_activism</span>
-                  </div>
-                ))
-              ) : (
-                donors.map((donor) => (
-                  <a
-                    key={donor.id}
-                    href={donor.website || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-white rounded-xl p-6 flex items-center justify-center h-24 hover:scale-105 transition-transform cursor-pointer shadow-lg"
-                  >
-                    {donor.logo ? (
-                      <img
-                        src={donor.logo}
-                        alt={donor.name}
-                        className="max-h-12 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity"
-                      />
-                    ) : (
-                      <span className="text-gray-600 font-bold text-sm text-center">{donor.name}</span>
-                    )}
-                  </a>
-                ))
-              )}
-            </div>
-            <Link href="/donors" className="mt-4 text-white/80 hover:text-white underline text-sm">
-              Become a Donor
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

@@ -147,6 +147,7 @@ CREATE TABLE IF NOT EXISTS public.donors (
   website TEXT NOT NULL,
   logo TEXT,
   description TEXT,
+  level TEXT, -- Optional: bronze, silver, gold, platinum
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
