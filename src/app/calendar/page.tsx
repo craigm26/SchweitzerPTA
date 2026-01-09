@@ -29,10 +29,13 @@ export default function EventsPage() {
   }, []);
 
   const getDateParts = (dateString: string) => {
-    const date = new Date(dateString);
+    // Parse date string directly to avoid timezone issues
+    // dateString format: "YYYY-MM-DD"
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     return {
       month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
-      day: date.getDate().toString().padStart(2, '0'),
+      day: day.toString().padStart(2, '0'),
     };
   };
 

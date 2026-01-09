@@ -290,9 +290,15 @@ export default function EventManagementPage() {
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
                               <span className={`font-bold ${isPast ? 'text-gray-500' : 'text-[#181411] dark:text-white'}`}>
-                                {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                {(() => {
+                                  const [y, m, d] = event.date.split('-').map(Number);
+                                  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                })()}
                                 {(event as any).end_date && (event as any).end_date !== event.date && (
-                                  <span className="font-normal"> - {new Date((event as any).end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                  <span className="font-normal"> - {(() => {
+                                    const [y, m, d] = ((event as any).end_date as string).split('-').map(Number);
+                                    return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                  })()}</span>
                                 )}
                               </span>
                               <span className="text-sm text-gray-500">
