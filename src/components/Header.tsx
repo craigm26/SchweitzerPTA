@@ -62,6 +62,14 @@ const Header = () => {
                 Resources
               </Link>
               <Link
+                href="/documents"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/documents') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                }`}
+              >
+                Documents
+              </Link>
+              <Link
                 href="/auction"
                 className={`text-sm font-medium transition-colors ${
                   isActive('/auction') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
@@ -131,6 +139,15 @@ const Header = () => {
               }`}
             >
               Resources
+            </Link>
+            <Link
+              href="/documents"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors ${
+                isActive('/documents') ? 'text-primary' : 'text-white hover:text-primary'
+              }`}
+            >
+              Documents
             </Link>
             <Link
               href="/auction"

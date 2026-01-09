@@ -302,3 +302,85 @@ export interface UserProfile {
   last_login: string | null;
 }
 
+export interface Document {
+  id: number;
+  title: string;
+  description: string | null;
+  file_url: string;
+  file_name: string;
+  file_type: string;
+  file_size: number | null;
+  category: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Documents API
+export async function getDocuments(options?: { category?: string }) {
+  const params = new URLSearchParams();
+  if (options?.category) params.set('category', options.category);
+
+  const res = await fetch(`${API_BASE}/api/documents?${params}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Failed to fetch documents');
+  const data = await res.json();
+  return data.documents || [];
+}
+
+export async function createDocument(data: {
+  title: string;
+  description?: string;
+  file_url: string;
+  file_name: string;
+  file_type: string;
+  file_size?: number;
+  category?: string;
+}) {
+  const res = await fetch(`${API_BASE}/api/documents`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create document');
+  return res.json();
+}
+
+export async function updateDocument(id: number, data: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE}/api/documents`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ...data }),
+  });
+  if (!res.ok) throw new Error('Failed to update document');
+  return res.json();
+}
+
+export async function deleteDocument(id: number) {
+  const res = await fetch(`${API_BASE}/api/documents?id=${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete document');
+  return res.json();
+}
+
+// File upload utility
+export async function uploadFile(file: File, bucket: 'sponsor-logos' | 'documents' = 'sponsor-logos') {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('bucket', bucket);
+
+  const res = await fetch(`${API_BASE}/api/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to upload file');
+  }
+
+  return res.json();
+}
+

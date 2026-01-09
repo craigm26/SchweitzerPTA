@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { getDonors, createDonor, updateDonor, deleteDonor, Donor } from '@/lib/api';
 
@@ -11,6 +11,9 @@ export default function DonorManagementPage() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     website: '',
@@ -33,6 +36,62 @@ export default function DonorManagementPage() {
       setLoading(false);
     }
   }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload an image file (JPEG, PNG, GIF, WebP, or SVG)');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    // Show preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    setLogoPreview(previewUrl);
+
+    setUploadingLogo(true);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('bucket', 'sponsor-logos');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const { url } = await response.json();
+      setFormData((prev) => ({ ...prev, logo: url }));
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      alert(error instanceof Error ? error.message : 'Failed to upload logo');
+      setLogoPreview(null);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const removeLogo = () => {
+    setFormData((prev) => ({ ...prev, logo: '' }));
+    setLogoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +149,7 @@ export default function DonorManagementPage() {
   const openAddModal = () => {
     setFormData({ name: '', website: '', logo: '', description: '', is_active: true });
     setEditingDonor(null);
+    setLogoPreview(null);
     setShowAddModal(true);
   };
 
@@ -102,6 +162,7 @@ export default function DonorManagementPage() {
       is_active: donor.is_active,
     });
     setEditingDonor(donor);
+    setLogoPreview(donor.logo || null);
     setShowAddModal(true);
   };
 
@@ -109,6 +170,10 @@ export default function DonorManagementPage() {
     setShowAddModal(false);
     setEditingDonor(null);
     setFormData({ name: '', website: '', logo: '', description: '', is_active: true });
+    setLogoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Filter donors
@@ -217,7 +282,7 @@ export default function DonorManagementPage() {
                           }`}
                         >
                           <td className="px-6 py-4">
-                            <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
                               {donor.logo ? (
                                 <img src={donor.logo} alt={donor.name} className="max-h-10 max-w-10 object-contain" />
                               ) : (
@@ -317,16 +382,63 @@ export default function DonorManagementPage() {
                   placeholder="https://example.com"
                 />
               </div>
+
+              {/* Logo Upload Section */}
               <div>
-                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Logo URL</label>
-                <input
-                  type="url"
-                  value={formData.logo}
-                  onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="https://example.com/logo.png"
-                />
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-2">Logo</label>
+
+                {/* Preview Area */}
+                {(logoPreview || formData.logo) && (
+                  <div className="mb-3 relative inline-block">
+                    <div className="w-24 h-24 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={logoPreview || formData.logo}
+                        alt="Logo preview"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeLogo}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Upload Button */}
+                <div className="flex items-center gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    id="logo-upload"
+                  />
+                  <label
+                    htmlFor="logo-upload"
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm font-medium text-[#181411] dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                      uploadingLogo ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {uploadingLogo ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-lg">upload</span>
+                        {formData.logo ? 'Change Logo' : 'Upload Logo'}
+                      </>
+                    )}
+                  </label>
+                  <span className="text-xs text-gray-500">JPEG, PNG, GIF, WebP, SVG (max 5MB)</span>
+                </div>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Description</label>
                 <textarea
@@ -359,7 +471,7 @@ export default function DonorManagementPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={actionLoading === -1}
+                  disabled={actionLoading === -1 || uploadingLogo}
                   className="flex-1 py-3 px-4 rounded-lg bg-primary hover:bg-orange-600 text-white font-bold transition-colors disabled:opacity-50"
                 >
                   {actionLoading === -1 ? 'Saving...' : editingDonor ? 'Update' : 'Add Donor'}
