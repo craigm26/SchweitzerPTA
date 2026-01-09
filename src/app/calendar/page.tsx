@@ -225,81 +225,11 @@ export default function EventsPage() {
                             </span>
                           </div>
                           <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">{event.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <button className="px-4 py-2 rounded-lg text-sm font-bold transition-colors bg-primary hover:bg-orange-600 text-white">
-                              RSVP
-                            </button>
-                            <button className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                              <span className="material-symbols-outlined text-gray-500 text-lg">share</span>
-                            </button>
-                          </div>
                         </div>
                       </div>
                     );
                   })
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:w-80 shrink-0 flex flex-col gap-6">
-            {/* Community Partners Card */}
-            <div className="bg-[#181411] text-white rounded-xl p-6">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary text-2xl">volunteer_activism</span>
-                </div>
-                <h4 className="text-lg font-bold text-center">Community Partners</h4>
-                <p className="text-gray-400 text-sm text-center">
-                  A huge thank you to our donors for supporting our Wildcats!
-                </p>
-                <div className="flex flex-col gap-3 w-full">
-                  {donors.length === 0 ? (
-                    [1, 2, 3].map((i) => (
-                      <div key={i} className="bg-white rounded-lg p-3 flex items-center justify-center h-12">
-                        <span className="material-symbols-outlined text-gray-300">volunteer_activism</span>
-                      </div>
-                    ))
-                  ) : (
-                    donors.map((donor) => (
-                      <a
-                        key={donor.id}
-                        href={donor.website || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-white rounded-lg p-3 flex items-center justify-center h-12 hover:bg-gray-100 transition-colors"
-                      >
-                        {donor.logo ? (
-                          <img src={donor.logo} alt={donor.name} className="max-h-6 max-w-full object-contain" />
-                        ) : (
-                          <span className="text-xs font-bold text-gray-600">{donor.name}</span>
-                        )}
-                      </a>
-                    ))
-                  )}
-                </div>
-                <Link href="/donors" className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
-                  Become a Donor <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Newsletter Signup */}
-            <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-              <h4 className="font-bold text-[#181411] dark:text-white mb-2">Stay in the Loop</h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Get the weekly Wildcat Tales newsletter delivered to your inbox.
-              </p>
-              <div className="flex flex-col gap-3">
-                <input
-                  type="email"
-                  placeholder="Parent's Email"
-                  className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                />
-                <button className="w-full bg-[#181411] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-[#181411] font-bold py-3 px-4 rounded-lg transition-colors text-sm">
-                  Subscribe
-                </button>
               </div>
             </div>
           </div>
