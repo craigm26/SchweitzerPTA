@@ -18,6 +18,11 @@ if (platform === 'win32' && arch === 'x64') {
     '@tailwindcss/oxide-linux-x64-gnu@4.1.18',
     'lightningcss-linux-x64-gnu@1.30.2'
   );
+} else if (platform === 'linux' && arch === 'arm64') {
+  packages.push(
+    '@tailwindcss/oxide-linux-arm64-gnu@4.1.18',
+    'lightningcss-linux-arm64-gnu@1.30.2'
+  );
 } else if (platform === 'darwin' && arch === 'arm64') {
   packages.push(
     '@tailwindcss/oxide-darwin-arm64@4.1.18',
