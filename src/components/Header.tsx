@@ -123,14 +123,6 @@ const Header = () => {
             >
               Donors
             </Link>
-            <Link
-              href="/volunteer"
-              onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${isActive('/volunteer') ? 'text-primary' : 'text-white hover:text-primary'
-                }`}
-            >
-              Volunteer
-            </Link>
           </nav>
         </div>
       )}
