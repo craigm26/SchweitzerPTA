@@ -57,13 +57,7 @@ const Header = () => {
               >
                 Resources
               </Link>
-              <Link
-                href="/donors"
-                className={`text-sm font-medium transition-colors ${isActive('/donors') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
-                  }`}
-              >
-                Donors
-              </Link>            </nav>
+            </nav>
           </div>
           {/* Mobile Menu Button */}
           <div className="md:hidden">
@@ -114,14 +108,6 @@ const Header = () => {
                 }`}
             >
               Resources
-            </Link>
-            <Link
-              href="/donors"
-              onClick={() => setIsMenuOpen(false)}
-              className={`text-2xl font-bold transition-colors ${isActive('/donors') ? 'text-primary' : 'text-white hover:text-primary'
-                }`}
-            >
-              Donors
             </Link>
           </nav>
         </div>
