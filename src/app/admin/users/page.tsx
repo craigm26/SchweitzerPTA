@@ -10,6 +10,8 @@ export default function UserManagementPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -67,6 +69,23 @@ export default function UserManagementPage() {
     return colors[index];
   };
 
+  const getSignupUrl = () => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/login?signup=true`;
+    }
+    return '/login?signup=true';
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getSignupUrl());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const getRelativeTime = (dateString: string | null) => {
     if (!dateString) return 'Never';
     const date = new Date(dateString);
@@ -107,7 +126,10 @@ export default function UserManagementPage() {
               View, edit, and manage user roles for the PTA portal.
             </p>
           </div>
-          <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-orange-600 focus:ring-4 focus:ring-orange-500/30">
+          <button
+            onClick={() => setShowInviteModal(true)}
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-orange-600 focus:ring-4 focus:ring-orange-500/30"
+          >
             <span className="material-symbols-outlined text-[20px]">mail</span>
             <span>Invite New User</span>
           </button>
@@ -295,6 +317,68 @@ export default function UserManagementPage() {
               className="w-full mt-6 py-3 px-4 rounded-lg border border-gray-200 dark:border-gray-700 text-[#181411] dark:text-white font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Invite User Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 max-w-md w-full shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-[#181411] dark:text-white">Invite New User</h3>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Share this signup link with the person you want to invite to the PTA portal:
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={getSignupUrl()}
+                  className="flex-1 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181411] text-sm text-gray-600 dark:text-gray-300"
+                />
+                <button
+                  onClick={handleCopyLink}
+                  className={`px-4 py-3 rounded-lg font-bold text-sm transition-all ${
+                    copied
+                      ? 'bg-green-500 text-white'
+                      : 'bg-primary text-white hover:bg-orange-600'
+                  }`}
+                >
+                  {copied ? (
+                    <span className="material-symbols-outlined text-[20px]">check</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-[20px]">content_copy</span>
+                  )}
+                </button>
+              </div>
+              {copied && (
+                <p className="text-green-600 text-sm mt-2">Link copied to clipboard!</p>
+              )}
+            </div>
+            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 mb-6">
+              <div className="flex gap-3">
+                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">info</span>
+                <div className="text-sm text-amber-800 dark:text-amber-300">
+                  <p className="font-medium mb-1">Note</p>
+                  <p>New users will have the &quot;Member&quot; role by default. You can change their role after they sign up.</p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowInviteModal(false)}
+              className="w-full py-3 px-4 rounded-lg border border-gray-200 dark:border-gray-700 text-[#181411] dark:text-white font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              Done
             </button>
           </div>
         </div>
