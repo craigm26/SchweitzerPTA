@@ -42,6 +42,9 @@ export default function VolunteerPage() {
                   Sign up here
                 </a>
               </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 italic">
+                Note: The volunteer signup page may take a moment to load. Please be patient.
+              </p>
             </div>
 
             {/* APEX Fun Run Image */}
