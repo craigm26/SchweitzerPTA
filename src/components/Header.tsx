@@ -37,6 +37,13 @@ const Header = () => {
                 Home
               </Link>
               <Link
+                href="/volunteer"
+                className={`text-sm font-medium transition-colors ${isActive('/volunteer') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
+              >
+                Volunteer
+              </Link>
+              <Link
                 href="/auction"
                 className={`text-sm font-medium transition-colors ${isActive('/auction') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
                   }`}
@@ -84,6 +91,14 @@ const Header = () => {
                 }`}
             >
               Home
+            </Link>
+            <Link
+              href="/volunteer"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors ${isActive('/volunteer') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
+            >
+              Volunteer
             </Link>
             <Link
               href="/auction"
