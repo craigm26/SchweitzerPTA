@@ -116,9 +116,11 @@ export async function deleteEvent(id: number) {
 }
 
 // Donors API
-export async function getDonors(options?: { includeInactive?: boolean }) {
+export async function getDonors(options?: { includeInactive?: boolean; limit?: number | 'all' }) {
   const params = new URLSearchParams();
   if (options?.includeInactive) params.set('includeInactive', 'true');
+  // Default to fetching all donors for public pages
+  params.set('limit', options?.limit?.toString() || 'all');
 
   try {
     const res = await fetch(`${API_BASE}/api/donors?${params}`, {

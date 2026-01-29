@@ -64,7 +64,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const includeInactive = searchParams.get('includeInactive') === 'true';
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limitParam = searchParams.get('limit');
+    // Default to 100 donors (enough for most use cases), use 'all' for unlimited
+    const limit = limitParam === 'all' ? 1000 : parseInt(limitParam || '100');
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
