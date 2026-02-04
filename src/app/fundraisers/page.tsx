@@ -228,14 +228,6 @@ export default function FundraisersPage() {
                             </span>
                           </div>
                           <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">{event.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <button className="px-4 py-2 rounded-lg text-sm font-bold transition-colors bg-primary hover:bg-orange-600 text-white">
-                              RSVP
-                            </button>
-                            <button className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                              <span className="material-symbols-outlined text-gray-500 text-lg">share</span>
-                            </button>
-                          </div>
                         </div>
                       </div>
                     );
