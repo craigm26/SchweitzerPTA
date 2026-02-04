@@ -17,9 +17,33 @@ const ITEM_TYPES = [
   { value: 'all', label: 'All Types' },
   { value: 'live', label: 'Live Auction' },
   { value: 'silent', label: 'Silent Auction' },
+  { value: 'raffle', label: 'Raffle Items' },
 ];
 
-type ItemType = 'live' | 'silent';
+type ItemType = 'live' | 'silent' | 'raffle';
+
+const getYouTubeId = (url: string) => {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('youtu.be')) {
+      return parsed.pathname.replace('/', '') || null;
+    }
+    if (parsed.hostname.includes('youtube.com')) {
+      const searchId = parsed.searchParams.get('v');
+      if (searchId) return searchId;
+      if (parsed.pathname.startsWith('/embed/')) {
+        return parsed.pathname.split('/embed/')[1] || null;
+      }
+      if (parsed.pathname.startsWith('/shorts/')) {
+        return parsed.pathname.split('/shorts/')[1] || null;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
 
 export default function AuctionItemsPage() {
   const [items, setItems] = useState<AuctionItem[]>([]);
@@ -39,12 +63,15 @@ export default function AuctionItemsPage() {
     description: '',
     item_type: 'silent' as ItemType,
     image_urls: [] as string[],
+    youtube_url: '',
     estimated_value: '',
     restrictions: '',
     quantity: '',
     display_order: '0',
     is_active: true,
   });
+
+  const youtubeId = useMemo(() => getYouTubeId(formData.youtube_url), [formData.youtube_url]);
 
   useEffect(() => {
     async function fetchData() {
@@ -84,6 +111,7 @@ export default function AuctionItemsPage() {
       description: '',
       item_type: 'silent',
       image_urls: [],
+      youtube_url: '',
       estimated_value: '',
       restrictions: '',
       quantity: '',
@@ -101,6 +129,7 @@ export default function AuctionItemsPage() {
       description: item.description || '',
       item_type: item.item_type,
       image_urls: item.image_urls || [],
+      youtube_url: item.youtube_url || '',
       estimated_value: item.estimated_value?.toString() || '',
       restrictions: item.restrictions || '',
       quantity: item.quantity?.toString() || '',
@@ -129,6 +158,7 @@ export default function AuctionItemsPage() {
       description: formData.description.trim() || null,
       item_type: formData.item_type,
       image_urls: formData.image_urls,
+      youtube_url: formData.youtube_url.trim() || null,
       estimated_value: formData.estimated_value ? Number(formData.estimated_value) : null,
       restrictions: formData.restrictions.trim() || null,
       quantity: formData.quantity ? Number(formData.quantity) : null,
@@ -514,6 +544,7 @@ export default function AuctionItemsPage() {
                   >
                     <option value="silent">Silent Auction</option>
                     <option value="live">Live Auction</option>
+                    <option value="raffle">Raffle Item</option>
                   </select>
                 </div>
               </div>
@@ -582,6 +613,41 @@ export default function AuctionItemsPage() {
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                   placeholder="Describe the item or experience"
                 />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="auction-item-youtube"
+                  className="block text-sm font-medium text-[#181411] dark:text-white mb-1"
+                >
+                  YouTube Video (optional)
+                </label>
+                <input
+                  id="auction-item-youtube"
+                  type="url"
+                  value={formData.youtube_url}
+                  onChange={(event) => setFormData({ ...formData, youtube_url: event.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+                {formData.youtube_url && !youtubeId && (
+                  <p className="mt-2 text-xs text-red-500">
+                    Please enter a valid YouTube link.
+                  </p>
+                )}
+                {youtubeId && (
+                  <div className="mt-4 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-black">
+                    <div className="aspect-video">
+                      <iframe
+                        title="YouTube preview"
+                        src={`https://www.youtube.com/embed/${youtubeId}`}
+                        className="h-full w-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

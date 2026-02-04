@@ -2,26 +2,65 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
-import { getAuctionItems, AuctionItem } from '@/lib/api';
+import { getAuctionItems, getDonors, AuctionItem, Donor } from '@/lib/api';
+
+const getYouTubeId = (url?: string | null) => {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('youtu.be')) {
+      return parsed.pathname.replace('/', '') || null;
+    }
+    if (parsed.hostname.includes('youtube.com')) {
+      const searchId = parsed.searchParams.get('v');
+      if (searchId) return searchId;
+      if (parsed.pathname.startsWith('/embed/')) {
+        return parsed.pathname.split('/embed/')[1] || null;
+      }
+      if (parsed.pathname.startsWith('/shorts/')) {
+        return parsed.pathname.split('/shorts/')[1] || null;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
 
 export default function AuctionPage() {
   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
+  const [donors, setDonors] = useState<Donor[]>([]);
+  const [donorsLoading, setDonorsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      try {
-        const itemData = await getAuctionItems({ limit: 'all' });
-        setAuctionItems(itemData || []);
-      } catch (error) {
-        console.error('Error fetching auction data:', error);
+      const [itemsResult, donorsResult] = await Promise.allSettled([
+        getAuctionItems({ limit: 'all' }),
+        getDonors({ limit: 12 }),
+      ]);
+
+      if (itemsResult.status === 'fulfilled') {
+        setAuctionItems(itemsResult.value || []);
+      } else {
+        console.error('Error fetching auction items:', itemsResult.reason);
       }
+
+      if (donorsResult.status === 'fulfilled') {
+        setDonors(donorsResult.value || []);
+      } else {
+        console.error('Error fetching donors:', donorsResult.reason);
+      }
+
+      setDonorsLoading(false);
     }
     fetchData();
   }, []);
 
   const liveItems = auctionItems.filter((item) => item.item_type === 'live');
   const silentItems = auctionItems.filter((item) => item.item_type === 'silent');
+  const raffleItems = auctionItems.filter((item) => item.item_type === 'raffle');
   return (
     <main className="layout-container flex h-full grow flex-col pb-20 bg-[#f9f6f2] dark:bg-[#14100c]">
       {/* Hero Section */}
@@ -31,30 +70,12 @@ export default function AuctionPage() {
         <div className="relative px-4 md:px-10 lg:px-20 py-16 md:py-20">
           <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8">
             <div className="flex flex-col gap-4 max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                <span className="material-symbols-outlined text-sm">celebration</span>
-                9th Annual | Adult-Only
-              </div>
               <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
                 9th Annual Adult-Only Dinner & Silent Auction
               </h1>
               <p className="text-gray-200 text-base md:text-lg leading-relaxed max-w-2xl">
                 March 14, 2026 | Dinner, live bidding, and silent auction highlights.
               </p>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              <a
-                href="#tickets"
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-bold text-white shadow-lg shadow-orange-900/40 hover:bg-orange-600 transition-colors"
-              >
-                Get Tickets
-              </a>
-              <a
-                href="#how-to-help"
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-white/30 px-6 text-sm font-bold text-white hover:bg-white/10 transition-colors"
-              >
-                Donate an Item
-              </a>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
               <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white">
@@ -72,7 +93,6 @@ export default function AuctionPage() {
             </div>
           </div>
         </div>
-        <div className="absolute -bottom-1 left-0 right-0 h-12 bg-gradient-to-b from-transparent to-[#f9f6f2] dark:to-[#14100c]"></div>
       </section>
 
       {/* Main Content */}
@@ -124,10 +144,6 @@ export default function AuctionPage() {
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-4 left-4 text-white font-semibold text-lg flex items-center gap-2">
-                  <span className="material-symbols-outlined">star</span>
-                  A night to remember
-                </div>
               </div>
               <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-orange-500/10 dark:from-primary/10 dark:via-[#1c150f] dark:to-orange-500/10 p-5">
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary uppercase tracking-wider">
@@ -141,7 +157,11 @@ export default function AuctionPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="material-symbols-outlined text-base text-primary">check_circle</span>
-                    Live and silent auction opportunities
+                    Live and silent auctions
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
+                    Poker and Blackjack tables
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="material-symbols-outlined text-base text-primary">check_circle</span>
@@ -162,27 +182,14 @@ export default function AuctionPage() {
               <p className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed">
                 Purchase tickets or make a direct contribution to support our classrooms, arts, and campus programs.
               </p>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href="#how-to-help"
-                  className="inline-flex h-11 items-center justify-center rounded-lg bg-[#181411] text-white px-5 text-sm font-bold hover:bg-black transition-colors"
-                >
-                  Donate an Item
-                </a>
-                <a
-                  href="mailto:AlbertSchweitzerPTA@gmail.com"
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-gray-300 dark:border-gray-700 px-5 text-sm font-bold text-[#181411] dark:text-white hover:bg-gray-50 dark:hover:bg-[#221910] transition-colors"
-                >
-                  Ask a Question
-                </a>
-              </div>
+              
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                 <span className="material-symbols-outlined text-base">lock</span>
                 Ticketing powered by Zeffy
               </div>
             </div>
             <div className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1c150f] shadow-lg overflow-hidden">
-              <div className="relative h-[440px] w-full">
+              <div className="relative h-[640px] w-full">
                 <iframe
                   title="Donation form powered by Zeffy"
                   className="absolute inset-0 h-full w-full border-0"
@@ -193,14 +200,140 @@ export default function AuctionPage() {
               </div>
             </div>
           </section>
+          {/* Raffle Items Section - A lot like the auction items section, but for raffle items */}
+          <section id="raffle-items" className="flex flex-col gap-8">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Raffle Highlights</p>
+              <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
+                Preview a few of the items available this year.
+              </p>
+            </div>
+          </section>
+          {/* Raffle Items Section - A lot like the auction items section, but for raffle items */}
+          <section className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-[#1c150f] p-6 md:p-8 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight">
+                      Raffle Items
+                    </h3>
+                    <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
+                      Grab raffle tickets for a chance to win these prizes.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold uppercase">
+                      Raffle
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400">{raffleItems.length} items</span>
+                  </div>
+                </div>
+                {raffleItems.length === 0 ? (
+                  <div className="mt-6 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#221910] p-8 text-center">
+                    <span className="material-symbols-outlined text-4xl text-gray-300">local_activity</span>
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      Raffle items will be announced soon.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {raffleItems.map((item) => {
+                      const youtubeId = getYouTubeId(item.youtube_url);
+                      return (
+                        <div
+                          key={item.id}
+                          className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                        >
+                          <div className="relative">
+                            {youtubeId ? (
+                              <div className="aspect-video bg-black">
+                                <iframe
+                                  title={`${item.title} video`}
+                                  src={`https://www.youtube.com/embed/${youtubeId}`}
+                                  className="h-full w-full"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                  allowFullScreen
+                                />
+                              </div>
+                            ) : item.image_urls?.[0] ? (
+                              <img
+                                src={item.image_urls[0]}
+                                alt={item.title}
+                                className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="h-44 w-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-4xl text-gray-400">local_activity</span>
+                              </div>
+                            )}
+                            <div className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-[#181411] shadow-sm">
+                              <span className="material-symbols-outlined text-sm">local_activity</span>
+                              Raffle
+                            </div>
+                            {item.estimated_value !== null && (
+                              <div className="absolute top-3 right-3 rounded-full bg-[#181411]/80 text-white text-xs font-semibold px-2 py-1">
+                                Est. ${Number(item.estimated_value).toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-1 flex-col gap-3 p-5">
+                            <h4 className="text-[#181411] dark:text-white text-lg font-bold leading-tight">
+                              {item.title}
+                            </h4>
+                            {item.description && (
+                              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                                {item.description}
+                              </p>
+                            )}
+                            {youtubeId && item.image_urls?.[0] && (
+                              <img
+                                src={item.image_urls[0]}
+                                alt={`${item.title} preview`}
+                                className="h-20 w-full rounded-lg object-cover"
+                              />
+                            )}
+                            <div className="mt-auto flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                              {item.donor?.name ? (
+                                <div className="flex items-center gap-2">
+                                  {item.donor.logo ? (
+                                    <img
+                                      src={item.donor.logo}
+                                      alt={item.donor.name}
+                                      className="w-6 h-6 rounded object-contain"
+                                    />
+                                  ) : (
+                                    <span className="material-symbols-outlined text-base">handshake</span>
+                                  )}
+                                  <span>{item.donor.name}</span>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-400">Sponsor TBD</span>
+                              )}
+                              {item.quantity ? (
+                                <span className="text-xs font-semibold text-primary">Qty {item.quantity}</span>
+                              ) : null}
+                            </div>
+                            {item.donor?.website && (
+                              <a
+                                href={item.donor.website.startsWith('http') ? item.donor.website : `https://${item.donor.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary text-sm font-semibold hover:underline inline-flex items-center gap-1"
+                              >
+                                Sponsor Website <span className="material-symbols-outlined text-sm">open_in_new</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
 
           {/* Auction Items Section */}
           <section id="auction-items" className="flex flex-col gap-8">
             <div className="flex flex-col gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Auction Highlights</p>
-              <h2 className="text-[#181411] dark:text-white text-3xl font-bold leading-tight">
-                Bid on something unforgettable
-              </h2>
               <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
                 Preview a few of the packages and experiences available this year.
               </p>
@@ -238,28 +371,6 @@ export default function AuctionPage() {
                         key={item.id}
                         className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                       >
-                        <div className="relative">
-                          {item.image_urls?.[0] ? (
-                            <img
-                              src={item.image_urls[0]}
-                              alt={item.title}
-                              className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="h-44 w-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                              <span className="material-symbols-outlined text-4xl text-gray-400">gavel</span>
-                            </div>
-                          )}
-                          <div className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-[#181411] shadow-sm">
-                            <span className="material-symbols-outlined text-sm">gavel</span>
-                            Live
-                          </div>
-                          {item.estimated_value !== null && (
-                            <div className="absolute top-3 right-3 rounded-full bg-[#181411]/80 text-white text-xs font-semibold px-2 py-1">
-                              Est. ${Number(item.estimated_value).toLocaleString()}
-                            </div>
-                          )}
-                        </div>
                         <div className="flex flex-1 flex-col gap-3 p-5">
                           <h4 className="text-[#181411] dark:text-white text-lg font-bold leading-tight">
                             {item.title}
@@ -270,36 +381,11 @@ export default function AuctionPage() {
                             </p>
                           )}
                           <div className="mt-auto flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                            {item.donor?.name ? (
-                              <div className="flex items-center gap-2">
-                                {item.donor.logo ? (
-                                  <img
-                                    src={item.donor.logo}
-                                    alt={item.donor.name}
-                                    className="w-6 h-6 rounded object-contain"
-                                  />
-                                ) : (
-                                  <span className="material-symbols-outlined text-base">handshake</span>
-                                )}
-                                <span>{item.donor.name}</span>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-gray-400">Sponsor TBD</span>
-                            )}
+                            
                             {item.quantity ? (
                               <span className="text-xs font-semibold text-primary">Qty {item.quantity}</span>
                             ) : null}
                           </div>
-                          {item.donor?.website && (
-                            <a
-                              href={item.donor.website.startsWith('http') ? item.donor.website : `https://${item.donor.website}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary text-sm font-semibold hover:underline inline-flex items-center gap-1"
-                            >
-                              Sponsor Website <span className="material-symbols-outlined text-sm">open_in_new</span>
-                            </a>
-                          )}
                         </div>
                       </div>
                     ))}
@@ -338,28 +424,6 @@ export default function AuctionPage() {
                         key={item.id}
                         className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                       >
-                        <div className="relative">
-                          {item.image_urls?.[0] ? (
-                            <img
-                              src={item.image_urls[0]}
-                              alt={item.title}
-                              className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="h-44 w-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                              <span className="material-symbols-outlined text-4xl text-gray-400">redeem</span>
-                            </div>
-                          )}
-                          <div className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-xs font-semibold text-[#181411] shadow-sm">
-                            <span className="material-symbols-outlined text-sm">redeem</span>
-                            Silent
-                          </div>
-                          {item.estimated_value !== null && (
-                            <div className="absolute top-3 right-3 rounded-full bg-[#181411]/80 text-white text-xs font-semibold px-2 py-1">
-                              Est. ${Number(item.estimated_value).toLocaleString()}
-                            </div>
-                          )}
-                        </div>
                         <div className="flex flex-1 flex-col gap-3 p-5">
                           <h4 className="text-[#181411] dark:text-white text-lg font-bold leading-tight">
                             {item.title}
@@ -406,6 +470,8 @@ export default function AuctionPage() {
                   </div>
                 )}
               </section>
+
+              
             </div>
           </section>
  
@@ -603,14 +669,14 @@ export default function AuctionPage() {
           </section>
 
           {/* Header for thanking our donors H2 size like other headers */}
-          {/* Hide this section for now */}
-          {/* <h2 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight">
+          
+          <h2 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight">
             Thank you Donors!
           </h2>
 
           {/* Donors List */}
-          {/* <div className="w-full max-w-6xl px-4 pb-20 pt-10 lg:px-8">
-            {loading ? (
+          <div className="w-full max-w-6xl px-4 pb-20 pt-10 lg:px-8">
+            {donorsLoading ? (
               <div className="flex flex-col items-center justify-center min-h-[400px]">
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -672,7 +738,7 @@ export default function AuctionPage() {
                 </Link>
               </div>
             )}
-          </div> */}
+          </div>
           
           {/* CTA Section */}
           <section className="rounded-3xl bg-gradient-to-r from-primary to-orange-500 p-8 md:p-12 text-center shadow-xl">

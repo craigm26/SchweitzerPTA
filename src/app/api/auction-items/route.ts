@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const VALID_ITEM_TYPES = ['live', 'silent'] as const;
+const VALID_ITEM_TYPES = ['live', 'silent', 'raffle'] as const;
 
 function normalizeItemType(value: unknown) {
   if (typeof value !== 'string') return 'silent';
@@ -16,6 +16,12 @@ function normalizeImageUrls(value: unknown) {
     return value.filter((url) => typeof url === 'string' && url.trim().length > 0);
   }
   return [];
+}
+
+function normalizeYoutubeUrl(value: unknown) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 export async function GET(request: Request) {
@@ -92,6 +98,7 @@ export async function POST(request: Request) {
         description: body.description,
         item_type: normalizeItemType(body.item_type),
         image_urls: normalizeImageUrls(body.image_urls),
+        youtube_url: normalizeYoutubeUrl(body.youtube_url),
         estimated_value: body.estimated_value ?? null,
         restrictions: body.restrictions ?? null,
         quantity: body.quantity ?? null,
@@ -133,6 +140,7 @@ export async function PUT(request: Request) {
       ...updateData,
       item_type: updateData.item_type ? normalizeItemType(updateData.item_type) : undefined,
       image_urls: updateData.image_urls ? normalizeImageUrls(updateData.image_urls) : undefined,
+      youtube_url: updateData.youtube_url !== undefined ? normalizeYoutubeUrl(updateData.youtube_url) : undefined,
     };
 
     const { data, error } = await supabase

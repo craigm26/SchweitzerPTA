@@ -190,7 +190,7 @@ export async function deleteDonor(id: number) {
 // Auction Items API
 export async function getAuctionItems(options?: {
   includeInactive?: boolean;
-  itemType?: 'live' | 'silent';
+  itemType?: 'live' | 'silent' | 'raffle';
   donorId?: number;
   limit?: number | 'all';
 }) {
@@ -227,8 +227,9 @@ export async function createAuctionItem(data: {
   donor_id?: number | null;
   title: string;
   description?: string | null;
-  item_type?: 'live' | 'silent';
+  item_type?: 'live' | 'silent' | 'raffle';
   image_urls?: string[];
+  youtube_url?: string | null;
   estimated_value?: number | null;
   restrictions?: string | null;
   quantity?: number | null;
@@ -455,8 +456,9 @@ export interface AuctionItem {
   donor_id: number | null;
   title: string;
   description: string | null;
-  item_type: 'live' | 'silent';
+  item_type: 'live' | 'silent' | 'raffle';
   image_urls: string[];
+  youtube_url: string | null;
   estimated_value: number | null;
   restrictions: string | null;
   quantity: number | null;
