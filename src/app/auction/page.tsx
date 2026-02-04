@@ -74,21 +74,52 @@ export default function AuctionPage() {
                 9th Annual Adult-Only Dinner & Silent Auction
               </h1>
               <p className="text-gray-200 text-base md:text-lg leading-relaxed max-w-2xl">
-                March 14, 2026 | Dinner, live bidding, and silent auction highlights.
+                Dinner, live bidding, and silent auction highlights.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white">
-                <p className="text-xs uppercase text-white/60">Date</p>
-                <p className="text-lg font-bold">March 14, 2026</p>
+          </div>
+        </div>
+      </section>
+      {/* Tickets Section */}
+      <section id="tickets" className="px-4 md:px-10 lg:px-20 py-12">
+        <div className="mx-auto w-full max-w-[1200px]">
+          <div className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1c150f] shadow-xl overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-[0.42fr_0.58fr]">
+              <div className="p-6 md:p-8 bg-gradient-to-br from-primary/10 via-white to-orange-500/10 dark:from-primary/10 dark:via-[#1c150f] dark:to-orange-500/10">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Tickets & Donations</p>
+                <h2 className="mt-3 text-[#181411] dark:text-white text-2xl md:text-3xl font-bold leading-tight">
+                  Reserve your seat
+                </h2>
+                <p className="mt-3 text-[#181411]/80 dark:text-gray-300 text-sm leading-relaxed">
+                  Purchase tickets or make a direct contribution to support our classrooms, arts, and campus programs.
+                </p>
+                <div className="mt-6 space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="flex items-start gap-2">
+                    <span className="material-symbols-outlined text-base text-primary">restaurant</span>
+                    Dinner included with admission
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="material-symbols-outlined text-base text-primary">gavel</span>
+                    Live and silent auction bidding
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="material-symbols-outlined text-base text-primary">school</span>
+                    100% of proceeds support students
+                  </div>
+                </div>
+                <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 dark:bg-[#1c150f] px-3 py-1 text-xs text-gray-600 dark:text-gray-300">
+                  <span className="material-symbols-outlined text-base text-primary">lock</span>
+                  Ticketing powered by Zeffy
+                </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white">
-                <p className="text-xs uppercase text-white/60">Audience</p>
-                <p className="text-lg font-bold">Adult-Only Evening</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white">
-                <p className="text-xs uppercase text-white/60">Highlights</p>
-                <p className="text-lg font-bold">Dinner + Auction</p>
+              <div className="relative h-[560px] lg:h-[640px] w-full bg-white dark:bg-[#1c150f]">
+                <iframe
+                  title="Donation form powered by Zeffy"
+                  className="absolute inset-0 h-full w-full border-0"
+                  src="https://www.zeffy.com/embed/ticketing/boardwalk-bash-and-benefit-night"
+                  allow="payment"
+                  allowTransparency
+                />
               </div>
             </div>
           </div>
@@ -134,17 +165,6 @@ export default function AuctionPage() {
               </div>
             </div>
             <div className="flex flex-col gap-6">
-              <div className="relative rounded-2xl overflow-hidden shadow-lg">
-                <Image
-                  src="/auction-image.png"
-                  alt="9th Annual Adult-Only Dinner & Silent Auction"
-                  width={800}
-                  height={600}
-                  className="w-full h-auto object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              </div>
               <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-orange-500/10 dark:from-primary/10 dark:via-[#1c150f] dark:to-orange-500/10 p-5">
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary uppercase tracking-wider">
                   <span className="material-symbols-outlined text-base">celebration</span>
@@ -172,34 +192,7 @@ export default function AuctionPage() {
             </div>
           </section>
 
-          {/* Tickets Section */}
-          <section id="tickets" className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-center">
-            <div className="flex flex-col gap-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Tickets & Donations</p>
-              <h2 className="text-[#181411] dark:text-white text-2xl md:text-3xl font-bold leading-tight">
-                Reserve your seat
-              </h2>
-              <p className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed">
-                Purchase tickets or make a direct contribution to support our classrooms, arts, and campus programs.
-              </p>
-              
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <span className="material-symbols-outlined text-base">lock</span>
-                Ticketing powered by Zeffy
-              </div>
-            </div>
-            <div className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1c150f] shadow-lg overflow-hidden">
-              <div className="relative h-[640px] w-full">
-                <iframe
-                  title="Donation form powered by Zeffy"
-                  className="absolute inset-0 h-full w-full border-0"
-                  src="https://www.zeffy.com/embed/ticketing/boardwalk-bash-and-benefit-night"
-                  allow="payment"
-                  allowTransparency
-                />
-              </div>
-            </div>
-          </section>
+          
           {/* Raffle Items Section - A lot like the auction items section, but for raffle items */}
           <section id="raffle-items" className="flex flex-col gap-8">
             <div className="flex flex-col gap-3">
