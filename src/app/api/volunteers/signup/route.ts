@@ -9,8 +9,57 @@ export async function POST(request: Request) {
     
     // Get current user if logged in
     const { data: { user } } = await supabase.auth.getUser();
-    
-    // Check if opportunity exists and has spots
+
+    if (body.shift_id) {
+      // Event volunteer shift signup
+      const { data: shift, error: shiftError } = await supabase
+        .from('event_volunteer_shifts')
+        .select('spots_available, spots_filled, is_active')
+        .eq('id', body.shift_id)
+        .single();
+
+      if (shiftError || !shift) {
+        return NextResponse.json({ error: 'Shift not found' }, { status: 404 });
+      }
+
+      if (!shift.is_active) {
+        return NextResponse.json({ error: 'Shift is not active' }, { status: 400 });
+      }
+
+      if (shift.spots_filled >= shift.spots_available) {
+        return NextResponse.json({ error: 'No spots available' }, { status: 400 });
+      }
+
+      const { data, error } = await supabase
+        .from('event_volunteer_signups')
+        .insert({
+          shift_id: body.shift_id,
+          user_id: user?.id || null,
+          name: body.name,
+          email: body.email,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating event signup:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      await supabase
+        .from('event_volunteer_shifts')
+        .update({ spots_filled: shift.spots_filled + 1 })
+        .eq('id', body.shift_id);
+
+      return NextResponse.json(data);
+    }
+
+    if (!body.opportunity_id) {
+      return NextResponse.json({ error: 'Shift ID is required' }, { status: 400 });
+    }
+
+    // Legacy volunteer opportunity signup
     const { data: opportunity, error: oppError } = await supabase
       .from('volunteer_opportunities')
       .select('spots_available, spots_filled')
@@ -25,7 +74,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No spots available' }, { status: 400 });
     }
 
-    // Create signup
     const { data, error } = await supabase
       .from('volunteer_signups')
       .insert({
@@ -45,7 +93,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Increment spots_filled
     await supabase
       .from('volunteer_opportunities')
       .update({ spots_filled: opportunity.spots_filled + 1 })

@@ -128,7 +128,20 @@ export async function getDonors(options?: { includeInactive?: boolean; limit?: n
     });
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(`Failed to fetch donors: ${res.status} ${errorData.error || res.statusText}`);
+      const errorMessage = errorData.message || errorData.error || res.statusText;
+      console.error('Failed to fetch donors:', {
+        status: res.status,
+        error: errorMessage,
+        details: errorData.details,
+        hint: errorData.hint
+      });
+      // If it's an API key error, provide helpful message
+      if (errorData.error === 'Invalid API key' || errorMessage?.includes('API key')) {
+        console.error('⚠️ Supabase API key issue. Please check your .env.local file contains:');
+        console.error('   NEXT_PUBLIC_SUPABASE_URL');
+        console.error('   NEXT_PUBLIC_SUPABASE_ANON_KEY');
+      }
+      throw new Error(`Failed to fetch donors: ${res.status} ${errorMessage}`);
     }
     const result = await res.json();
     // Handle paginated response - extract data array
@@ -174,6 +187,81 @@ export async function deleteDonor(id: number) {
   return res.json();
 }
 
+// Auction Items API
+export async function getAuctionItems(options?: {
+  includeInactive?: boolean;
+  itemType?: 'live' | 'silent';
+  donorId?: number;
+  limit?: number | 'all';
+}) {
+  const params = new URLSearchParams();
+  if (options?.includeInactive) params.set('includeInactive', 'true');
+  if (options?.itemType) params.set('itemType', options.itemType);
+  if (options?.donorId) params.set('donorId', options.donorId.toString());
+  params.set('limit', options?.limit?.toString() || 'all');
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auction-items?${params}`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || res.statusText;
+      console.error('Failed to fetch auction items:', {
+        status: res.status,
+        error: errorMessage,
+        details: errorData.details,
+        hint: errorData.hint,
+      });
+      throw new Error(`Failed to fetch auction items: ${res.status} ${errorMessage}`);
+    }
+    const result = await res.json();
+    return result.data || result || [];
+  } catch (error) {
+    console.error('Error in getAuctionItems:', error);
+    return [];
+  }
+}
+
+export async function createAuctionItem(data: {
+  donor_id?: number | null;
+  title: string;
+  description?: string | null;
+  item_type?: 'live' | 'silent';
+  image_urls?: string[];
+  estimated_value?: number | null;
+  restrictions?: string | null;
+  quantity?: number | null;
+  display_order?: number | null;
+  is_active?: boolean;
+}) {
+  const res = await fetch(`${API_BASE}/api/auction-items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create auction item');
+  return res.json();
+}
+
+export async function updateAuctionItem(id: number, data: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE}/api/auction-items`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ...data }),
+  });
+  if (!res.ok) throw new Error('Failed to update auction item');
+  return res.json();
+}
+
+export async function deleteAuctionItem(id: number) {
+  const res = await fetch(`${API_BASE}/api/auction-items?id=${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete auction item');
+  return res.json();
+}
+
 // Volunteer API
 export async function getVolunteerOpportunities(options?: { category?: string; activeOnly?: boolean }) {
   const params = new URLSearchParams();
@@ -193,6 +281,76 @@ export async function signUpForVolunteer(data: {
   email: string;
   phone?: string;
   notes?: string;
+}) {
+  const res = await fetch(`${API_BASE}/api/volunteers/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to sign up');
+  return res.json();
+}
+
+// Event volunteer API
+export async function getVolunteerEvents(options?: {
+  includeInactive?: boolean;
+  includeInactiveShifts?: boolean;
+  upcoming?: boolean;
+  eventId?: number;
+}) {
+  const params = new URLSearchParams();
+  if (options?.includeInactive) params.set('includeInactive', 'true');
+  if (options?.includeInactiveShifts) params.set('includeInactiveShifts', 'true');
+  if (options?.upcoming === false) params.set('upcoming', 'false');
+  if (options?.eventId) params.set('eventId', options.eventId.toString());
+
+  const res = await fetch(`${API_BASE}/api/volunteer-events?${params}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Failed to fetch volunteer events');
+  return res.json();
+}
+
+export async function createVolunteerShift(data: {
+  event_id: number;
+  job_title: string;
+  shift_description?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  spots_available: number;
+  is_active?: boolean;
+}) {
+  const res = await fetch(`${API_BASE}/api/volunteer-shifts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create volunteer shift');
+  return res.json();
+}
+
+export async function updateVolunteerShift(id: number, data: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE}/api/volunteer-shifts`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ...data }),
+  });
+  if (!res.ok) throw new Error('Failed to update volunteer shift');
+  return res.json();
+}
+
+export async function deleteVolunteerShift(id: number) {
+  const res = await fetch(`${API_BASE}/api/volunteer-shifts?id=${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete volunteer shift');
+  return res.json();
+}
+
+export async function signUpForVolunteerShift(data: {
+  shift_id: number;
+  name: string;
+  email: string;
 }) {
   const res = await fetch(`${API_BASE}/api/volunteers/signup`, {
     method: 'POST',
@@ -269,6 +427,7 @@ export interface Event {
   image: string | null;
   is_featured: boolean;
   is_all_day: boolean;
+  volunteer_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -284,6 +443,30 @@ export interface Donor {
   updated_at: string;
 }
 
+export interface AuctionItemDonor {
+  id: number;
+  name: string;
+  website: string;
+  logo: string | null;
+}
+
+export interface AuctionItem {
+  id: number;
+  donor_id: number | null;
+  title: string;
+  description: string | null;
+  item_type: 'live' | 'silent';
+  image_urls: string[];
+  estimated_value: number | null;
+  restrictions: string | null;
+  quantity: number | null;
+  display_order: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  donor?: AuctionItemDonor | null;
+}
+
 export interface VolunteerOpportunity {
   id: number;
   title: string;
@@ -297,6 +480,34 @@ export interface VolunteerOpportunity {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface VolunteerShift {
+  id: number;
+  event_id: number;
+  job_title: string;
+  shift_description: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  spots_available: number;
+  spots_filled: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VolunteerEvent extends Event {
+  shifts: VolunteerShift[];
+}
+
+export interface VolunteerSignup {
+  id: number;
+  shift_id: number;
+  user_id: string | null;
+  name: string;
+  email: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  created_at: string;
 }
 
 export interface UserProfile {

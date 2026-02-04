@@ -1,53 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/Button';
-import Card from '@/components/Card';
-import { getNews, getDonors, NewsArticle, Donor } from '@/lib/api';
 
 export default function Home() {
-  const [news, setNews] = useState<NewsArticle[]>([]);
-  const [donors, setDonors] = useState<Donor[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [newsData, donorsData] = await Promise.all([
-          getNews({ status: 'published', limit: 3 }),
-          getDonors(),
-        ]);
-        setNews(newsData?.slice(0, 3) || []);
-        setDonors(donorsData?.slice(0, 4) || []);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-  };
-
-  const getRelativeTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return formatDate(dateString);
-  };
-
   return (
     <div className="layout-container flex flex-col w-full mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-6 gap-8">
       <section className="w-full">
@@ -70,11 +27,27 @@ export default function Home() {
                     programs, and build strong connections between families and staff. Everything we do is
                     focused on helping our Wildcats learn, grow, and succeed.
                   </p>
-                  <p>
-                    Some of our favorite traditions include the Fall Festival, a lively and family-friendly
-                    celebration for all ages, and our Annual Auction, a popular adults-only evening that
-                    raises critical funds directly benefiting our school.
-                  </p>
+                  <div>
+                    <p className="mb-2">PTA Sponsored Events include:</p>
+                    <ul className="list-disc list-inside space-y-1 ml-4">
+                      <li>School Calendars</li>
+                      <li>Teacher Stipends</li>
+                      <li>Classroom Field Trips</li>
+                      <li>Fall Festival</li>
+                      <li>Cocoa and Crafts</li>
+                      <li>Teacher and Staff Appreciation</li>
+                      <li>5th Grade Campership</li>
+                      <li>School Dance</li>
+                      <li>Starstruck Shirts</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="mb-2">PTA Sponsored Projects include:</p>
+                    <ul className="list-disc list-inside space-y-1 ml-4">
+                      <li>New School Mural (in planning)</li>
+                      <li>New technology and lighting for MP Room</li>
+                    </ul>
+                  </div>
                   <p>
                     None of this would be possible without our amazing community. Whether you have an
                     hour to spare, a skill to share, or want to be involved throughout the year, your time and

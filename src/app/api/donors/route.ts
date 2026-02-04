@@ -60,6 +60,31 @@ async function fetchWebsiteLogo(websiteUrl: string): Promise<string | null> {
 
 export async function GET(request: Request) {
   try {
+    // Check environment variables before attempting to create client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase environment variables');
+      return NextResponse.json({ 
+        error: 'Invalid API key',
+        message: 'Supabase environment variables are not configured. Please check your .env.local file.',
+        details: {
+          NEXT_PUBLIC_SUPABASE_URL: supabaseUrl ? 'Set' : 'MISSING',
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseKey ? 'Set' : 'MISSING'
+        }
+      }, { status: 500 });
+    }
+
+    // Validate key format - accept both legacy JWT and modern publishable formats
+    const isLegacyJWT = supabaseKey.startsWith('eyJ');
+    const isModernPublishable = supabaseKey.startsWith('sb_publishable_');
+    
+    if (!isLegacyJWT && !isModernPublishable) {
+      console.error('⚠️ API key format warning: Key should start with "eyJ" (JWT) or "sb_publishable_" (modern)');
+      console.error('This might indicate you are using the wrong key type');
+    }
+
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const includeInactive = searchParams.get('includeInactive') === 'true';
@@ -85,11 +110,60 @@ export async function GET(request: Request) {
     const { data, error, count } = await query;
 
     if (error) {
-      console.error('Error fetching donors:', error);
+      const errorStatus = (error as { status?: number }).status;
+      // Log full error details to server console for debugging
+      console.error('=== Supabase Error Details ===');
+      console.error('Error message:', error.message);
+      console.error('Error code:', error.code);
+      console.error('Error details:', error.details);
+      console.error('Error hint:', error.hint);
+      console.error('Status code:', errorStatus);
+      console.error('Full error object:', JSON.stringify(error, null, 2));
+      console.error('URL:', supabaseUrl);
+      console.error('Key prefix:', supabaseKey.substring(0, 30) + '...');
+      console.error('Key length:', supabaseKey.length);
+      console.error('============================');
+      
+      // Check if it's an authentication/API key error
+      if (error.message?.includes('Invalid API key') || 
+          error.message?.includes('JWT') || 
+          error.message?.includes('invalid') ||
+          error.message?.includes('apikey') ||
+          error.code === 'PGRST301' ||
+          errorStatus === 401 ||
+          errorStatus === 403) {
+        console.error('⚠️ API Key Error Detected');
+        console.error('This usually means:');
+        console.error('  1. The key is from a different Supabase project');
+        console.error('  2. The key has been regenerated/revoked');
+        console.error('  3. There is a mismatch between URL and key');
+        console.error('  4. The key is incorrect or incomplete');
+        
+        return NextResponse.json({ 
+          error: 'Invalid API key',
+          message: 'The Supabase API key is invalid or incorrect. Please verify your NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local',
+          details: error.details,
+          hint: error.hint || 'Make sure you are using the "anon" key from Supabase, not the service_role key. The anon key should start with "eyJ"',
+          supabaseError: {
+            message: error.message,
+            code: error.code,
+            statusCode: errorStatus
+          },
+          diagnostic: {
+            keyLength: supabaseKey.length,
+            keyStartsWithEyJ: supabaseKey.startsWith('eyJ'),
+            keyStartsWithSbPublishable: supabaseKey.startsWith('sb_publishable_'),
+            urlMatches: supabaseUrl === 'https://mrptpsbzadthudiiazqr.supabase.co',
+            url: supabaseUrl
+          }
+        }, { status: 500 });
+      }
       return NextResponse.json({ 
         error: error.message,
         details: error.details,
-        hint: error.hint
+        hint: error.hint,
+        code: error.code,
+        statusCode: errorStatus
       }, { status: 500 });
     }
 
@@ -102,6 +176,14 @@ export async function GET(request: Request) {
     });
   } catch (error: any) {
     console.error('Error in donors API route:', error);
+    // Check if it's an environment variable error
+    if (error.message?.includes('environment variables')) {
+      return NextResponse.json({ 
+        error: 'Invalid API key',
+        message: error.message,
+        details: 'Please create a .env.local file with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
+      }, { status: 500 });
+    }
     return NextResponse.json({ 
       error: error.message || 'Failed to connect to Supabase',
       details: error.cause?.message || error.stack

@@ -169,6 +169,40 @@ CREATE POLICY "Admins can manage donors" ON public.donors
   );
 
 -- ============================================
+-- AUCTION ITEMS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.auction_items (
+  id SERIAL PRIMARY KEY,
+  donor_id INTEGER REFERENCES public.donors(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  item_type TEXT NOT NULL DEFAULT 'silent' CHECK (item_type IN ('live', 'silent')),
+  image_urls TEXT[] DEFAULT ARRAY[]::TEXT[],
+  estimated_value NUMERIC,
+  restrictions TEXT,
+  quantity INTEGER,
+  display_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE public.auction_items ENABLE ROW LEVEL SECURITY;
+
+-- Policies for auction items
+CREATE POLICY "Active auction items are viewable by everyone" ON public.auction_items
+  FOR SELECT USING (is_active = TRUE OR auth.uid() IS NOT NULL);
+
+CREATE POLICY "Editors and admins can manage auction items" ON public.auction_items
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role IN ('admin', 'editor')
+    )
+  );
+
+-- ============================================
 -- VOLUNTEER OPPORTUNITIES TABLE
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.volunteer_opportunities (
@@ -289,6 +323,9 @@ CREATE TRIGGER update_events_updated_at BEFORE UPDATE ON public.events
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 CREATE TRIGGER update_donors_updated_at BEFORE UPDATE ON public.donors
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER update_auction_items_updated_at BEFORE UPDATE ON public.auction_items
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 CREATE TRIGGER update_volunteer_opportunities_updated_at BEFORE UPDATE ON public.volunteer_opportunities

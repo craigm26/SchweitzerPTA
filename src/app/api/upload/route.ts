@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 // Allowed file types by bucket
 const ALLOWED_TYPES: Record<string, string[]> = {
   'sponsor-logos': ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+  'auction-item-photos': ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   'documents': [
     // Images
     'image/jpeg', 'image/png', 'image/gif', 'image/webp',
@@ -24,11 +25,12 @@ const ALLOWED_TYPES: Record<string, string[]> = {
 // Max file sizes by bucket (in bytes)
 const MAX_FILE_SIZES: Record<string, number> = {
   'sponsor-logos': 5 * 1024 * 1024,  // 5MB for logos
+  'auction-item-photos': 10 * 1024 * 1024,  // 10MB for item photos
   'documents': 10 * 1024 * 1024,      // 10MB for documents
 };
 
 // Valid bucket names
-const VALID_BUCKETS = ['sponsor-logos', 'documents'];
+const VALID_BUCKETS = ['sponsor-logos', 'auction-item-photos', 'documents'];
 
 export async function POST(request: Request) {
   try {

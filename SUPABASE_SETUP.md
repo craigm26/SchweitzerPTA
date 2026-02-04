@@ -17,7 +17,16 @@ This guide will walk you through setting up Supabase for the Schweitzer PTA webs
 1. In your Supabase dashboard, go to **Project Settings** → **API**
 2. Copy these values:
    - **Project URL** (e.g., `https://xxxxx.supabase.co`)
-   - **anon public** key (safe to use in browser)
+   - **anon public** key (safe to use in browser) - ⚠️ **IMPORTANT: Use the "anon" key, NOT the "service_role" key!**
+
+### ⚠️ Critical Security Note
+
+**NEVER use the `service_role` key in your application!**
+
+- ✅ **Use `anon` key**: Safe for public use, respects Row Level Security (RLS)
+- ❌ **Never use `service_role` key**: Bypasses RLS, should only be used in secure server-side contexts
+
+The `anon` key is what you need for `NEXT_PUBLIC_SUPABASE_ANON_KEY`. It will look like a JWT token starting with `eyJ...`
 
 ## 3. Set Environment Variables
 
