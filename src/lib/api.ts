@@ -115,6 +115,61 @@ export async function deleteEvent(id: number) {
   return res.json();
 }
 
+// Fundraisers API
+export async function getFundraisers(options?: { featured?: boolean; upcoming?: boolean; includeInactive?: boolean }) {
+  const params = new URLSearchParams();
+  if (options?.featured) params.set('featured', 'true');
+  if (options?.upcoming) params.set('upcoming', 'true');
+  if (options?.includeInactive) params.set('includeInactive', 'true');
+
+  const res = await fetch(`${API_BASE}/api/fundraisers?${params}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Failed to fetch fundraisers');
+  return res.json();
+}
+
+export async function createFundraiserEvent(data: {
+  title: string;
+  description: string;
+  date: string;
+  end_date?: string | null;
+  time?: string | null;
+  end_time?: string | null;
+  location: string;
+  image?: string;
+  website_url?: string | null;
+  is_featured?: boolean;
+  is_all_day?: boolean;
+  is_active?: boolean;
+}) {
+  const res = await fetch(`${API_BASE}/api/fundraisers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create fundraiser');
+  return res.json();
+}
+
+export async function updateFundraiserEvent(id: number, data: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE}/api/fundraisers`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ...data }),
+  });
+  if (!res.ok) throw new Error('Failed to update fundraiser');
+  return res.json();
+}
+
+export async function deleteFundraiserEvent(id: number) {
+  const res = await fetch(`${API_BASE}/api/fundraisers?id=${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete fundraiser');
+  return res.json();
+}
+
 // Donors API
 export async function getDonors(options?: { includeInactive?: boolean; limit?: number | 'all' }) {
   const params = new URLSearchParams();
@@ -429,6 +484,24 @@ export interface Event {
   is_featured: boolean;
   is_all_day: boolean;
   volunteer_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FundraiserEvent {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  end_date: string | null;
+  time: string | null;
+  end_time: string | null;
+  location: string;
+  image: string | null;
+  website_url: string | null;
+  is_featured: boolean;
+  is_all_day: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
