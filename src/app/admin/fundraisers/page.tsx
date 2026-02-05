@@ -25,6 +25,7 @@ export default function FundraiserManagementPage() {
     title: '',
     description: '',
     image: '',
+    website_url: '',
     is_active: true,
   });
 
@@ -154,7 +155,7 @@ export default function FundraiserManagementPage() {
   };
 
   const openAddModal = () => {
-    setFormData({ title: '', description: '', image: '', is_active: true });
+    setFormData({ title: '', description: '', image: '', website_url: '', is_active: true });
     setEditingFundraiser(null);
     setImagePreview(null);
     setShowAddModal(true);
@@ -165,6 +166,7 @@ export default function FundraiserManagementPage() {
       title: fundraiser.title,
       description: fundraiser.description,
       image: fundraiser.image || '',
+      website_url: fundraiser.website_url || '',
       is_active: fundraiser.is_active,
     });
     setEditingFundraiser(fundraiser);
@@ -175,7 +177,7 @@ export default function FundraiserManagementPage() {
   const closeModal = () => {
     setShowAddModal(false);
     setEditingFundraiser(null);
-    setFormData({ title: '', description: '', image: '', is_active: true });
+    setFormData({ title: '', description: '', image: '', website_url: '', is_active: true });
     setImagePreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -271,9 +273,8 @@ export default function FundraiserManagementPage() {
                     <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-[#181411]">
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Photo</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
-                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Description
-                      </th>
+                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Description</th>
+                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">URL</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
                     </tr>
@@ -303,6 +304,20 @@ export default function FundraiserManagementPage() {
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                             <span className="line-clamp-2">{fundraiser.description}</span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            {fundraiser.website_url ? (
+                              <a
+                                href={fundraiser.website_url.startsWith('http') ? fundraiser.website_url : `https://${fundraiser.website_url}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline break-all"
+                              >
+                                {fundraiser.website_url.replace(/^https?:\/\//, '')}
+                              </a>
+                            ) : (
+                              <span className="text-gray-400">--</span>
+                            )}
                           </td>
                           <td className="px-6 py-4">
                             <button
@@ -435,6 +450,16 @@ export default function FundraiserManagementPage() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                   placeholder="Description for the fundraiser block..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Website URL</label>
+                <input
+                  type="url"
+                  value={formData.website_url}
+                  onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="https://example.com"
                 />
               </div>
               <div className="flex items-center gap-2">
