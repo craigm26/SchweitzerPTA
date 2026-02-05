@@ -96,6 +96,7 @@ export async function POST(request: Request) {
         donor_id: body.donor_id || null,
         title: body.title,
         description: body.description,
+        sponsor_text: body.sponsor_text ?? null,
         item_type: normalizeItemType(body.item_type),
         image_urls: normalizeImageUrls(body.image_urls),
         youtube_url: normalizeYoutubeUrl(body.youtube_url),

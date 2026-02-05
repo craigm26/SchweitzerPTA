@@ -282,6 +282,7 @@ export async function createAuctionItem(data: {
   donor_id?: number | null;
   title: string;
   description?: string | null;
+  sponsor_text?: string | null;
   item_type?: 'live' | 'silent' | 'raffle';
   image_urls?: string[];
   youtube_url?: string | null;
@@ -529,6 +530,7 @@ export interface AuctionItem {
   donor_id: number | null;
   title: string;
   description: string | null;
+  sponsor_text: string | null;
   item_type: 'live' | 'silent' | 'raffle';
   image_urls: string[];
   youtube_url: string | null;

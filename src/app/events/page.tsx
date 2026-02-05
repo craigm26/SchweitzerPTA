@@ -30,11 +30,60 @@ export default function EventsPage() {
   }, []);
 
   const getDateParts = (dateString: string) => {
-    const date = new Date(dateString);
+    // Parse date string directly to avoid timezone issues
+    // dateString format: "YYYY-MM-DD"
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     return {
       month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
-      day: date.getDate().toString().padStart(2, '0'),
+      day: day.toString().padStart(2, '0'),
     };
+  };
+
+  const getPacificTimeZoneLabel = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    if (!year || !month || !day) return 'PT';
+    const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      timeZoneName: 'short',
+    }).formatToParts(date);
+    return parts.find((part) => part.type === 'timeZoneName')?.value ?? 'PT';
+  };
+
+  const formatTime12Hour = (time: string) => {
+    const match = time.match(/^(\d{2}):(\d{2})(?::\d{2})?$/);
+    if (!match) return time;
+    const hour = Number(match[1]);
+    const minute = match[2];
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minute} ${period}`;
+  };
+
+  const formatEventTimeRange = (event: Event) => {
+    if (event.is_all_day || !event.time) {
+      return 'All Day';
+    }
+    const tzLabel = getPacificTimeZoneLabel(event.date);
+    const start = formatTime12Hour(event.time);
+    if (event.end_time) {
+      const end = formatTime12Hour(event.end_time);
+      return `${start} - ${end} ${tzLabel}`;
+    }
+    return `${start} ${tzLabel}`;
+  };
+
+  const getEventEndDate = (event: Event) => {
+    if (event.end_date && event.end_date >= event.date) {
+      return event.end_date;
+    }
+    return event.date;
+  };
+
+  const isEventOnDate = (dateStr: string, event: Event) => {
+    const endDate = getEventEndDate(event);
+    return dateStr >= event.date && dateStr <= endDate;
   };
 
 
@@ -55,7 +104,7 @@ export default function EventsPage() {
     // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const hasEvent = events.some((e) => e.date === dateStr);
+      const hasEvent = events.some((e) => isEventOnDate(dateStr, e));
       const isToday = new Date().toISOString().split('T')[0] === dateStr;
       days.push({ day, events: hasEvent, highlight: isToday });
     }
@@ -221,8 +270,7 @@ export default function EventsPage() {
                           <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400">
                             <span className="flex items-center gap-1">
                               <span className="material-symbols-outlined text-sm">schedule</span>
-                              {event.time}
-                              {event.end_time && ` - ${event.end_time}`}
+                              {formatEventTimeRange(event)}
                             </span>
                             <span className="flex items-center gap-1">
                               <span className="material-symbols-outlined text-sm">location_on</span> {event.location}

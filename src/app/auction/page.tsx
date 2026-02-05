@@ -94,16 +94,24 @@ export default function AuctionPage() {
                 </p>
                 <div className="mt-6 space-y-3 text-sm text-gray-600 dark:text-gray-300">
                   <div className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-base text-primary">restaurant</span>
+                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
                     Dinner included with admission
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-base text-primary">gavel</span>
-                    Live and silent auction bidding
+                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
+                    Silent and Live and Auctions
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-base text-primary">school</span>
-                    100% of proceeds support students
+                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
+                    Raffles, Trivia, Poker & Blackjack Tables
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
+                    Dessert Auction
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
+                    No-Host Bar
                   </div>
                 </div>
                 <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 dark:bg-[#1c150f] px-3 py-1 text-xs text-gray-600 dark:text-gray-300">
@@ -129,7 +137,7 @@ export default function AuctionPage() {
       <div className="px-4 md:px-10 lg:px-20 py-12 flex justify-center">
         <div className="flex flex-col max-w-[1200px] w-full gap-12">
           {/* About Section */}
-          <section className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 items-start bg-white/90 dark:bg-[#1c150f] rounded-3xl p-8 md:p-10 shadow-xl border border-white/60 dark:border-white/5 -mt-16">
+          <section className="bg-white/90 dark:bg-[#1c150f] rounded-3xl p-8 md:p-10 shadow-xl border border-white/60 dark:border-white/5 -mt-16">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Event Overview</p>
@@ -140,65 +148,35 @@ export default function AuctionPage() {
               <div className="flex flex-col gap-4 text-[#181411]/80 dark:text-gray-300">
                 <p className="text-base leading-relaxed">
                   Albert Schweitzer Elementary School is proud to host our 9th Annual Adult-Only Dinner
-                  & Silent Auction on March 14, 2026.
+                  & Silent Auction on March 14, 2026, at 6:00pm.
                 </p>
                 <p className="text-base leading-relaxed">
                   Each year, our auction raises essential funds that directly enhance student learning –
                   supporting classroom stipends, field trips, performing arts, campus improvements, and
                   technology upgrades.
                 </p>
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 dark:bg-[#221910] p-4 md:p-6">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-2">
+                      <h3 className="text-[#181411] dark:text-white text-xl font-bold">
+                        Interested in donating an item?
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const donationSection = document.getElementById('donation-section');
+                        if (donationSection) {
+                          donationSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                      className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-md shadow-primary/20 hover:bg-orange-600 transition-colors"
+                    >
+                      Go to Donation Section
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-4">
-                  <p className="text-xs uppercase text-gray-500 dark:text-gray-400">Hosted by</p>
-                  <p className="text-lg font-bold text-[#181411] dark:text-white">Schweitzer PTA</p>
-                </div>
-                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-4">
-                  <p className="text-xs uppercase text-gray-500 dark:text-gray-400">Audience</p>
-                  <p className="text-lg font-bold text-[#181411] dark:text-white">Adult-Only</p>
-                </div>
-                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-4">
-                  <p className="text-xs uppercase text-gray-500 dark:text-gray-400">Purpose</p>
-                  <p className="text-lg font-bold text-[#181411] dark:text-white">Support Students</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-6">
-              <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-orange-500/10 dark:from-primary/10 dark:via-[#1c150f] dark:to-orange-500/10 p-5">
-                <div className="flex items-center gap-2 text-sm font-semibold text-primary uppercase tracking-wider">
-                  <span className="material-symbols-outlined text-base">celebration</span>
-                  What to Expect
-                </div>
-                <ul className="mt-4 space-y-2 text-sm text-[#181411]/80 dark:text-gray-300">
-                  <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
-                    Dinner and community celebration
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
-                    Live and silent auctions
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
-                    Poker and Blackjack tables
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="material-symbols-outlined text-base text-primary">check_circle</span>
-                    Every bid supports student programs
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </section>
-
-          
-          {/* Raffle Items Section - A lot like the auction items section, but for raffle items */}
-          <section id="raffle-items" className="flex flex-col gap-8">
-            <div className="flex flex-col gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Raffle Highlights</p>
-              <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
-                Preview a few of the items available this year.
-              </p>
             </div>
           </section>
           {/* Raffle Items Section - A lot like the auction items section, but for raffle items */}
@@ -208,9 +186,6 @@ export default function AuctionPage() {
                     <h3 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight">
                       Raffle Items
                     </h3>
-                    <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
-                      Grab raffle tickets for a chance to win these prizes.
-                    </p>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold uppercase">
@@ -230,6 +205,10 @@ export default function AuctionPage() {
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {raffleItems.map((item) => {
                       const youtubeId = getYouTubeId(item.youtube_url);
+                      const sponsorText = item.sponsor_text?.trim();
+                      const sponsorName = item.donor?.name?.trim();
+                      const footerLabel = sponsorText || sponsorName || '';
+                      const useTextLabel = Boolean(sponsorText);
                       return (
                         <div
                           key={item.id}
@@ -284,24 +263,28 @@ export default function AuctionPage() {
                               />
                             )}
                             <div className="mt-auto flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                              {item.donor?.name ? (
-                                <div className="flex items-center gap-2">
-                                  {item.donor.logo ? (
+                              {footerLabel ? (
+                                useTextLabel ? (
+                                  <span>{footerLabel}</span>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    {item.donor?.logo ? (
                                     <img
                                       src={item.donor.logo}
-                                      alt={item.donor.name}
+                                      alt={item.donor?.name || 'Sponsor'}
                                       className="w-6 h-6 rounded object-contain"
                                     />
-                                  ) : (
-                                    <span className="material-symbols-outlined text-base">handshake</span>
-                                  )}
-                                  <span>{item.donor.name}</span>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-gray-400">Sponsor TBD</span>
-                              )}
+                                    ) : (
+                                      <span className="material-symbols-outlined text-base">handshake</span>
+                                    )}
+                                    <span>{footerLabel}</span>
+                                  </div>
+                                )
+                              ) : null}
                               {item.quantity ? (
-                                <span className="text-xs font-semibold text-primary">Qty {item.quantity}</span>
+                                <span className={`text-xs font-semibold text-primary${footerLabel ? '' : ' ml-auto'}`}>
+                                  Qty {item.quantity}
+                                </span>
                               ) : null}
                             </div>
                             {item.donor?.website && (
@@ -324,12 +307,6 @@ export default function AuctionPage() {
 
           {/* Auction Items Section */}
           <section id="auction-items" className="flex flex-col gap-8">
-            <div className="flex flex-col gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Auction Highlights</p>
-              <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
-                Preview a few of the packages and experiences available this year.
-              </p>
-            </div>
 
             <div className="flex flex-col gap-8">
               <section className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-[#1c150f] p-6 md:p-8 shadow-sm">
@@ -338,9 +315,6 @@ export default function AuctionPage() {
                     <h3 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight">
                       Live Auction Items
                     </h3>
-                    <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
-                      Exclusive live experiences and premier packages.
-                    </p>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold uppercase">
@@ -391,9 +365,6 @@ export default function AuctionPage() {
                     <h3 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight">
                       Silent Auction Items
                     </h3>
-                    <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
-                      A preview of items and experiences up for bid.
-                    </p>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold uppercase">
@@ -522,31 +493,20 @@ export default function AuctionPage() {
 
 
 
-          {/* Donations Section */}
-          <section id="how-to-help" className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-[#1c150f] shadow-lg">
-            <details className="group">
-              <summary className="flex cursor-pointer items-center justify-between gap-6 px-6 py-6 md:px-8 md:py-7">
-                <div className="flex flex-col gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">How You Can Help</p>
-                  <h2 className="text-[#181411] dark:text-white text-2xl md:text-3xl font-bold leading-tight">
-                    Donate to the auction
-                  </h2>
-                  <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
-                    Give an item, experience, or contribution to support our students.
-                  </p>
-                </div>
-                <span className="material-symbols-outlined text-3xl text-primary">expand_more</span>
-              </summary>
-              <div className="px-6 pb-8 md:px-8">
-                <div className="flex flex-col gap-4 text-[#181411]/80 dark:text-gray-300">
-                  <p className="text-base leading-relaxed">
-                    We kindly ask you to consider donating an item, experience, gift certificate, or
-                    direct contribution for this year&apos;s event. Your generosity strengthens our auction offerings and
-                    provides valuable visibility among families and community members who appreciate
-                    supporters of their local schools.
-                  </p>
-                </div>
-
+          {/* Donation Section */}
+          <section id="donation-section" className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white/90 dark:bg-[#1c150f] shadow-lg">
+            <div className="px-6 py-6 md:px-8 md:py-7 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Donation Section</p>
+                <h2 className="text-[#181411] dark:text-white text-2xl md:text-3xl font-bold leading-tight">
+                  Donation Section
+                </h2>
+                <p className="text-[#181411]/70 dark:text-gray-300 text-sm">
+                  Give an item, experience, or contribution to support our students.
+                </p>
+              </div>
+            </div>
+            <div className="px-6 pb-8 md:px-8">
                 {/* Donation Types Grid */}
                 <section className="mt-8 flex flex-col gap-6">
                   <div className="flex items-center gap-3">
@@ -557,9 +517,7 @@ export default function AuctionPage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-5 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined text-2xl">gavel</span>
-                      </div>
+                      
                       <h4 className="mt-3 text-[#181411] dark:text-white text-lg font-bold leading-tight">
                         Silent Auction Donations
                       </h4>
@@ -568,9 +526,7 @@ export default function AuctionPage() {
                       </p>
                     </div>
                     <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-5 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined text-2xl">shopping_basket</span>
-                      </div>
+                      
                       <h4 className="mt-3 text-[#181411] dark:text-white text-lg font-bold leading-tight">
                         Local-Themed Baskets
                       </h4>
@@ -579,9 +535,7 @@ export default function AuctionPage() {
                       </p>
                     </div>
                     <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-5 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined text-2xl">card_giftcard</span>
-                      </div>
+                      
                       <h4 className="mt-3 text-[#181411] dark:text-white text-lg font-bold leading-tight">
                         Gift Cards
                       </h4>
@@ -590,9 +544,7 @@ export default function AuctionPage() {
                       </p>
                     </div>
                     <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-5 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined text-2xl">cake</span>
-                      </div>
+                      
                       <h4 className="mt-3 text-[#181411] dark:text-white text-lg font-bold leading-tight">
                         Dessert Table Donations
                       </h4>
@@ -601,9 +553,7 @@ export default function AuctionPage() {
                       </p>
                     </div>
                     <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-5 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined text-2xl">local_bar</span>
-                      </div>
+                      
                       <h4 className="mt-3 text-[#181411] dark:text-white text-lg font-bold leading-tight">
                         Beverage Donations
                       </h4>
@@ -612,9 +562,7 @@ export default function AuctionPage() {
                       </p>
                     </div>
                     <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#221910] p-5 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                        <span className="material-symbols-outlined text-2xl">volunteer_activism</span>
-                      </div>
+                      
                       <h4 className="mt-3 text-[#181411] dark:text-white text-lg font-bold leading-tight">
                         Community Donations
                       </h4>
@@ -656,14 +604,13 @@ export default function AuctionPage() {
                     </div>
                   </section>
                 </div>
-              </div>
-            </details>
+            </div>
           </section>
 
           {/* Header for thanking our donors H2 size like other headers */}
           
           <h2 className="text-[#181411] dark:text-white text-2xl font-bold leading-tight">
-            Thank you Donors!
+            Thank You for Your Support!
           </h2>
 
           {/* Donors List */}
@@ -730,33 +677,6 @@ export default function AuctionPage() {
               </div>
             )}
           </div>
-          
-          {/* CTA Section */}
-          <section className="rounded-3xl bg-gradient-to-r from-primary to-orange-500 p-8 md:p-12 text-center shadow-xl">
-            <div className="flex flex-col items-center gap-6 max-w-2xl mx-auto">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-white text-3xl">volunteer_activism</span>
-              </div>
-              <h2 className="text-white text-3xl md:text-4xl font-bold">Ready to Donate?</h2>
-              <p className="text-white/90 text-lg">
-                Have questions or want to discuss your donation? We&apos;d love to hear from you!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a
-                  href="mailto:AlbertSchweitzerPTA@gmail.com"
-                  className="bg-[#181411] hover:bg-black text-white font-bold py-3 px-6 rounded-lg transition-colors"
-                >
-                  Contact Us
-                </a>
-                <a
-                  href="#tickets"
-                  className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-                >
-                  Get Tickets
-                </a>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
     </main>

@@ -61,6 +61,7 @@ export default function AuctionItemsPage() {
     donor_id: null as number | null,
     title: '',
     description: '',
+    sponsor_text: '',
     item_type: 'silent' as ItemType,
     image_urls: [] as string[],
     youtube_url: '',
@@ -109,6 +110,7 @@ export default function AuctionItemsPage() {
       donor_id: null,
       title: '',
       description: '',
+      sponsor_text: '',
       item_type: 'silent',
       image_urls: [],
       youtube_url: '',
@@ -127,6 +129,7 @@ export default function AuctionItemsPage() {
       donor_id: item.donor_id,
       title: item.title,
       description: item.description || '',
+      sponsor_text: item.sponsor_text || '',
       item_type: item.item_type,
       image_urls: item.image_urls || [],
       youtube_url: item.youtube_url || '',
@@ -156,6 +159,7 @@ export default function AuctionItemsPage() {
       donor_id: formData.donor_id,
       title: formData.title.trim(),
       description: formData.description.trim() || null,
+      sponsor_text: formData.sponsor_text.trim() || null,
       item_type: formData.item_type,
       image_urls: formData.image_urls,
       youtube_url: formData.youtube_url.trim() || null,
@@ -612,6 +616,23 @@ export default function AuctionItemsPage() {
                   onChange={(event) => setFormData({ ...formData, description: event.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                   placeholder="Describe the item or experience"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="auction-item-sponsor-text"
+                  className="block text-sm font-medium text-[#181411] dark:text-white mb-1"
+                >
+                  Sponsor Text (optional)
+                </label>
+                <input
+                  id="auction-item-sponsor-text"
+                  type="text"
+                  value={formData.sponsor_text}
+                  onChange={(event) => setFormData({ ...formData, sponsor_text: event.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Custom text to display instead of sponsor name"
                 />
               </div>
 

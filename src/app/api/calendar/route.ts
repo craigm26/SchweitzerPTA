@@ -27,7 +27,8 @@ export async function GET(request: Request) {
     }
 
     if (upcoming === 'true') {
-      query = query.gte('date', new Date().toISOString().split('T')[0]);
+      const today = new Date().toISOString().split('T')[0];
+      query = query.or(`date.gte.${today},end_date.gte.${today}`);
     }
 
     const { data, error } = await query;

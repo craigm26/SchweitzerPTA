@@ -251,27 +251,6 @@ export default function VolunteerPage() {
                         )}
                       </div>
                     </div>
-                    <div className="lg:w-80 shrink-0">
-                      <div className="bg-gray-50 dark:bg-[#181411] rounded-lg border border-gray-200 dark:border-gray-700 p-4 h-full flex items-center justify-center">
-                        {event.image ? (
-                          <Image
-                            loader={eventImageLoader}
-                            src={event.image}
-                            alt={`${event.title} event`}
-                            width={400}
-                            height={260}
-                            sizes="(min-width: 1024px) 320px, 100vw"
-                            unoptimized
-                            className="rounded-lg object-cover w-full h-full max-h-[260px]"
-                          />
-                        ) : (
-                          <div className="text-center text-gray-400">
-                            <span className="material-symbols-outlined text-5xl">image</span>
-                            <p className="text-sm mt-2">Event photo coming soon</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 </section>
               );

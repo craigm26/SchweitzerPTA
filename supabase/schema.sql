@@ -212,6 +212,7 @@ CREATE TABLE IF NOT EXISTS public.auction_items (
   donor_id INTEGER REFERENCES public.donors(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   description TEXT,
+  sponsor_text TEXT,
   item_type TEXT NOT NULL DEFAULT 'silent' CHECK (item_type IN ('live', 'silent', 'raffle')),
   image_urls TEXT[] DEFAULT ARRAY[]::TEXT[],
   youtube_url TEXT,

@@ -153,6 +153,47 @@ export default function EventManagementPage() {
     setEditingEvent(null);
   };
 
+  const getPacificTimeZoneLabel = (dateString: string) => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    if (!year || !month || !day) return 'PT';
+    const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      timeZoneName: 'short',
+    }).formatToParts(date);
+    return parts.find((part) => part.type === 'timeZoneName')?.value ?? 'PT';
+  };
+
+  const formatTime12Hour = (time: string) => {
+    const match = time.match(/^(\d{2}):(\d{2})(?::\d{2})?$/);
+    if (!match) return time;
+    const hour = Number(match[1]);
+    const minute = match[2];
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minute} ${period}`;
+  };
+
+  const formatEventTimeRange = (event: Event) => {
+    if (event.is_all_day || !event.time) {
+      return 'All Day';
+    }
+    const tzLabel = getPacificTimeZoneLabel(event.date);
+    const start = formatTime12Hour(event.time);
+    if (event.end_time) {
+      const end = formatTime12Hour(event.end_time);
+      return `${start} - ${end} ${tzLabel}`;
+    }
+    return `${start} ${tzLabel}`;
+  };
+
+  const getEventEndDate = (event: Event) => {
+    if (event.end_date && event.end_date >= event.date) {
+      return event.end_date;
+    }
+    return event.date;
+  };
+
   // Filter events
   const filteredEvents = events.filter((event) => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -278,7 +319,8 @@ export default function EventManagementPage() {
                   <tbody>
                     {filteredEvents.map((event) => {
                       const isLoading = actionLoading === event.id;
-                      const isPast = new Date() > new Date(event.date + 'T23:59:59');
+                      const endDate = getEventEndDate(event);
+                      const isPast = new Date() > new Date(endDate + 'T23:59:59');
 
                       return (
                         <tr
@@ -294,22 +336,15 @@ export default function EventManagementPage() {
                                   const [y, m, d] = event.date.split('-').map(Number);
                                   return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                                 })()}
-                                {(event as any).end_date && (event as any).end_date !== event.date && (
+                                {event.end_date && event.end_date !== event.date && (
                                   <span className="font-normal"> - {(() => {
-                                    const [y, m, d] = ((event as any).end_date as string).split('-').map(Number);
+                                    const [y, m, d] = event.end_date.split('-').map(Number);
                                     return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                                   })()}</span>
                                 )}
                               </span>
                               <span className="text-sm text-gray-500">
-                                {event.time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.time) ? (
-                                  <>
-                                    {new Date(`2000-01-01T${event.time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                                    {event.end_time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.end_time) && ` - ${new Date(`2000-01-01T${event.end_time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`}
-                                  </>
-                                ) : (
-                                  <span className="italic">All Day</span>
-                                )}
+                                {formatEventTimeRange(event)}
                               </span>
                             </div>
                           </td>

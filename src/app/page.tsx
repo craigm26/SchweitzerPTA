@@ -28,7 +28,7 @@ export default function Home() {
                     focused on helping our Wildcats learn, grow, and succeed.
                   </p>
                   <div>
-                    <p className="mb-2">PTA Sponsored Events include:</p>
+                    <p className="mb-2">PTA Sponsored Events/Items include:</p>
                     <ul className="list-disc list-inside space-y-1 ml-4">
                       <li>School Calendars</li>
                       <li>Teacher Stipends</li>
@@ -37,8 +37,10 @@ export default function Home() {
                       <li>Cocoa and Crafts</li>
                       <li>Teacher and Staff Appreciation</li>
                       <li>5th Grade Campership</li>
-                      <li>School Dance</li>
-                      <li>Starstruck Shirts</li>
+                      <li>School Family Dance</li>
+                      <li>Starstruck Shirts (A school-wide dance program where each class learns a routine and performs in a showcase)</li>
+                      
+                      <li>Auction</li>
                     </ul>
                   </div>
                   <div>
@@ -46,6 +48,7 @@ export default function Home() {
                     <ul className="list-disc list-inside space-y-1 ml-4">
                       <li>New School Mural (in planning)</li>
                       <li>New technology and lighting for MP Room</li>
+                      <li>New library furniture</li>
                     </ul>
                   </div>
                   <p>
@@ -72,11 +75,6 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/about">
                   <Button size="large">Join the PTA</Button>
-                </Link>
-                <Link href="/calendar">
-                  <Button size="large" variant="secondary">
-                    View Calendar
-                  </Button>
                 </Link>
               </div>
             </div>
