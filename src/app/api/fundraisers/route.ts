@@ -63,11 +63,11 @@ export async function POST(request: Request) {
       .insert({
         title: body.title,
         description: body.description,
-        date: body.date,
+        date: body.date || null,
         end_date: body.end_date || null,
         time: body.time || null,
         end_time: body.end_time || null,
-        location: body.location,
+        location: body.location || null,
         image: body.image,
         website_url: body.website_url || null,
         is_featured: body.is_featured || false,

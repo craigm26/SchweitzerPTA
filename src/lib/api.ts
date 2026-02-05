@@ -132,11 +132,11 @@ export async function getFundraisers(options?: { featured?: boolean; upcoming?: 
 export async function createFundraiserEvent(data: {
   title: string;
   description: string;
-  date: string;
+  date?: string | null;
   end_date?: string | null;
   time?: string | null;
   end_time?: string | null;
-  location: string;
+  location?: string | null;
   image?: string;
   website_url?: string | null;
   is_featured?: boolean;
@@ -492,11 +492,11 @@ export interface FundraiserEvent {
   id: number;
   title: string;
   description: string;
-  date: string;
+  date: string | null;
   end_date: string | null;
   time: string | null;
   end_time: string | null;
-  location: string;
+  location: string | null;
   image: string | null;
   website_url: string | null;
   is_featured: boolean;

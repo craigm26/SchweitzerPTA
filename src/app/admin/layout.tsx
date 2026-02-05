@@ -13,6 +13,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     { href: '/admin', label: 'Dashboard', icon: 'dashboard' },
     { href: '/admin/news', label: 'News Management', icon: 'article' },
     { href: '/admin/events', label: 'Event Management', icon: 'calendar_month' },
+    { href: '/admin/fundraisers', label: 'Fundraiser Management', icon: 'campaign' },
     { href: '/admin/volunteers', label: 'Volunteer Management', icon: 'volunteer_activism' },
     { href: '/admin/donors', label: 'Donor Management', icon: 'handshake' },
     { href: '/admin/auction-items', label: 'Auction Items', icon: 'gavel' },
