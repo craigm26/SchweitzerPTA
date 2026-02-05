@@ -352,12 +352,14 @@ export async function signUpForVolunteer(data: {
 export async function getVolunteerEvents(options?: {
   includeInactive?: boolean;
   includeInactiveShifts?: boolean;
+  includeSignups?: boolean;
   upcoming?: boolean;
   eventId?: number;
 }) {
   const params = new URLSearchParams();
   if (options?.includeInactive) params.set('includeInactive', 'true');
   if (options?.includeInactiveShifts) params.set('includeInactiveShifts', 'true');
+  if (options?.includeSignups) params.set('includeSignups', 'true');
   if (options?.upcoming === false) params.set('upcoming', 'false');
   if (options?.eventId) params.set('eventId', options.eventId.toString());
 
@@ -569,6 +571,7 @@ export interface VolunteerShift {
   spots_available: number;
   spots_filled: number;
   is_active: boolean;
+  signups?: VolunteerSignup[];
   created_at: string;
   updated_at: string;
 }

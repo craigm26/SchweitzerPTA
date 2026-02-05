@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   createVolunteerShift,
@@ -47,6 +47,7 @@ export default function VolunteerManagementPage() {
       const data = await getVolunteerEvents({
         includeInactive: true,
         includeInactiveShifts: true,
+        includeSignups: true,
         upcoming: true,
       });
       setEvents(data || []);
@@ -341,49 +342,74 @@ export default function VolunteerManagementPage() {
                                 shift.start_time || shift.end_time
                                   ? `${formatTime(shift.start_time)}${shift.end_time ? ` - ${formatTime(shift.end_time)}` : ''}`
                                   : 'Time flexible';
+                              const signups = shift.signups || [];
 
                               return (
-                                <tr key={shift.id} className="border-t border-gray-100 dark:border-gray-700">
-                                  <td className="py-3 pr-4">
-                                    <div className="font-medium text-[#181411] dark:text-white">{shift.job_title}</div>
-                                    {shift.shift_description && (
-                                      <div className="text-xs text-gray-500">{shift.shift_description}</div>
-                                    )}
-                                  </td>
-                                  <td className="py-3 pr-4 text-sm text-gray-600 dark:text-gray-300">{timeLabel}</td>
-                                  <td className="py-3 pr-4 text-sm text-gray-600 dark:text-gray-300">
-                                    {shift.spots_filled}/{shift.spots_available}
-                                  </td>
-                                  <td className="py-3 pr-4">
-                                    <button
-                                      onClick={() => handleToggleShiftActive(shift)}
-                                      disabled={actionLoading === `shift-${shift.id}`}
-                                      className={`text-xs font-bold px-2 py-1 rounded ${
-                                        shift.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                                      }`}
-                                    >
-                                      {shift.is_active ? 'Active' : 'Inactive'}
-                                    </button>
-                                  </td>
-                                  <td className="py-3">
-                                    <div className="flex items-center gap-2">
+                                <Fragment key={shift.id}>
+                                  <tr className="border-t border-gray-100 dark:border-gray-700">
+                                    <td className="py-3 pr-4">
+                                      <div className="font-medium text-[#181411] dark:text-white">{shift.job_title}</div>
+                                      {shift.shift_description && (
+                                        <div className="text-xs text-gray-500">{shift.shift_description}</div>
+                                      )}
+                                    </td>
+                                    <td className="py-3 pr-4 text-sm text-gray-600 dark:text-gray-300">{timeLabel}</td>
+                                    <td className="py-3 pr-4 text-sm text-gray-600 dark:text-gray-300">
+                                      {shift.spots_filled}/{shift.spots_available}
+                                    </td>
+                                    <td className="py-3 pr-4">
                                       <button
-                                        onClick={() => openEditShiftModal(shift)}
-                                        className="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                                        title="Edit"
+                                        onClick={() => handleToggleShiftActive(shift)}
+                                        disabled={actionLoading === `shift-${shift.id}`}
+                                        className={`text-xs font-bold px-2 py-1 rounded ${
+                                          shift.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                                        }`}
                                       >
-                                        <span className="material-symbols-outlined text-lg">edit</span>
+                                        {shift.is_active ? 'Active' : 'Inactive'}
                                       </button>
-                                      <button
-                                        onClick={() => handleDeleteShift(shift)}
-                                        className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                                        title="Delete"
-                                      >
-                                        <span className="material-symbols-outlined text-lg">delete</span>
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
+                                    </td>
+                                    <td className="py-3">
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          onClick={() => openEditShiftModal(shift)}
+                                          className="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                          title="Edit"
+                                        >
+                                          <span className="material-symbols-outlined text-lg">edit</span>
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteShift(shift)}
+                                          className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                          title="Delete"
+                                        >
+                                          <span className="material-symbols-outlined text-lg">delete</span>
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  <tr className="border-b border-gray-100 dark:border-gray-700">
+                                    <td colSpan={5} className="pb-4 pr-4 text-xs text-gray-500">
+                                      <span className="font-semibold text-gray-600 dark:text-gray-300">Signups:</span>{' '}
+                                      {signups.length === 0 ? (
+                                        <span>No signups yet.</span>
+                                      ) : (
+                                        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                                          {signups.map((signup) => (
+                                            <div
+                                              key={signup.id}
+                                              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181411] px-3 py-2"
+                                            >
+                                              <div className="font-medium text-[#181411] dark:text-white">
+                                                {signup.name}
+                                              </div>
+                                              <div className="text-xs text-gray-500">{signup.email}</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                </Fragment>
                               );
                             })}
                           </tbody>

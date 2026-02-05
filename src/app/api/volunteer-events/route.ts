@@ -11,12 +11,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const includeInactive = searchParams.get('includeInactive') === 'true';
     const includeInactiveShifts = searchParams.get('includeInactiveShifts') === 'true';
+    const includeSignups = searchParams.get('includeSignups') === 'true';
     const upcoming = searchParams.get('upcoming') !== 'false';
     const eventIdParam = searchParams.get('eventId');
     let allowInactive = false;
     let allowInactiveShifts = false;
+    let allowSignups = false;
 
-    if (includeInactive || includeInactiveShifts) {
+    if (includeInactive || includeInactiveShifts || includeSignups) {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
@@ -28,6 +30,7 @@ export async function GET(request: Request) {
 
         allowInactive = profile?.role === 'admin' || profile?.role === 'editor';
         allowInactiveShifts = allowInactive;
+        allowSignups = allowInactive;
       }
     }
 
@@ -75,12 +78,37 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: shiftsError.message }, { status: 500 });
     }
 
+    let signupsByShift = new Map<number, any[]>();
+    if (includeSignups && allowSignups && shifts && shifts.length > 0) {
+      const shiftIds = shifts.map((shift) => shift.id);
+      const { data: signups, error: signupsError } = await supabase
+        .from('event_volunteer_signups')
+        .select('*')
+        .in('shift_id', shiftIds)
+        .order('created_at', { ascending: false });
+
+      if (signupsError) {
+        console.error('Error fetching volunteer signups:', signupsError);
+      } else {
+        signupsByShift = new Map<number, any[]>();
+        (signups || []).forEach((signup) => {
+          if (!signupsByShift.has(signup.shift_id)) {
+            signupsByShift.set(signup.shift_id, []);
+          }
+          signupsByShift.get(signup.shift_id)?.push(signup);
+        });
+      }
+    }
+
     const shiftsByEvent = new Map<number, typeof shifts>();
     (shifts || []).forEach((shift) => {
+      const decoratedShift = signupsByShift.size
+        ? { ...shift, signups: signupsByShift.get(shift.id) || [] }
+        : shift;
       if (!shiftsByEvent.has(shift.event_id)) {
         shiftsByEvent.set(shift.event_id, []);
       }
-      shiftsByEvent.get(shift.event_id)?.push(shift);
+      shiftsByEvent.get(shift.event_id)?.push(decoratedShift);
     });
 
     const response = events.map((event) => ({
