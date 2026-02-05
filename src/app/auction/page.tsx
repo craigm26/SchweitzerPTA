@@ -3,7 +3,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getAuctionItems, getDonors, AuctionItem, Donor } from '@/lib/api';
 
 const getYouTubeId = (url?: string | null) => {
@@ -685,13 +684,12 @@ export default function AuctionPage() {
                   >
                     <div className="w-28 h-28 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                       {donor.logo ? (
-                        <Image
+                        <img
                           src={donor.logo}
                           alt={donor.name}
-                          width={80}
-                          height={80}
-                          sizes="80px"
                           className="max-h-20 max-w-20 object-contain"
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <span className="material-symbols-outlined text-5xl text-gray-300 group-hover:text-primary transition-colors">

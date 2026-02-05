@@ -13,6 +13,21 @@ const nextConfig: NextConfig = {
         hostname: '**.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.google.com',
+        pathname: '/s2/favicons',
+      },
+      {
+        protocol: 'https',
+        hostname: 'icon.horse',
+        pathname: '/icon/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'logo.clearbit.com',
+        pathname: '/**',
+      },
     ],
   },
 
