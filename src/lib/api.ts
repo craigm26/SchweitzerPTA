@@ -420,6 +420,39 @@ export async function signUpForVolunteerShift(data: {
   return res.json();
 }
 
+export async function createVolunteerSignup(data: {
+  shift_id: number;
+  name: string;
+  email: string;
+  allow_overbook?: boolean;
+}) {
+  const res = await fetch(`${API_BASE}/api/volunteer-signups`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to add signup');
+  return res.json();
+}
+
+export async function updateVolunteerSignup(id: number, data: { status: 'pending' | 'confirmed' | 'cancelled' }) {
+  const res = await fetch(`${API_BASE}/api/volunteer-signups`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ...data }),
+  });
+  if (!res.ok) throw new Error('Failed to update signup');
+  return res.json();
+}
+
+export async function deleteVolunteerSignup(id: number) {
+  const res = await fetch(`${API_BASE}/api/volunteer-signups?id=${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to remove signup');
+  return res.json();
+}
+
 // Contact API
 export async function submitContactForm(data: {
   name: string;

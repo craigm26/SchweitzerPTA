@@ -3,9 +3,12 @@
 import { Fragment, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
+  createVolunteerSignup,
   createVolunteerShift,
+  deleteVolunteerSignup,
   deleteVolunteerShift,
   getVolunteerEvents,
+  updateVolunteerSignup,
   updateEvent,
   updateVolunteerShift,
   VolunteerEvent,
@@ -26,6 +29,10 @@ export default function VolunteerManagementPage() {
   const [events, setEvents] = useState<VolunteerEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [signupStatusFilter, setSignupStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
+  const [signupForms, setSignupForms] = useState<
+    Record<number, { name: string; email: string; allowOverbook: boolean; loading: boolean; error: string | null }>
+  >({});
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [editingShift, setEditingShift] = useState<VolunteerShift | null>(null);
   const [formData, setFormData] = useState<ShiftFormState>({
@@ -219,6 +226,138 @@ export default function VolunteerManagementPage() {
     }
   };
 
+  const getSignupForm = (shiftId: number) =>
+    signupForms[shiftId] || { name: '', email: '', allowOverbook: false, loading: false, error: null };
+
+  const handleSignupFieldChange = (shiftId: number, field: 'name' | 'email', value: string) => {
+    const current = getSignupForm(shiftId);
+    setSignupForms((prev) => ({
+      ...prev,
+      [shiftId]: { ...current, [field]: value, error: null },
+    }));
+  };
+
+  const handleSignupOverbookChange = (shiftId: number, value: boolean) => {
+    const current = getSignupForm(shiftId);
+    setSignupForms((prev) => ({
+      ...prev,
+      [shiftId]: { ...current, allowOverbook: value, error: null },
+    }));
+  };
+
+  const handleAddSignup = async (shiftId: number) => {
+    const current = getSignupForm(shiftId);
+    if (!current.name.trim() || !current.email.trim()) {
+      setSignupForms((prev) => ({
+        ...prev,
+        [shiftId]: { ...current, error: 'Name and email are required.' },
+      }));
+      return;
+    }
+
+    setSignupForms((prev) => ({
+      ...prev,
+      [shiftId]: { ...current, loading: true, error: null },
+    }));
+
+    try {
+      const result = await createVolunteerSignup({
+        shift_id: shiftId,
+        name: current.name.trim(),
+        email: current.email.trim(),
+        allow_overbook: current.allowOverbook,
+      });
+
+      setEvents((prev) =>
+        prev.map((event) => ({
+          ...event,
+          shifts: event.shifts.map((shift) =>
+            shift.id === shiftId
+              ? {
+                  ...shift,
+                  spots_filled: result.spots_filled ?? shift.spots_filled,
+                  signups: [...(shift.signups || []), result.signup],
+                }
+              : shift
+          ),
+        }))
+      );
+
+      setSignupForms((prev) => ({
+        ...prev,
+        [shiftId]: { name: '', email: '', allowOverbook: false, loading: false, error: null },
+      }));
+    } catch (error) {
+      console.error('Error adding signup:', error);
+      setSignupForms((prev) => ({
+        ...prev,
+        [shiftId]: { ...current, loading: false, error: 'Failed to add signup.' },
+      }));
+    }
+  };
+
+  const handleRemoveSignup = async (shiftId: number, signupId: number) => {
+    if (!confirm('Remove this volunteer from the shift?')) return;
+
+    const loadingKey = `signup-${signupId}`;
+    setActionLoading(loadingKey);
+    try {
+      const result = await deleteVolunteerSignup(signupId);
+      setEvents((prev) =>
+        prev.map((event) => ({
+          ...event,
+          shifts: event.shifts.map((shift) =>
+            shift.id === shiftId
+              ? {
+                  ...shift,
+                  spots_filled: result.spots_filled ?? shift.spots_filled,
+                  signups: (shift.signups || []).filter((signup) => signup.id !== signupId),
+                }
+              : shift
+          ),
+        }))
+      );
+    } catch (error) {
+      console.error('Error removing signup:', error);
+      alert('Failed to remove signup');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUpdateSignupStatus = async (
+    shiftId: number,
+    signupId: number,
+    status: 'pending' | 'confirmed' | 'cancelled'
+  ) => {
+    const loadingKey = `signup-${signupId}`;
+    setActionLoading(loadingKey);
+    try {
+      const result = await updateVolunteerSignup(signupId, { status });
+      setEvents((prev) =>
+        prev.map((event) => ({
+          ...event,
+          shifts: event.shifts.map((shift) =>
+            shift.id === shiftId
+              ? {
+                  ...shift,
+                  spots_filled: result.spots_filled ?? shift.spots_filled,
+                  signups: (shift.signups || []).map((signup) =>
+                    signup.id === signupId ? result.signup : signup
+                  ),
+                }
+              : shift
+          ),
+        }))
+      );
+    } catch (error) {
+      console.error('Error updating signup status:', error);
+      alert('Failed to update signup status');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 lg:p-10 flex items-center justify-center min-h-[400px]">
@@ -251,13 +390,30 @@ export default function VolunteerManagementPage() {
                 Assign volunteer shifts to events and track open spots.
               </p>
             </div>
-            <button
-              onClick={() => openAddShiftModal()}
-              className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              <span className="material-symbols-outlined">add</span>
-              Add Shift
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Signup status</label>
+                <select
+                  value={signupStatusFilter}
+                  onChange={(e) =>
+                    setSignupStatusFilter(e.target.value as 'all' | 'pending' | 'confirmed' | 'cancelled')
+                  }
+                  className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] px-3 py-2 text-sm text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                >
+                  <option value="all">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <button
+                onClick={() => openAddShiftModal()}
+                className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                <span className="material-symbols-outlined">add</span>
+                Add Shift
+              </button>
+            </div>
           </div>
         </div>
 
@@ -343,6 +499,14 @@ export default function VolunteerManagementPage() {
                                   ? `${formatTime(shift.start_time)}${shift.end_time ? ` - ${formatTime(shift.end_time)}` : ''}`
                                   : 'Time flexible';
                               const signups = shift.signups || [];
+                              const signupForm = getSignupForm(shift.id);
+                              const isFull = shift.spots_filled >= shift.spots_available;
+                              const filteredSignups =
+                                signupStatusFilter === 'all'
+                                  ? signups
+                                  : signups.filter(
+                                      (signup) => (signup.status || 'pending') === signupStatusFilter
+                                    );
 
                               return (
                                 <Fragment key={shift.id}>
@@ -392,21 +556,104 @@ export default function VolunteerManagementPage() {
                                       <span className="font-semibold text-gray-600 dark:text-gray-300">Signups:</span>{' '}
                                       {signups.length === 0 ? (
                                         <span>No signups yet.</span>
+                                      ) : filteredSignups.length === 0 ? (
+                                        <span>No signups match the current filter.</span>
                                       ) : (
                                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                                          {signups.map((signup) => (
+                                          {filteredSignups.map((signup) => (
                                             <div
                                               key={signup.id}
                                               className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181411] px-3 py-2"
                                             >
-                                              <div className="font-medium text-[#181411] dark:text-white">
-                                                {signup.name}
+                                              <div className="flex items-start justify-between gap-2">
+                                                <div>
+                                                  <div className="font-medium text-[#181411] dark:text-white">
+                                                    {signup.name}
+                                                  </div>
+                                                  <div className="text-xs text-gray-500">{signup.email}</div>
+                                                </div>
+                                                <button
+                                                  onClick={() => handleRemoveSignup(shift.id, signup.id)}
+                                                  disabled={actionLoading === `signup-${signup.id}`}
+                                                  className="text-xs font-semibold text-red-500 hover:text-red-600"
+                                                  title="Remove signup"
+                                                >
+                                                  Remove
+                                                </button>
                                               </div>
-                                              <div className="text-xs text-gray-500">{signup.email}</div>
+                                              <div className="mt-2 flex items-center gap-2">
+                                                <label className="text-[11px] font-semibold text-gray-500">Status</label>
+                                                <select
+                                                  value={signup.status || 'pending'}
+                                                  onChange={(e) =>
+                                                    handleUpdateSignupStatus(
+                                                      shift.id,
+                                                      signup.id,
+                                                      e.target.value as 'pending' | 'confirmed' | 'cancelled'
+                                                    )
+                                                  }
+                                                  disabled={actionLoading === `signup-${signup.id}`}
+                                                  className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] px-2 py-1 text-[11px] text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                >
+                                                  <option value="pending">Pending</option>
+                                                  <option value="confirmed">Confirmed</option>
+                                                  <option value="cancelled">Cancelled</option>
+                                                </select>
+                                              </div>
                                             </div>
                                           ))}
                                         </div>
                                       )}
+                                      <div className="mt-3 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] p-3">
+                                        <div className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                                          Add volunteer manually
+                                        </div>
+                                        <div className="grid gap-2 sm:grid-cols-2">
+                                          <input
+                                            type="text"
+                                            placeholder="Name"
+                                            value={signupForm.name}
+                                            onChange={(e) => handleSignupFieldChange(shift.id, 'name', e.target.value)}
+                                            className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-xs text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                          />
+                                          <input
+                                            type="email"
+                                            placeholder="Email"
+                                            value={signupForm.email}
+                                            onChange={(e) => handleSignupFieldChange(shift.id, 'email', e.target.value)}
+                                            className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-xs text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                          />
+                                        </div>
+                                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                                          <input
+                                            id={`allow_overbook_${shift.id}`}
+                                            type="checkbox"
+                                            checked={signupForm.allowOverbook}
+                                            onChange={(e) => handleSignupOverbookChange(shift.id, e.target.checked)}
+                                            className="rounded border-gray-300"
+                                          />
+                                          <label htmlFor={`allow_overbook_${shift.id}`}>
+                                            Allow overbooking
+                                          </label>
+                                        </div>
+                                        <div className="mt-2 flex items-center gap-3">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAddSignup(shift.id)}
+                                            disabled={signupForm.loading || (isFull && !signupForm.allowOverbook)}
+                                            className="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                                          >
+                                            {isFull && !signupForm.allowOverbook
+                                              ? 'Shift Full'
+                                              : signupForm.loading
+                                                ? 'Adding...'
+                                                : 'Add Volunteer'}
+                                          </button>
+                                          {signupForm.error && (
+                                            <span className="text-xs text-red-500">{signupForm.error}</span>
+                                          )}
+                                        </div>
+                                      </div>
                                     </td>
                                   </tr>
                                 </Fragment>
