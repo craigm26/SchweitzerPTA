@@ -37,7 +37,7 @@ export default function AuctionPage() {
     async function fetchData() {
       const [itemsResult, donorsResult] = await Promise.allSettled([
         getAuctionItems({ limit: 'all' }),
-        getDonors({ limit: 12 }),
+        getDonors({ limit: 'all' }),
       ]);
 
       if (itemsResult.status === 'fulfilled') {
