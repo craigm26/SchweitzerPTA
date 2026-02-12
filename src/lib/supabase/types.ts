@@ -133,6 +133,27 @@ export interface Database {
         }
         Relationships: []
       }
+      newsletter_subscriptions: {
+        Row: {
+          created_at: string
+          email: string
+          id: number
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: number
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: number
+          source?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           id: string;

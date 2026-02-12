@@ -1,10 +1,60 @@
 'use client';
 
+import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/Button';
 
 export default function Home() {
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subscribeMessage, setSubscribeMessage] = useState('');
+  const [subscribeError, setSubscribeError] = useState('');
+
+  const handleSubscribe = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
+
+    setSubscribeMessage('');
+    setSubscribeError('');
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/newsletter-subscriptions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          source: 'home_page',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setSubscribeError(result.error || 'Unable to subscribe right now. Please try again.');
+        return;
+      }
+
+      if (result.alreadySubscribed) {
+        setSubscribeMessage('You are already subscribed. Thanks for staying connected!');
+      } else {
+        setSubscribeMessage('Thanks for subscribing! You will receive future announcements.');
+      }
+      setEmail('');
+    } catch (error) {
+      console.error('Newsletter subscribe request failed:', error);
+      setSubscribeError('Unable to subscribe right now. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="layout-container flex flex-col w-full mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-6 gap-8">
       <section className="w-full">
@@ -77,6 +127,38 @@ export default function Home() {
                   <Button size="large">Join the PTA</Button>
                 </Link>
               </div>
+              <form onSubmit={handleSubscribe} className="max-w-xl">
+                <label
+                  htmlFor="newsletter-email"
+                  className="block text-sm font-semibold text-[#181411] dark:text-gray-100 mb-2"
+                >
+                  Subscribe for newsletters and announcements
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    id="newsletter-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="Enter your email address"
+                    required
+                    className="flex-1 rounded-lg border border-[#e6e0db] dark:border-gray-700 bg-white dark:bg-[#181411] px-4 h-12 text-[#181411] dark:text-white placeholder:text-[#181411]/50 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="h-12 px-6 rounded-lg font-bold bg-background-light dark:bg-white/10 border border-[#e6e0db] dark:border-white/20 text-[#181411] dark:text-white hover:bg-[#e6e0db] dark:hover:bg-white/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+                  </button>
+                </div>
+                {subscribeMessage && (
+                  <p className="mt-2 text-sm font-medium text-green-700 dark:text-green-400">{subscribeMessage}</p>
+                )}
+                {subscribeError && (
+                  <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-400">{subscribeError}</p>
+                )}
+              </form>
             </div>
             <div className="w-full flex-1 rounded-xl overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-800 relative group flex items-center justify-center min-h-[400px]">
               <Image
