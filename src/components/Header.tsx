@@ -77,7 +77,7 @@ const Header = () => {
                   required
                   value={subscribeEmail}
                   onChange={(event) => setSubscribeEmail(event.target.value)}
-                  placeholder="Email for updates"
+                  placeholder="Email for PTA News"
                   className="h-9 w-56 rounded-md border border-white/25 bg-white/10 px-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <button
