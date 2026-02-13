@@ -156,6 +156,35 @@ const Header = () => {
               <span className="material-symbols-outlined text-3xl">close</span>
             </button>
           </div>
+          <div className="mt-2 mb-6 rounded-lg border border-white/20 bg-white/5 p-3">
+            <p className="text-white text-sm font-semibold mb-2">Get PTA updates</p>
+            <form onSubmit={handleSubscribe} className="flex items-center gap-2">
+              <label htmlFor="mobile-subscribe-email" className="sr-only">
+                Email for newsletter subscription
+              </label>
+              <input
+                id="mobile-subscribe-email"
+                type="email"
+                required
+                value={subscribeEmail}
+                onChange={(event) => setSubscribeEmail(event.target.value)}
+                placeholder="Email for PTA News"
+                className="h-9 flex-1 rounded-md border border-white/25 bg-white/10 px-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <button
+                type="submit"
+                disabled={isSubscribing}
+                className="h-9 px-3 rounded-md text-sm font-bold bg-primary text-white hover:bg-orange-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isSubscribing ? '...' : 'Join'}
+              </button>
+            </form>
+            {(subscribeError || subscribeMessage) && (
+              <p className={`mt-2 text-xs font-medium ${subscribeError ? 'text-red-300' : 'text-green-300'}`}>
+                {subscribeError || subscribeMessage}
+              </p>
+            )}
+          </div>
           <nav className="flex flex-col items-center gap-8 mt-10">
             <Link
               href="/"
