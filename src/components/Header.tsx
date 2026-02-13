@@ -55,19 +55,17 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo & School Name */}
-          <Link href="/" className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <div className="size-10 rounded-full bg-primary flex items-center justify-center text-white">
-              <span className="material-symbols-outlined text-2xl">pets</span>
+              <Link href="/" aria-label="Go to home page">
+                <span className="material-symbols-outlined text-2xl">pets</span>
+              </Link>
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-white text-lg font-bold leading-tight tracking-tight">Schweitzer Elementary</h1>
-              <span className="text-primary text-xs font-bold uppercase tracking-wider">PTA</span>
-            </div>
-          </Link>
-          {/* Desktop Nav */}
-          <div className="hidden md:flex flex-1 justify-end gap-6 items-center">
-            <div className="hidden lg:block relative">
-              <form onSubmit={handleSubscribe} className="flex items-center gap-2">
+            <div className="flex flex-col gap-1">
+              <Link href="/" className="text-white text-lg font-bold leading-tight tracking-tight hover:text-primary transition-colors">
+                Schweitzer Elementary
+              </Link>
+              <form onSubmit={handleSubscribe} className="hidden lg:flex items-center gap-2">
                 <label htmlFor="header-subscribe-email" className="sr-only">
                   Email for newsletter subscription
                 </label>
@@ -78,27 +76,24 @@ const Header = () => {
                   value={subscribeEmail}
                   onChange={(event) => setSubscribeEmail(event.target.value)}
                   placeholder="Email for PTA News"
-                  className="h-9 w-56 rounded-md border border-white/25 bg-white/10 px-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="h-8 w-52 rounded-md border border-white/25 bg-white/10 px-3 text-xs text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <button
                   type="submit"
                   disabled={isSubscribing}
-                  className="h-9 px-3 rounded-md text-sm font-bold bg-primary text-white hover:bg-orange-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="h-8 px-3 rounded-md text-xs font-bold bg-primary text-white hover:bg-orange-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubscribing ? '...' : 'Subscribe'}
                 </button>
               </form>
-              {subscribeMessage && (
-                <p className="absolute top-full mt-1 left-0 text-xs font-medium text-green-300 whitespace-nowrap">
-                  {subscribeMessage}
-                </p>
-              )}
-              {subscribeError && (
-                <p className="absolute top-full mt-1 left-0 text-xs font-medium text-red-300 whitespace-nowrap">
-                  {subscribeError}
-                </p>
-              )}
+              <p className={`hidden lg:block text-xs ${subscribeError ? 'text-red-300' : 'text-green-300'} min-h-4`}>
+                {subscribeError || subscribeMessage || ''}
+              </p>
+              <span className="text-primary text-xs font-bold uppercase tracking-wider lg:hidden">PTA</span>
             </div>
+          </div>
+          {/* Desktop Nav */}
+          <div className="hidden md:flex flex-1 justify-end gap-6 items-center">
             <nav className="flex items-center gap-6">
               <Link
                 href="/"
