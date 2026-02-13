@@ -139,6 +139,7 @@ export async function createFundraiserEvent(data: {
   location?: string | null;
   image?: string;
   website_url?: string | null;
+  display_order?: number;
   is_featured?: boolean;
   is_all_day?: boolean;
   is_active?: boolean;
@@ -535,6 +536,7 @@ export interface FundraiserEvent {
   location: string | null;
   image: string | null;
   website_url: string | null;
+  display_order: number;
   is_featured: boolean;
   is_all_day: boolean;
   is_active: boolean;

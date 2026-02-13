@@ -10,6 +10,13 @@ import {
   updateFundraiserEvent,
 } from '@/lib/api';
 
+const sortFundraisers = (events: FundraiserEvent[]) =>
+  [...events].sort((a, b) => {
+    const orderDiff = (a.display_order ?? 0) - (b.display_order ?? 0);
+    if (orderDiff !== 0) return orderDiff;
+    return b.id - a.id;
+  });
+
 export default function FundraiserManagementPage() {
   const [fundraisers, setFundraisers] = useState<FundraiserEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +33,7 @@ export default function FundraiserManagementPage() {
     description: '',
     image: '',
     website_url: '',
+    display_order: '0',
     is_active: true,
   });
 
@@ -36,7 +44,7 @@ export default function FundraiserManagementPage() {
   async function fetchFundraisers() {
     try {
       const data = await getFundraisers({ includeInactive: true });
-      setFundraisers(data || []);
+      setFundraisers(sortFundraisers(data || []));
     } catch (error) {
       console.error('Error fetching fundraisers:', error);
     } finally {
@@ -100,18 +108,28 @@ export default function FundraiserManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionLoading(-1);
+    const payload = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      image: formData.image.trim(),
+      website_url: formData.website_url.trim() || null,
+      display_order: Number(formData.display_order) || 0,
+      is_active: formData.is_active,
+    };
 
     try {
       if (editingFundraiser) {
-        await updateFundraiserEvent(editingFundraiser.id, formData);
+        await updateFundraiserEvent(editingFundraiser.id, payload);
         setFundraisers((prev) =>
-          prev.map((item) =>
-            item.id === editingFundraiser.id ? { ...item, ...formData } as FundraiserEvent : item
+          sortFundraisers(
+            prev.map((item) =>
+              item.id === editingFundraiser.id ? { ...item, ...payload } as FundraiserEvent : item
+            )
           )
         );
       } else {
-        const newFundraiser = await createFundraiserEvent(formData);
-        setFundraisers((prev) => [newFundraiser, ...prev]);
+        const newFundraiser = await createFundraiserEvent(payload);
+        setFundraisers((prev) => sortFundraisers([newFundraiser, ...prev]));
       }
       closeModal();
     } catch (error) {
@@ -155,7 +173,17 @@ export default function FundraiserManagementPage() {
   };
 
   const openAddModal = () => {
-    setFormData({ title: '', description: '', image: '', website_url: '', is_active: true });
+    const nextDisplayOrder = fundraisers.reduce((max, fundraiser) => {
+      return Math.max(max, fundraiser.display_order ?? 0);
+    }, -1) + 1;
+    setFormData({
+      title: '',
+      description: '',
+      image: '',
+      website_url: '',
+      display_order: String(nextDisplayOrder),
+      is_active: true,
+    });
     setEditingFundraiser(null);
     setImagePreview(null);
     setShowAddModal(true);
@@ -167,6 +195,7 @@ export default function FundraiserManagementPage() {
       description: fundraiser.description,
       image: fundraiser.image || '',
       website_url: fundraiser.website_url || '',
+      display_order: String(fundraiser.display_order ?? 0),
       is_active: fundraiser.is_active,
     });
     setEditingFundraiser(fundraiser);
@@ -177,7 +206,7 @@ export default function FundraiserManagementPage() {
   const closeModal = () => {
     setShowAddModal(false);
     setEditingFundraiser(null);
-    setFormData({ title: '', description: '', image: '', website_url: '', is_active: true });
+    setFormData({ title: '', description: '', image: '', website_url: '', display_order: '0', is_active: true });
     setImagePreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -221,7 +250,7 @@ export default function FundraiserManagementPage() {
                 Fundraiser Management
               </h2>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Manage fundraiser visibility, photos, and descriptions.
+                Manage fundraiser visibility, photos, descriptions, and front-end display order.
               </p>
             </div>
             <button
@@ -276,6 +305,7 @@ export default function FundraiserManagementPage() {
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Description</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">URL</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
+                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Order</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
                     </tr>
                   </thead>
@@ -329,6 +359,9 @@ export default function FundraiserManagementPage() {
                             >
                               {fundraiser.is_active ? 'Active' : 'Inactive'}
                             </button>
+                          </td>
+                          <td className="px-6 py-4 text-sm font-medium text-gray-700 dark:text-gray-200">
+                            {fundraiser.display_order ?? 0}
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
@@ -461,6 +494,18 @@ export default function FundraiserManagementPage() {
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                   placeholder="https://example.com"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Display Order</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={formData.display_order}
+                  onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="0"
+                />
+                <p className="mt-1 text-xs text-gray-500">Lower numbers appear first on the public fundraisers page.</p>
               </div>
               <div className="flex items-center gap-2">
                 <input

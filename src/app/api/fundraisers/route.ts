@@ -16,7 +16,9 @@ export async function GET(request: Request) {
     let query = supabase
       .from('fundraiser_events')
       .select('*')
-      .order('date', { ascending: true });
+      .order('display_order', { ascending: true })
+      .order('date', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false });
 
     if (featured === 'true') {
       query = query.eq('is_featured', true);
@@ -70,6 +72,7 @@ export async function POST(request: Request) {
         location: body.location || null,
         image: body.image,
         website_url: body.website_url || null,
+        display_order: body.display_order ?? 0,
         is_featured: body.is_featured || false,
         is_all_day: body.is_all_day || false,
         is_active: body.is_active ?? true,

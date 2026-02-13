@@ -3,6 +3,16 @@
 import { useEffect, useState } from 'react';
 import { getFundraisers, FundraiserEvent } from '@/lib/api';
 
+const sortFundraisers = (events: FundraiserEvent[]) =>
+  [...events].sort((a, b) => {
+    const orderDiff = (a.display_order ?? 0) - (b.display_order ?? 0);
+    if (orderDiff !== 0) return orderDiff;
+    const aDate = a.date ? new Date(a.date).getTime() : Number.MAX_SAFE_INTEGER;
+    const bDate = b.date ? new Date(b.date).getTime() : Number.MAX_SAFE_INTEGER;
+    if (aDate !== bDate) return aDate - bDate;
+    return b.id - a.id;
+  });
+
 export default function FundraisersPage() {
   const [fundraisers, setFundraisers] = useState<FundraiserEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +22,7 @@ export default function FundraisersPage() {
     async function fetchData() {
       try {
         const eventsData = (await getFundraisers()) as FundraiserEvent[];
-        setFundraisers(eventsData || []);
+        setFundraisers(sortFundraisers(eventsData || []));
       } catch (error) {
         console.error('Error fetching fundraiser data:', error);
       } finally {

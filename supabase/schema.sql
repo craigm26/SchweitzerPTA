@@ -152,6 +152,7 @@ CREATE TABLE IF NOT EXISTS public.fundraiser_events (
   location TEXT,
   image TEXT,
   website_url TEXT,
+  display_order INTEGER DEFAULT 0,
   is_featured BOOLEAN DEFAULT FALSE,
   is_all_day BOOLEAN DEFAULT FALSE,
   is_active BOOLEAN DEFAULT TRUE,
