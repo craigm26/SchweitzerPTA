@@ -1,15 +1,53 @@
 'use client';
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscribeMessage, setSubscribeMessage] = useState('');
+  const [subscribeError, setSubscribeError] = useState('');
   const pathname = usePathname();
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
+  };
+
+  const handleSubscribe = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubscribing) return;
+
+    setSubscribeMessage('');
+    setSubscribeError('');
+    setIsSubscribing(true);
+
+    try {
+      const response = await fetch('/api/newsletter-subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: subscribeEmail,
+          source: 'header_nav',
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        setSubscribeError(result.error || 'Unable to subscribe right now.');
+        return;
+      }
+
+      setSubscribeMessage(result.alreadySubscribed ? 'Already subscribed' : 'Subscribed!');
+      setSubscribeEmail('');
+    } catch (error) {
+      console.error('Newsletter subscribe request failed:', error);
+      setSubscribeError('Unable to subscribe right now.');
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   return (
@@ -27,7 +65,40 @@ const Header = () => {
             </div>
           </Link>
           {/* Desktop Nav */}
-          <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
+          <div className="hidden md:flex flex-1 justify-end gap-6 items-center">
+            <div className="hidden lg:block relative">
+              <form onSubmit={handleSubscribe} className="flex items-center gap-2">
+                <label htmlFor="header-subscribe-email" className="sr-only">
+                  Email for newsletter subscription
+                </label>
+                <input
+                  id="header-subscribe-email"
+                  type="email"
+                  required
+                  value={subscribeEmail}
+                  onChange={(event) => setSubscribeEmail(event.target.value)}
+                  placeholder="Email for updates"
+                  className="h-9 w-56 rounded-md border border-white/25 bg-white/10 px-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <button
+                  type="submit"
+                  disabled={isSubscribing}
+                  className="h-9 px-3 rounded-md text-sm font-bold bg-primary text-white hover:bg-orange-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isSubscribing ? '...' : 'Subscribe'}
+                </button>
+              </form>
+              {subscribeMessage && (
+                <p className="absolute top-full mt-1 left-0 text-xs font-medium text-green-300 whitespace-nowrap">
+                  {subscribeMessage}
+                </p>
+              )}
+              {subscribeError && (
+                <p className="absolute top-full mt-1 left-0 text-xs font-medium text-red-300 whitespace-nowrap">
+                  {subscribeError}
+                </p>
+              )}
+            </div>
             <nav className="flex items-center gap-6">
               <Link
                 href="/"

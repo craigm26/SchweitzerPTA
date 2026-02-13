@@ -17,6 +17,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     { href: '/admin/volunteers', label: 'Volunteer Management', icon: 'volunteer_activism' },
     { href: '/admin/donors', label: 'Donor Management', icon: 'handshake' },
     { href: '/admin/auction-items', label: 'Auction Items', icon: 'gavel' },
+    { href: '/admin/subscribers', label: 'Subscribers', icon: 'mail' },
     { href: '/admin/documents', label: 'Document Management', icon: 'folder_open' },
     { href: '/admin/users', label: 'User Management', icon: 'group' },
   ];

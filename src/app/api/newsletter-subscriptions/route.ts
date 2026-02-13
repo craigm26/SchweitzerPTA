@@ -3,6 +3,61 @@ import { createClient } from '@/lib/supabase/server';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function toCsvValue(value: string) {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+export async function GET(request: Request) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile || !['admin', 'editor'].includes(profile.role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const { data, error } = await supabase
+    .from('newsletter_subscriptions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching newsletter subscriptions:', error);
+    return NextResponse.json({ error: 'Failed to fetch subscriptions' }, { status: 500 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  if (searchParams.get('format') === 'csv') {
+    const header = 'email,source,created_at';
+    const rows = (data || []).map((row) =>
+      [toCsvValue(row.email), toCsvValue(row.source || ''), toCsvValue(row.created_at)].join(',')
+    );
+    const csv = [header, ...rows].join('\n');
+
+    return new NextResponse(csv, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="newsletter-subscribers.csv"`,
+      },
+    });
+  }
+
+  return NextResponse.json(data || []);
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
 

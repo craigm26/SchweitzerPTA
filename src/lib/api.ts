@@ -490,6 +490,22 @@ export async function updateUser(id: string, data: Record<string, unknown>) {
   return res.json();
 }
 
+// Newsletter subscriptions API (admin/editor view)
+export interface NewsletterSubscription {
+  id: number;
+  email: string;
+  source: string | null;
+  created_at: string;
+}
+
+export async function getNewsletterSubscriptions() {
+  const res = await fetch(`${API_BASE}/api/newsletter-subscriptions`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Failed to fetch newsletter subscriptions');
+  return (await res.json()) as NewsletterSubscription[];
+}
+
 // Types for API responses
 export interface NewsArticle {
   id: number;
