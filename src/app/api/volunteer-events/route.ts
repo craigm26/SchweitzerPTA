@@ -68,6 +68,7 @@ export async function GET(request: Request) {
       .from('event_volunteer_shifts')
       .select('*')
       .in('event_id', eventIds)
+      .order('display_order', { ascending: true, nullsFirst: false })
       .order('start_time', { ascending: true })
       .order('id', { ascending: true });
 

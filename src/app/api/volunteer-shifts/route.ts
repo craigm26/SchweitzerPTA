@@ -11,7 +11,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const eventIdParam = searchParams.get('eventId');
 
-    let query = supabase.from('event_volunteer_shifts').select('*').order('start_time', { ascending: true });
+    let query = supabase
+      .from('event_volunteer_shifts')
+      .select('*')
+      .order('display_order', { ascending: true, nullsFirst: false })
+      .order('start_time', { ascending: true });
 
     if (eventIdParam) {
       query = query.eq('event_id', Number(eventIdParam));
@@ -53,6 +57,7 @@ export async function POST(request: Request) {
         shift_description: body.shift_description,
         start_time: body.start_time,
         end_time: body.end_time,
+        display_order: body.display_order ?? null,
         spots_available: body.spots_available,
         spots_filled: body.spots_filled || 0,
         is_active: body.is_active ?? true,

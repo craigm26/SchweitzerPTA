@@ -377,6 +377,7 @@ export async function createVolunteerShift(data: {
   shift_description?: string | null;
   start_time?: string | null;
   end_time?: string | null;
+  display_order?: number | null;
   spots_available: number;
   is_active?: boolean;
 }) {
@@ -620,6 +621,7 @@ export interface VolunteerShift {
   shift_description: string | null;
   start_time: string | null;
   end_time: string | null;
+  display_order: number | null;
   spots_available: number;
   spots_filled: number;
   is_active: boolean;

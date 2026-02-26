@@ -21,6 +21,7 @@ type ShiftFormState = {
   shift_description: string;
   start_time: string;
   end_time: string;
+  display_order: string;
   spots_available: number;
   is_active: boolean;
 };
@@ -30,6 +31,7 @@ export default function VolunteerManagementPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [eventOrderInputs, setEventOrderInputs] = useState<Record<number, string>>({});
+  const [shiftOrderInputs, setShiftOrderInputs] = useState<Record<number, string>>({});
   const [signupStatusFilter, setSignupStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
   const [signupForms, setSignupForms] = useState<
     Record<number, { name: string; email: string; allowOverbook: boolean; loading: boolean; error: string | null }>
@@ -42,6 +44,7 @@ export default function VolunteerManagementPage() {
     shift_description: '',
     start_time: '',
     end_time: '',
+    display_order: '',
     spots_available: 1,
     is_active: true,
   });
@@ -49,6 +52,25 @@ export default function VolunteerManagementPage() {
   useEffect(() => {
     fetchVolunteerEvents();
   }, []);
+
+  const sortShifts = (shifts: VolunteerShift[]) =>
+    [...shifts].sort((a, b) => {
+      const aOrder = a.display_order;
+      const bOrder = b.display_order;
+      if (aOrder == null && bOrder == null) {
+        const aTime = a.start_time || '';
+        const bTime = b.start_time || '';
+        if (aTime !== bTime) return aTime.localeCompare(bTime);
+        return a.id - b.id;
+      }
+      if (aOrder == null) return 1;
+      if (bOrder == null) return -1;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      const aTime = a.start_time || '';
+      const bTime = b.start_time || '';
+      if (aTime !== bTime) return aTime.localeCompare(bTime);
+      return a.id - b.id;
+    });
 
   async function fetchVolunteerEvents() {
     try {
@@ -66,6 +88,12 @@ export default function VolunteerManagementPage() {
         ])
       );
       setEventOrderInputs(initialOrders);
+      const initialShiftOrders = Object.fromEntries(
+        (data || []).flatMap((event: VolunteerEvent) =>
+          event.shifts.map((shift) => [shift.id, shift.display_order?.toString() ?? ''])
+        )
+      );
+      setShiftOrderInputs(initialShiftOrders);
     } catch (error) {
       console.error('Error fetching volunteer events:', error);
     } finally {
@@ -175,6 +203,7 @@ export default function VolunteerManagementPage() {
       shift_description: '',
       start_time: '',
       end_time: '',
+      display_order: '',
       spots_available: 1,
       is_active: true,
     });
@@ -189,6 +218,7 @@ export default function VolunteerManagementPage() {
       shift_description: shift.shift_description || '',
       start_time: shift.start_time || '',
       end_time: shift.end_time || '',
+      display_order: shift.display_order?.toString() || '',
       spots_available: shift.spots_available,
       is_active: shift.is_active,
     });
@@ -207,6 +237,16 @@ export default function VolunteerManagementPage() {
       return;
     }
 
+    const parsedShiftOrder =
+      formData.display_order.trim() === '' ? null : Number(formData.display_order.trim());
+    if (
+      parsedShiftOrder !== null &&
+      (!Number.isFinite(parsedShiftOrder) || !Number.isInteger(parsedShiftOrder) || parsedShiftOrder < 0)
+    ) {
+      alert('Shift order must be a non-negative whole number, or left blank.');
+      return;
+    }
+
     setActionLoading('shift-save');
     const payload = {
       event_id: formData.event_id,
@@ -214,6 +254,7 @@ export default function VolunteerManagementPage() {
       shift_description: formData.shift_description || null,
       start_time: formData.start_time || null,
       end_time: formData.end_time || null,
+      display_order: parsedShiftOrder,
       spots_available: Number(formData.spots_available),
       is_active: formData.is_active,
     };
@@ -226,18 +267,26 @@ export default function VolunteerManagementPage() {
             event.id === updated.event_id
               ? {
                   ...event,
-                  shifts: event.shifts.map((item) => (item.id === updated.id ? updated : item)),
+                  shifts: sortShifts(event.shifts.map((item) => (item.id === updated.id ? updated : item))),
                 }
               : event
           )
         );
+        setShiftOrderInputs((prev) => ({
+          ...prev,
+          [updated.id]: updated.display_order?.toString() || '',
+        }));
       } else {
         const created = await createVolunteerShift(payload);
         setEvents((prev) =>
           prev.map((event) =>
-            event.id === created.event_id ? { ...event, shifts: [...event.shifts, created] } : event
+            event.id === created.event_id ? { ...event, shifts: sortShifts([...event.shifts, created]) } : event
           )
         );
+        setShiftOrderInputs((prev) => ({
+          ...prev,
+          [created.id]: created.display_order?.toString() || '',
+        }));
       }
       closeShiftModal();
     } catch (error) {
@@ -262,9 +311,49 @@ export default function VolunteerManagementPage() {
             : event
         )
       );
+      setShiftOrderInputs((prev) => {
+        const next = { ...prev };
+        delete next[shift.id];
+        return next;
+      });
     } catch (error) {
       console.error('Error deleting shift:', error);
       alert('Failed to delete shift');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSaveShiftOrder = async (shift: VolunteerShift) => {
+    const loadingKey = `shift-order-${shift.id}`;
+    const rawValue = shiftOrderInputs[shift.id] ?? '';
+    const parsedOrder = rawValue === '' ? null : Number(rawValue);
+
+    if (parsedOrder !== null && (!Number.isFinite(parsedOrder) || !Number.isInteger(parsedOrder) || parsedOrder < 0)) {
+      alert('Shift order must be a non-negative whole number, or left blank.');
+      return;
+    }
+
+    setActionLoading(loadingKey);
+    try {
+      const updated = await updateVolunteerShift(shift.id, { display_order: parsedOrder });
+      setEvents((prev) =>
+        prev.map((event) =>
+          event.id === updated.event_id
+            ? {
+                ...event,
+                shifts: sortShifts(event.shifts.map((item) => (item.id === updated.id ? updated : item))),
+              }
+            : event
+        )
+      );
+      setShiftOrderInputs((prev) => ({
+        ...prev,
+        [shift.id]: updated.display_order?.toString() || '',
+      }));
+    } catch (error) {
+      console.error('Error saving shift order:', error);
+      alert('Failed to save shift order');
     } finally {
       setActionLoading(null);
     }
@@ -560,6 +649,7 @@ export default function VolunteerManagementPage() {
                             <tr className="text-left text-sm text-gray-500 dark:text-gray-400">
                               <th className="py-2 pr-4">Job Title</th>
                               <th className="py-2 pr-4">Time Slot</th>
+                              <th className="py-2 pr-4">Order</th>
                               <th className="py-2 pr-4">Spots</th>
                               <th className="py-2 pr-4">Active</th>
                               <th className="py-2">Actions</th>
@@ -591,6 +681,31 @@ export default function VolunteerManagementPage() {
                                       )}
                                     </td>
                                     <td className="py-3 pr-4 text-sm text-gray-600 dark:text-gray-300">{timeLabel}</td>
+                                    <td className="py-3 pr-4">
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          value={shiftOrderInputs[shift.id] ?? ''}
+                                          onChange={(e) =>
+                                            setShiftOrderInputs((prev) => ({
+                                              ...prev,
+                                              [shift.id]: e.target.value,
+                                            }))
+                                          }
+                                          placeholder="Auto"
+                                          className="w-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] px-2 py-2 text-xs text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSaveShiftOrder(shift)}
+                                          disabled={actionLoading === `shift-order-${shift.id}`}
+                                          className="inline-flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 px-2 py-2 text-[11px] font-bold text-[#181411] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                                        >
+                                          Save
+                                        </button>
+                                      </div>
+                                    </td>
                                     <td className="py-3 pr-4 text-sm text-gray-600 dark:text-gray-300">
                                       {shift.spots_filled}/{shift.spots_available}
                                     </td>
@@ -625,7 +740,7 @@ export default function VolunteerManagementPage() {
                                     </td>
                                   </tr>
                                   <tr className="border-b border-gray-100 dark:border-gray-700">
-                                    <td colSpan={5} className="pb-4 pr-4 text-xs text-gray-500">
+                                    <td colSpan={6} className="pb-4 pr-4 text-xs text-gray-500">
                                       <span className="font-semibold text-gray-600 dark:text-gray-300">Signups:</span>{' '}
                                       {signups.length === 0 ? (
                                         <span>No signups yet.</span>
@@ -833,6 +948,21 @@ export default function VolunteerManagementPage() {
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">
+                    Shift Order
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={formData.display_order}
+                    onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
+                    placeholder="Auto"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 mt-7">
                   <input
                     type="checkbox"
