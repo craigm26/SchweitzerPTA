@@ -29,6 +29,7 @@ export default function VolunteerManagementPage() {
   const [events, setEvents] = useState<VolunteerEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [eventOrderInputs, setEventOrderInputs] = useState<Record<number, string>>({});
   const [signupStatusFilter, setSignupStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
   const [signupForms, setSignupForms] = useState<
     Record<number, { name: string; email: string; allowOverbook: boolean; loading: boolean; error: string | null }>
@@ -58,6 +59,13 @@ export default function VolunteerManagementPage() {
         upcoming: true,
       });
       setEvents(data || []);
+      const initialOrders = Object.fromEntries(
+        (data || []).map((event: VolunteerEvent) => [
+          event.id,
+          event.volunteer_display_order?.toString() ?? '',
+        ])
+      );
+      setEventOrderInputs(initialOrders);
     } catch (error) {
       console.error('Error fetching volunteer events:', error);
     } finally {
@@ -95,6 +103,42 @@ export default function VolunteerManagementPage() {
     } catch (error) {
       console.error('Error updating event visibility:', error);
       alert('Failed to update event visibility');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSaveEventOrder = async (event: VolunteerEvent) => {
+    const loadingKey = `event-order-${event.id}`;
+    const rawValue = eventOrderInputs[event.id] ?? '';
+    const parsedOrder = rawValue === '' ? null : Number(rawValue);
+
+    if (parsedOrder !== null && (!Number.isFinite(parsedOrder) || !Number.isInteger(parsedOrder) || parsedOrder < 0)) {
+      alert('Order must be a non-negative whole number, or left blank.');
+      return;
+    }
+
+    setActionLoading(loadingKey);
+    try {
+      await updateEvent(event.id, { volunteer_display_order: parsedOrder });
+      setEvents((prev) =>
+        [...prev]
+          .map((item) =>
+            item.id === event.id ? { ...item, volunteer_display_order: parsedOrder } : item
+          )
+          .sort((a, b) => {
+            const aOrder = a.volunteer_display_order;
+            const bOrder = b.volunteer_display_order;
+            if (aOrder == null && bOrder == null) return a.date.localeCompare(b.date);
+            if (aOrder == null) return 1;
+            if (bOrder == null) return -1;
+            if (aOrder !== bOrder) return aOrder - bOrder;
+            return a.date.localeCompare(b.date);
+          })
+      );
+    } catch (error) {
+      console.error('Error saving event order:', error);
+      alert('Failed to save event order');
     } finally {
       setActionLoading(null);
     }
@@ -456,6 +500,35 @@ export default function VolunteerManagementPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <label
+                          htmlFor={`event_order_${event.id}`}
+                          className="text-xs font-semibold text-gray-500 dark:text-gray-300"
+                        >
+                          Order
+                        </label>
+                        <input
+                          id={`event_order_${event.id}`}
+                          type="number"
+                          min={0}
+                          value={eventOrderInputs[event.id] ?? ''}
+                          onChange={(e) =>
+                            setEventOrderInputs((prev) => ({
+                              ...prev,
+                              [event.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="Auto"
+                          className="w-20 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] px-2 py-2 text-sm text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                        <button
+                          onClick={() => handleSaveEventOrder(event)}
+                          disabled={actionLoading === `event-order-${event.id}`}
+                          className="inline-flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-xs font-bold text-[#181411] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                        >
+                          Save Order
+                        </button>
+                      </div>
                       <button
                         onClick={() => handleToggleEventActive(event)}
                         disabled={actionLoading === `event-${event.id}`}

@@ -34,7 +34,11 @@ export async function GET(request: Request) {
       }
     }
 
-    let eventsQuery = supabase.from('events').select('*').order('date', { ascending: true });
+    let eventsQuery = supabase
+      .from('events')
+      .select('*')
+      .order('volunteer_display_order', { ascending: true, nullsFirst: false })
+      .order('date', { ascending: true });
 
     if (!(includeInactive && allowInactive)) {
       eventsQuery = eventsQuery.eq('volunteer_active', true);
