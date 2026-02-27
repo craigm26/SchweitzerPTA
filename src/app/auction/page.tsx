@@ -99,7 +99,7 @@ export default function AuctionPage() {
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="material-symbols-outlined text-base text-primary">check_circle</span>
-                    Silent and Live and Auctions
+                    Silent and Live Auctions
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="material-symbols-outlined text-base text-primary">check_circle</span>
