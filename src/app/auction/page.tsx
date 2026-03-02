@@ -136,6 +136,20 @@ export default function AuctionPage() {
       {/* Main Content */}
       <div className="px-4 md:px-10 lg:px-20 py-12 flex justify-center">
         <div className="flex flex-col max-w-[1200px] w-full gap-12">
+          {/* Volunteering Section - Interested in Volunteering? */}
+          <section className="bg-white/90 dark:bg-[#1c150f] rounded-3xl p-8 md:p-10 shadow-xl border border-white/60 dark:border-white/5">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Volunteering</p>
+                <h2 className="text-[#181411] dark:text-white text-3xl font-bold leading-tight">
+                  Interested in Volunteering?
+                </h2>
+                <p className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed">
+                  We are looking for volunteers to help with the event. If you are interested in volunteering, please visit our <Link href="/volunteer" className="text-primary font-bold hover:underline">Volunteer Page</Link> or contact us at <a href="mailto:AlbertSchweitzerPTA@gmail.com" className="text-primary font-bold hover:underline">AlbertSchweitzerPTA@gmail.com</a>.
+                </p>
+              </div>
+            </div>
+          </section>
           {/* About Section */}
           <section className="bg-white/90 dark:bg-[#1c150f] rounded-3xl p-8 md:p-10 shadow-xl border border-white/60 dark:border-white/5 -mt-16">
             <div className="flex flex-col gap-6">
