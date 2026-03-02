@@ -61,7 +61,7 @@ export default function AuctionPage() {
   const silentItems = auctionItems.filter((item) => item.item_type === 'silent');
   const raffleItems = auctionItems.filter((item) => item.item_type === 'raffle');
   return (
-    <main className="layout-container flex h-full grow flex-col pb-20 bg-[#f9f6f2] dark:bg-[#14100c]">
+    <main className="layout-container flex h-full grow flex-col pb-14 bg-[#f9f6f2] dark:bg-[#14100c]">
       {/* Hero Section */}
       <section className="relative w-full overflow-hidden bg-[#181411]">
         <div className="absolute inset-0 bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuDe6jw42NH7O6HBK4-_pDgetxwbKwV4vkea4ZUWqNCs5GTreR5TneieFr-c-uwq6-FlXAybVI_T9Dl5_2n1GREGYCuVNkF5dBWrhs37Sd7cZvgea7YLD8y7wyqFwcRuVLTHWiuNmT5cB5Ge9d3Okuys58iW_ifv7uxNGzxJRNjbfGv56j6yiD3FTrEkymsy-hC3jltB2ZHsVuMX6TJG3Yril76y4wq5nwnvI9820utJK1HM3-Hv4KddLzchnVvhCL0FskaRtoU5q-dQ')] bg-center bg-cover opacity-40 mix-blend-overlay"></div>
@@ -80,7 +80,7 @@ export default function AuctionPage() {
         </div>
       </section>
       {/* Tickets Section */}
-      <section id="tickets" className="px-4 md:px-10 lg:px-20 py-12">
+      <section id="tickets" className="px-4 md:px-8 lg:px-16 py-10">
         <div className="mx-auto w-full max-w-[1200px]">
           <div className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1c150f] shadow-xl overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-[0.42fr_0.58fr]">
@@ -134,10 +134,10 @@ export default function AuctionPage() {
       </section>
 
       {/* Main Content */}
-      <div className="px-4 md:px-10 lg:px-20 py-12 flex justify-center">
-        <div className="flex flex-col max-w-[1200px] w-full gap-12">
+      <div className="px-4 md:px-8 lg:px-16 py-8 flex justify-center">
+        <div className="flex flex-col max-w-[1200px] w-full gap-8">
           {/* Volunteering Section - Interested in Volunteering? */}
-          <section className="bg-white/90 dark:bg-[#1c150f] rounded-3xl p-8 md:p-10 shadow-xl border border-white/60 dark:border-white/5">
+          <section className="bg-white/90 dark:bg-[#1c150f] rounded-3xl p-6 md:p-8 shadow-xl border border-white/60 dark:border-white/5">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Volunteering</p>
@@ -151,7 +151,7 @@ export default function AuctionPage() {
             </div>
           </section>
           {/* About Section */}
-          <section className="bg-white/90 dark:bg-[#1c150f] rounded-3xl p-8 md:p-10 shadow-xl border border-white/60 dark:border-white/5 -mt-16">
+          <section className="bg-white/90 dark:bg-[#1c150f] rounded-3xl p-6 md:p-8 shadow-xl border border-white/60 dark:border-white/5">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">Event Overview</p>
