@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'No spots available' }, { status: 400 });
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('event_volunteer_signups')
         .insert({
           shift_id: body.shift_id,
@@ -38,9 +38,7 @@ export async function POST(request: Request) {
           name: body.name,
           email: body.email,
           status: 'pending',
-        })
-        .select()
-        .single();
+        });
 
       if (error) {
         console.error('Error creating event signup:', error);
@@ -65,7 +63,7 @@ export async function POST(request: Request) {
         .update({ spots_filled: updatedCount })
         .eq('id', body.shift_id);
 
-      return NextResponse.json(data);
+      return NextResponse.json({ success: true, shift_id: body.shift_id, spots_filled: updatedCount });
     }
 
     if (!body.opportunity_id) {
@@ -87,7 +85,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No spots available' }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('volunteer_signups')
       .insert({
         opportunity_id: body.opportunity_id,
@@ -97,9 +95,7 @@ export async function POST(request: Request) {
         phone: body.phone,
         notes: body.notes,
         status: 'pending',
-      })
-      .select()
-      .single();
+      });
 
     if (error) {
       console.error('Error creating signup:', error);
@@ -111,7 +107,7 @@ export async function POST(request: Request) {
       .update({ spots_filled: opportunity.spots_filled + 1 })
       .eq('id', body.opportunity_id);
 
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true, opportunity_id: body.opportunity_id });
   } catch (error) {
     console.error('Error parsing request:', error);
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
