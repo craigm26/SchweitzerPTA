@@ -418,7 +418,11 @@ export async function signUpForVolunteerShift(data: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to sign up');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData.error || errorData.message || 'Failed to sign up';
+    throw new Error(message);
+  }
   return res.json();
 }
 

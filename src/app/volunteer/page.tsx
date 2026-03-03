@@ -11,6 +11,27 @@ type SignupState = {
   success: boolean;
 };
 
+function parseTimeParts(time: string | null): { hour: number; minute: number } | null {
+  if (!time) return null;
+  const match = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!match) return null;
+
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (!Number.isInteger(hour) || !Number.isInteger(minute)) return null;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+
+  return { hour, minute };
+}
+
+function formatTimeLabel(time: string | null): string | null {
+  const parts = parseTimeParts(time);
+  if (!parts) return null;
+  const period = parts.hour >= 12 ? 'PM' : 'AM';
+  const hour12 = parts.hour % 12 || 12;
+  return `${hour12}:${parts.minute.toString().padStart(2, '0')} ${period}`;
+}
+
 function ShiftSignup({
   shift,
   onSignedUp,
@@ -48,10 +69,14 @@ function ShiftSignup({
       onSignedUp(shift.id);
     } catch (error) {
       console.error('Error signing up:', error);
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Signup failed. Please try again.';
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: 'Signup failed. Please try again.',
+        error: message,
       }));
     }
   };
@@ -118,14 +143,6 @@ export default function VolunteerPage() {
     });
   };
 
-  const formatTime = (time: string | null) => {
-    if (!time) return '';
-    return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-  };
-
   const handleSignedUp = (shiftId: number) => {
     setEvents((prev) =>
       prev.map((event) => ({
@@ -174,8 +191,10 @@ export default function VolunteerPage() {
             </div>
           ) : (
             events.map((event) => {
+              const formattedStart = formatTimeLabel(event.time);
+              const formattedEnd = formatTimeLabel(event.end_time);
               const eventTime = event.time
-                ? `${formatTime(event.time)}${event.end_time ? ` - ${formatTime(event.end_time)}` : ''}`
+                ? `${formattedStart || 'Time TBD'}${formattedEnd ? ` - ${formattedEnd}` : ''}`
                 : event.is_all_day
                   ? 'All day'
                   : '';
@@ -218,9 +237,11 @@ export default function VolunteerPage() {
                           <div className="text-sm text-gray-500">No shifts posted yet.</div>
                         ) : (
                           event.shifts.map((shift) => {
+                            const formattedShiftStart = formatTimeLabel(shift.start_time);
+                            const formattedShiftEnd = formatTimeLabel(shift.end_time);
                             const timeLabel =
                               shift.start_time || shift.end_time
-                                ? `${formatTime(shift.start_time)}${shift.end_time ? ` - ${formatTime(shift.end_time)}` : ''}`
+                                ? `${formattedShiftStart || 'Time TBD'}${formattedShiftEnd ? ` - ${formattedShiftEnd}` : ''}`
                                 : 'Time flexible';
                             return (
                               <div
