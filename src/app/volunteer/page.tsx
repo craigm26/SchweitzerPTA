@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getVolunteerEvents, signUpForVolunteerShift, VolunteerEvent, VolunteerShift } from '@/lib/api';
 
@@ -95,8 +94,6 @@ function ShiftSignup({
 export default function VolunteerPage() {
   const [events, setEvents] = useState<VolunteerEvent[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const eventImageLoader = ({ src }: { src: string }) => src;
 
   useEffect(() => {
     async function fetchEvents() {

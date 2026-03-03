@@ -119,6 +119,8 @@ CREATE TABLE IF NOT EXISTS public.events (
   image TEXT,
   is_featured BOOLEAN DEFAULT FALSE,
   is_all_day BOOLEAN DEFAULT FALSE,
+  volunteer_active BOOLEAN DEFAULT FALSE,
+  volunteer_display_order INTEGER,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -313,6 +315,80 @@ CREATE POLICY "Admins can manage signups" ON public.volunteer_signups
   );
 
 -- ============================================
+-- EVENT VOLUNTEER SHIFTS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.event_volunteer_shifts (
+  id SERIAL PRIMARY KEY,
+  event_id INTEGER NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+  job_title TEXT NOT NULL,
+  shift_description TEXT,
+  start_time TEXT,
+  end_time TEXT,
+  display_order INTEGER,
+  spots_available INTEGER NOT NULL DEFAULT 1,
+  spots_filled INTEGER NOT NULL DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE public.event_volunteer_shifts ENABLE ROW LEVEL SECURITY;
+
+-- Policies for event volunteer shifts
+CREATE POLICY "Active shifts are viewable by everyone" ON public.event_volunteer_shifts
+  FOR SELECT USING (
+    is_active = TRUE OR EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role IN ('admin', 'editor')
+    )
+  );
+
+CREATE POLICY "Editors and admins can manage event volunteer shifts" ON public.event_volunteer_shifts
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role IN ('admin', 'editor')
+    )
+  );
+
+-- ============================================
+-- EVENT VOLUNTEER SIGNUPS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.event_volunteer_signups (
+  id SERIAL PRIMARY KEY,
+  shift_id INTEGER NOT NULL REFERENCES public.event_volunteer_shifts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE public.event_volunteer_signups ENABLE ROW LEVEL SECURITY;
+
+-- Policies for event volunteer signups
+CREATE POLICY "Users can view their event signups" ON public.event_volunteer_signups
+  FOR SELECT USING (user_id = auth.uid() OR
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role IN ('admin', 'editor')
+    )
+  );
+
+CREATE POLICY "Anyone can signup for event shifts" ON public.event_volunteer_signups
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admins can manage event volunteer signups" ON public.event_volunteer_signups
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role IN ('admin', 'editor')
+    )
+  );
+
+-- ============================================
 -- CONTACT SUBMISSIONS TABLE
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.contact_submissions (
@@ -371,6 +447,9 @@ CREATE TRIGGER update_auction_items_updated_at BEFORE UPDATE ON public.auction_i
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 CREATE TRIGGER update_volunteer_opportunities_updated_at BEFORE UPDATE ON public.volunteer_opportunities
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+CREATE TRIGGER update_event_volunteer_shifts_updated_at BEFORE UPDATE ON public.event_volunteer_shifts
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- ============================================

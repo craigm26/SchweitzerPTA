@@ -47,9 +47,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
+      const { count, error: countError } = await supabase
+        .from('event_volunteer_signups')
+        .select('*', { count: 'exact', head: true })
+        .eq('shift_id', body.shift_id)
+        .neq('status', 'cancelled');
+
+      if (countError) {
+        console.error('Error counting event signups:', countError);
+        return NextResponse.json({ error: countError.message }, { status: 500 });
+      }
+
+      const updatedCount = count || 0;
+
       await supabase
         .from('event_volunteer_shifts')
-        .update({ spots_filled: shift.spots_filled + 1 })
+        .update({ spots_filled: updatedCount })
         .eq('id', body.shift_id);
 
       return NextResponse.json(data);
