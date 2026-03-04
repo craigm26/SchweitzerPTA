@@ -209,6 +209,24 @@ export async function getDonors(options?: { includeInactive?: boolean; limit?: n
   }
 }
 
+// Dashboard analytics API
+export interface DashboardAnalytics {
+  visitors: number | null;
+  pageViews: number | null;
+  bounceRate: number | null;
+  topPage: string | null;
+  source: 'vercel' | 'unavailable';
+  note?: string;
+}
+
+export async function getDashboardAnalytics() {
+  const res = await fetch(`${API_BASE}/api/analytics`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Failed to fetch analytics');
+  return (await res.json()) as DashboardAnalytics;
+}
+
 export async function createDonor(data: {
   name: string;
   website: string;

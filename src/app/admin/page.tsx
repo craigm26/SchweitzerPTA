@@ -3,13 +3,29 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
-import { getNews, getEvents, getDonors, NewsArticle, Event, Donor } from '@/lib/api';
+import {
+  getNews,
+  getEvents,
+  getDonors,
+  getDashboardAnalytics,
+  NewsArticle,
+  Event,
+  Donor,
+  DashboardAnalytics,
+} from '@/lib/api';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [donors, setDonors] = useState<Donor[]>([]);
+  const [analytics, setAnalytics] = useState<DashboardAnalytics>({
+    visitors: null,
+    pageViews: null,
+    bounceRate: null,
+    topPage: null,
+    source: 'unavailable',
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,9 +36,17 @@ export default function AdminDashboard() {
           getEvents({ upcoming: true }),
           getDonors({ includeInactive: true }),
         ]);
+        const analyticsData = await getDashboardAnalytics().catch(() => ({
+          visitors: null,
+          pageViews: null,
+          bounceRate: null,
+          topPage: null,
+          source: 'unavailable' as const,
+        }));
         setNews(newsData || []);
         setEvents(eventsData || []);
         setDonors(donorsData || []);
+        setAnalytics(analyticsData);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -33,20 +57,33 @@ export default function AdminDashboard() {
   }, []);
 
   // Calculate stats from real data
-  const draftNews = news.filter((n) => n.status === 'draft').length;
   const activeDonors = donors.filter((d) => d.is_active).length;
   const upcomingEvents = events.length;
 
+  const formatNumber = (value: number | null) => {
+    if (value === null) return '--';
+    return new Intl.NumberFormat('en-US').format(value);
+  };
+
+  const formatBounceRate = (value: number | null) => {
+    if (value === null) return null;
+    const asPercent = value <= 1 ? value * 100 : value;
+    return `${asPercent.toFixed(1)}% Bounce`;
+  };
+
   const stats = [
     {
-      icon: 'article',
-      iconBg: 'bg-blue-100 dark:bg-blue-900/30',
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      label: 'News Posts',
-      value: `${news.length} Total`,
-      badge: draftNews > 0 ? `${draftNews} Drafts` : null,
-      badgeColor: 'bg-amber-100 text-amber-600',
-      link: { href: '/admin/news', label: 'Manage News' },
+      icon: 'groups',
+      iconBg: 'bg-indigo-100 dark:bg-indigo-900/30',
+      iconColor: 'text-indigo-600 dark:text-indigo-400',
+      label: 'Visitors (30 Days)',
+      value: formatNumber(analytics.visitors),
+      badge: analytics.source === 'vercel' ? 'Vercel Analytics' : 'Unavailable',
+      badgeColor:
+        analytics.source === 'vercel'
+          ? 'bg-green-100 text-green-600'
+          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
+      link: { href: 'https://vercel.com/analytics', label: 'Open Analytics' },
     },
     {
       icon: 'handshake',
@@ -59,23 +96,24 @@ export default function AdminDashboard() {
       link: { href: '/admin/donors', label: 'Manage Donors' },
     },
     {
-      icon: 'event',
+      icon: 'monitoring',
       iconBg: 'bg-teal-100 dark:bg-teal-900/30',
       iconColor: 'text-teal-600 dark:text-teal-400',
+      label: 'Page Views (30 Days)',
+      value: formatNumber(analytics.pageViews),
+      badge: formatBounceRate(analytics.bounceRate),
+      badgeColor: 'bg-blue-100 text-blue-600',
+      link: { href: 'https://vercel.com/analytics', label: analytics.topPage ? `Top: ${analytics.topPage}` : 'Open Analytics' },
+    },
+    {
+      icon: 'event',
+      iconBg: 'bg-purple-100 dark:bg-purple-900/30',
+      iconColor: 'text-purple-600 dark:text-purple-400',
       label: 'Events',
       value: `${upcomingEvents} Upcoming`,
       badge: 'Upcoming',
       badgeColor: 'bg-blue-100 text-blue-600',
       link: { href: '/calendar', label: 'View Calendar' },
-    },
-    {
-      icon: 'group',
-      iconBg: 'bg-purple-100 dark:bg-purple-900/30',
-      iconColor: 'text-purple-600 dark:text-purple-400',
-      label: 'Users',
-      value: 'Manage',
-      badge: null,
-      link: { href: '/admin/users', label: 'User Settings' },
     },
   ];
 
@@ -162,6 +200,8 @@ export default function AdminDashboard() {
               <Link
                 href={stat.link.href}
                 className="text-primary text-sm font-bold hover:underline flex items-center gap-1"
+                target={stat.link.href.startsWith('http') ? '_blank' : undefined}
+                rel={stat.link.href.startsWith('http') ? 'noreferrer' : undefined}
               >
                 {stat.link.label} <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </Link>
