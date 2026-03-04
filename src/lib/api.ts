@@ -221,6 +221,7 @@ export interface DashboardAnalytics {
     hasAccessToken: boolean;
     projectId: string | null;
     teamId: string | null;
+    teamIdLooksLikeSlug?: boolean;
     rangeDays: number;
     endpointPath: string;
     vercelStatus?: number;

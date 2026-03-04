@@ -16,6 +16,7 @@ interface DashboardAnalyticsResponse {
     hasAccessToken: boolean;
     projectId: string | null;
     teamId: string | null;
+    teamIdLooksLikeSlug?: boolean;
     rangeDays: number;
     endpointPath: string;
     vercelStatus?: number;
@@ -119,6 +120,7 @@ export async function GET(request: Request) {
         hasAccessToken: Boolean(token),
         projectId: maskValue(projectId),
         teamId: maskValue(teamId),
+        teamIdLooksLikeSlug: Boolean(teamId && !teamId.startsWith('team_')),
         rangeDays: 30,
         endpointPath: '/v1/web/analytics',
       };
@@ -155,6 +157,7 @@ export async function GET(request: Request) {
           hasAccessToken: true,
           projectId: maskValue(projectId),
           teamId: maskValue(teamId),
+          teamIdLooksLikeSlug: Boolean(teamId && !teamId.startsWith('team_')),
           rangeDays: 30,
           endpointPath: '/v1/web/analytics',
           vercelStatus: response.status,
@@ -183,6 +186,7 @@ export async function GET(request: Request) {
         hasAccessToken: true,
         projectId: maskValue(projectId),
         teamId: maskValue(teamId),
+        teamIdLooksLikeSlug: Boolean(teamId && !teamId.startsWith('team_')),
         rangeDays: 30,
         endpointPath: '/v1/web/analytics',
         vercelStatus: response.status,
@@ -198,6 +202,7 @@ export async function GET(request: Request) {
         hasAccessToken: Boolean(token),
         projectId: maskValue(projectId),
         teamId: maskValue(teamId),
+        teamIdLooksLikeSlug: Boolean(teamId && !teamId.startsWith('team_')),
         rangeDays: 30,
         endpointPath: '/v1/web/analytics',
       };

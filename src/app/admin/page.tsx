@@ -91,7 +91,7 @@ export default function AdminDashboard() {
         analytics.source === 'vercel'
           ? 'bg-green-100 text-green-600'
           : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
-      link: { href: 'https://vercel.com/analytics', label: 'Open Analytics' },
+      link: { href: '/admin/analytics', label: 'View Analytics' },
     },
     {
       icon: 'handshake',
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
       value: formatNumber(analytics.pageViews),
       badge: formatBounceRate(analytics.bounceRate),
       badgeColor: 'bg-blue-100 text-blue-600',
-      link: { href: 'https://vercel.com/analytics', label: analytics.topPage ? `Top: ${analytics.topPage}` : 'Open Analytics' },
+      link: { href: '/admin/analytics', label: analytics.topPage ? `Top: ${analytics.topPage}` : 'View Analytics' },
     },
     {
       icon: 'event',

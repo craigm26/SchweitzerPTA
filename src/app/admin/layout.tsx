@@ -11,6 +11,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: 'dashboard' },
+    { href: '/admin/analytics', label: 'Analytics', icon: 'monitoring' },
     { href: '/admin/news', label: 'News Management', icon: 'article' },
     { href: '/admin/events', label: 'Event Management', icon: 'calendar_month' },
     { href: '/admin/fundraisers', label: 'Fundraiser Management', icon: 'campaign' },
