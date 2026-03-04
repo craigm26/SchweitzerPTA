@@ -11,6 +11,16 @@ interface DashboardAnalyticsResponse {
   topPage: string | null;
   source: 'first_party' | 'vercel_import' | 'combined' | 'unavailable';
   note?: string;
+  timeframe: {
+    key: '24h' | '7d' | '30d' | '90d';
+    label: string;
+    periodDaysForSnapshot: number;
+  };
+  breakdown: {
+    devices: Array<{ name: string; visits: number }>;
+    browsers: Array<{ name: string; visits: number }>;
+    pages: Array<{ path: string; title: string | null; visits: number }>;
+  };
   debug?: {
     eventsInWindow?: number;
     sessionsInWindow?: number;
@@ -31,14 +41,31 @@ function defaultUnavailable(note: string): DashboardAnalyticsResponse {
     topPage: null,
     source: 'unavailable',
     note,
+    timeframe: {
+      key: '30d',
+      label: 'Last 30 Days',
+      periodDaysForSnapshot: 30,
+    },
+    breakdown: {
+      devices: [],
+      browsers: [],
+      pages: [],
+    },
   };
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const debugRequested = searchParams.get('debug') === '1';
-  const rangeDays = 30;
-  const windowStart = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString();
+  const timeframe = searchParams.get('timeframe') || '30d';
+  const timeframeConfig: Record<string, { key: '24h' | '7d' | '30d' | '90d'; label: string; hours: number; periodDaysForSnapshot: number }> = {
+    '24h': { key: '24h', label: 'Last 24 Hours', hours: 24, periodDaysForSnapshot: 1 },
+    '7d': { key: '7d', label: 'Last 7 Days', hours: 7 * 24, periodDaysForSnapshot: 7 },
+    '30d': { key: '30d', label: 'Last 30 Days', hours: 30 * 24, periodDaysForSnapshot: 30 },
+    '90d': { key: '90d', label: 'Last 90 Days', hours: 90 * 24, periodDaysForSnapshot: 90 },
+  };
+  const selectedTimeframe = timeframeConfig[timeframe] || timeframeConfig['30d'];
+  const windowStart = new Date(Date.now() - selectedTimeframe.hours * 60 * 60 * 1000).toISOString();
   const supabase = await createClient();
 
   const { data: authData } = await supabase.auth.getUser();
@@ -60,7 +87,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from('analytics_pageviews')
-    .select('path, visitor_id, session_id')
+    .select('path, page_title, visitor_id, session_id, device_type, browser_name')
     .gte('occurred_at', windowStart);
 
   if (error) {
@@ -70,7 +97,7 @@ export async function GET(request: Request) {
   const { data: snapshotRows, error: snapshotError } = await supabase
     .from('analytics_snapshots')
     .select('visitors, page_views, bounce_rate, top_page')
-    .eq('period_days', rangeDays)
+    .eq('period_days', selectedTimeframe.periodDaysForSnapshot)
     .order('captured_at', { ascending: false })
     .limit(1);
 
@@ -87,10 +114,20 @@ export async function GET(request: Request) {
 
   const sessionCounts = new Map<string, number>();
   const pageCounts = new Map<string, number>();
+  const pageTitles = new Map<string, string>();
+  const deviceCounts = new Map<string, number>();
+  const browserCounts = new Map<string, number>();
 
   for (const row of rows) {
     sessionCounts.set(row.session_id, (sessionCounts.get(row.session_id) || 0) + 1);
     pageCounts.set(row.path, (pageCounts.get(row.path) || 0) + 1);
+    if (row.page_title && !pageTitles.has(row.path)) {
+      pageTitles.set(row.path, row.page_title);
+    }
+    const device = row.device_type || 'unknown';
+    const browser = row.browser_name || 'Unknown';
+    deviceCounts.set(device, (deviceCounts.get(device) || 0) + 1);
+    browserCounts.set(browser, (browserCounts.get(browser) || 0) + 1);
   }
 
   let bounceSessions = 0;
@@ -134,6 +171,23 @@ export async function GET(request: Request) {
       hasImportedSnapshot && hasFirstPartyData
         ? 'Using imported Vercel snapshot as baseline plus first-party tracking for newer activity.'
         : undefined,
+    timeframe: {
+      key: selectedTimeframe.key,
+      label: selectedTimeframe.label,
+      periodDaysForSnapshot: selectedTimeframe.periodDaysForSnapshot,
+    },
+    breakdown: {
+      devices: Array.from(deviceCounts.entries())
+        .map(([name, visits]) => ({ name, visits }))
+        .sort((a, b) => b.visits - a.visits),
+      browsers: Array.from(browserCounts.entries())
+        .map(([name, visits]) => ({ name, visits }))
+        .sort((a, b) => b.visits - a.visits),
+      pages: Array.from(pageCounts.entries())
+        .map(([path, visits]) => ({ path, title: pageTitles.get(path) || null, visits }))
+        .sort((a, b) => b.visits - a.visits)
+        .slice(0, 20),
+    },
   };
 
   if (debugRequested) {
@@ -144,7 +198,7 @@ export async function GET(request: Request) {
       importedSnapshotVisitors: latestSnapshot?.visitors ?? null,
       importedSnapshotPageViews: latestSnapshot?.page_views ?? null,
       importedSnapshotBounceRate: (latestSnapshot?.bounce_rate as number | null) ?? null,
-      rangeDays,
+      rangeDays: selectedTimeframe.periodDaysForSnapshot,
       dataSource: hasImportedSnapshot
         ? 'public.analytics_pageviews + public.analytics_snapshots'
         : 'public.analytics_pageviews',

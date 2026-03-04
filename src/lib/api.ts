@@ -217,6 +217,16 @@ export interface DashboardAnalytics {
   topPage: string | null;
   source: 'first_party' | 'vercel_import' | 'combined' | 'unavailable';
   note?: string;
+  timeframe: {
+    key: '24h' | '7d' | '30d' | '90d';
+    label: string;
+    periodDaysForSnapshot: number;
+  };
+  breakdown: {
+    devices: Array<{ name: string; visits: number }>;
+    browsers: Array<{ name: string; visits: number }>;
+    pages: Array<{ path: string; title: string | null; visits: number }>;
+  };
   debug?: {
     eventsInWindow?: number;
     sessionsInWindow?: number;
@@ -229,9 +239,10 @@ export interface DashboardAnalytics {
   };
 }
 
-export async function getDashboardAnalytics(options?: { debug?: boolean }) {
+export async function getDashboardAnalytics(options?: { debug?: boolean; timeframe?: '24h' | '7d' | '30d' | '90d' }) {
   const params = new URLSearchParams();
   if (options?.debug) params.set('debug', '1');
+  if (options?.timeframe) params.set('timeframe', options.timeframe);
   const query = params.toString();
 
   const res = await fetch(`${API_BASE}/api/analytics${query ? `?${query}` : ''}`, {

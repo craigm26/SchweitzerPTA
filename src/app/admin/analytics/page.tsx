@@ -12,6 +12,16 @@ const emptyAnalytics: DashboardAnalytics = {
   bounceRate: null,
   topPage: null,
   source: 'unavailable',
+  timeframe: {
+    key: '30d',
+    label: 'Last 30 Days',
+    periodDaysForSnapshot: 30,
+  },
+  breakdown: {
+    devices: [],
+    browsers: [],
+    pages: [],
+  },
 };
 
 function formatNumber(value: number | null) {
@@ -29,6 +39,7 @@ export default function AdminAnalyticsPage() {
   const [analytics, setAnalytics] = useState<DashboardAnalytics>(emptyAnalytics);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d' | '90d'>('30d');
   const [importVisitors, setImportVisitors] = useState('');
   const [importPageViews, setImportPageViews] = useState('');
   const [importBounceRate, setImportBounceRate] = useState('');
@@ -38,7 +49,7 @@ export default function AdminAnalyticsPage() {
   async function loadAnalytics() {
     setLoading(true);
     try {
-      const data = await getDashboardAnalytics({ debug: true });
+      const data = await getDashboardAnalytics({ debug: true, timeframe });
       setAnalytics(data);
       setLastUpdated(new Date().toLocaleString());
     } catch {
@@ -53,7 +64,7 @@ export default function AdminAnalyticsPage() {
 
   useEffect(() => {
     loadAnalytics();
-  }, []);
+  }, [timeframe]);
 
   async function importSnapshot() {
     setImportStatus(null);
@@ -74,11 +85,18 @@ export default function AdminAnalyticsPage() {
       return;
     }
 
+    const timeframeToDays: Record<'24h' | '7d' | '30d' | '90d', number> = {
+      '24h': 1,
+      '7d': 7,
+      '30d': 30,
+      '90d': 90,
+    };
+
     const res = await fetch('/api/analytics/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        periodDays: 30,
+        periodDays: timeframeToDays[timeframe],
         visitors,
         pageViews,
         bounceRate,
@@ -114,6 +132,16 @@ export default function AdminAnalyticsPage() {
           >
             Refresh
           </button>
+          <select
+            value={timeframe}
+            onChange={(e) => setTimeframe(e.target.value as '24h' | '7d' | '30d' | '90d')}
+            className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm"
+          >
+            <option value="24h">Last 24 Hours</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+            <option value="90d">Last 90 Days</option>
+          </select>
           <Link
             href={VERCEL_ANALYTICS_URL}
             target="_blank"
@@ -158,9 +186,11 @@ export default function AdminAnalyticsPage() {
         </div>
 
         <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-          <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-3">Import Vercel Snapshot (30 Days)</h2>
+          <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-3">
+            Import Vercel Snapshot ({analytics.timeframe?.label || 'Selected Timeframe'})
+          </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Copy the top summary values from Vercel Analytics and import them as a baseline while first-party data ramps up.
+            Copy summary values from Vercel Analytics and import them as a baseline for the selected timeframe.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <input
@@ -211,6 +241,72 @@ export default function AdminAnalyticsPage() {
         </div>
 
         <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+          <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-3">Top Pages</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <th className="text-left py-2 pr-4 text-gray-500 dark:text-gray-400">Path</th>
+                  <th className="text-left py-2 pr-4 text-gray-500 dark:text-gray-400">Title</th>
+                  <th className="text-right py-2 text-gray-500 dark:text-gray-400">Visits</th>
+                </tr>
+              </thead>
+              <tbody>
+                {analytics.breakdown?.pages?.length ? (
+                  analytics.breakdown.pages.map((page) => (
+                    <tr key={page.path} className="border-b border-gray-50 dark:border-gray-800 last:border-0">
+                      <td className="py-2 pr-4 font-medium text-[#181411] dark:text-white">{page.path}</td>
+                      <td className="py-2 pr-4 text-gray-600 dark:text-gray-300">{page.title || '--'}</td>
+                      <td className="py-2 text-right text-gray-700 dark:text-gray-200">{page.visits}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="py-3 text-gray-500 dark:text-gray-400">
+                      No page data yet for this timeframe.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+            <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-3">Device Types</h2>
+            <div className="space-y-2 text-sm">
+              {analytics.breakdown?.devices?.length ? (
+                analytics.breakdown.devices.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between">
+                    <span className="text-gray-700 dark:text-gray-300 capitalize">{item.name}</span>
+                    <span className="font-semibold text-[#181411] dark:text-white">{item.visits}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400">No device data yet.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+            <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-3">Browsers</h2>
+            <div className="space-y-2 text-sm">
+              {analytics.breakdown?.browsers?.length ? (
+                analytics.breakdown.browsers.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between">
+                    <span className="text-gray-700 dark:text-gray-300">{item.name}</span>
+                    <span className="font-semibold text-[#181411] dark:text-white">{item.visits}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400">No browser data yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-3">Debug Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <div className="text-gray-700 dark:text-gray-300">
@@ -230,6 +326,18 @@ export default function AdminAnalyticsPage() {
             </div>
             <div className="text-gray-700 dark:text-gray-300">
               <span className="font-semibold">Endpoint:</span> /api/analytics
+            </div>
+            <div className="text-gray-700 dark:text-gray-300">
+              <span className="font-semibold">Imported visitors:</span>{' '}
+              {analytics.debug?.importedSnapshotVisitors ?? 'n/a'}
+            </div>
+            <div className="text-gray-700 dark:text-gray-300">
+              <span className="font-semibold">Imported page views:</span>{' '}
+              {analytics.debug?.importedSnapshotPageViews ?? 'n/a'}
+            </div>
+            <div className="text-gray-700 dark:text-gray-300">
+              <span className="font-semibold">Imported bounce rate:</span>{' '}
+              {analytics.debug?.importedSnapshotBounceRate ?? 'n/a'}
             </div>
           </div>
         </div>

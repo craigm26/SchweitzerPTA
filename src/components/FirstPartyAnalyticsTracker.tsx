@@ -39,6 +39,7 @@ export default function FirstPartyAnalyticsTracker() {
 
     const payload = JSON.stringify({
       path: pathWithQuery,
+      title: document.title || null,
       referrer: document.referrer || null,
       visitorId,
       sessionId,

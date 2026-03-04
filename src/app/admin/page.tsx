@@ -25,6 +25,16 @@ export default function AdminDashboard() {
     bounceRate: null,
     topPage: null,
     source: 'unavailable',
+    timeframe: {
+      key: '30d',
+      label: 'Last 30 Days',
+      periodDaysForSnapshot: 30,
+    },
+    breakdown: {
+      devices: [],
+      browsers: [],
+      pages: [],
+    },
   });
   const [loading, setLoading] = useState(true);
 
@@ -44,6 +54,16 @@ export default function AdminDashboard() {
           bounceRate: null,
           topPage: null,
           source: 'unavailable' as const,
+          timeframe: {
+            key: '30d' as const,
+            label: 'Last 30 Days',
+            periodDaysForSnapshot: 30,
+          },
+          breakdown: {
+            devices: [],
+            browsers: [],
+            pages: [],
+          },
         }));
         setNews(newsData || []);
         setEvents(eventsData || []);

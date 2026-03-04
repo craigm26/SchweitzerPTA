@@ -6,6 +6,7 @@ export const revalidate = 0;
 
 interface TrackPayload {
   path?: string;
+  title?: string | null;
   referrer?: string | null;
   visitorId?: string;
   sessionId?: string;
@@ -18,6 +19,18 @@ function inferDeviceType(userAgent: string | null) {
   if (ua.includes('ipad') || ua.includes('tablet')) return 'tablet';
   if (ua.includes('mobi') || ua.includes('android')) return 'mobile';
   return 'desktop';
+}
+
+function inferBrowserName(userAgent: string | null) {
+  if (!userAgent) return 'Unknown';
+  const ua = userAgent.toLowerCase();
+  if (ua.includes('edg/')) return 'Edge';
+  if (ua.includes('opr/') || ua.includes('opera')) return 'Opera';
+  if (ua.includes('firefox/')) return 'Firefox';
+  if (ua.includes('samsungbrowser/')) return 'Samsung Internet';
+  if (ua.includes('chrome/') && !ua.includes('edg/')) return 'Chrome';
+  if (ua.includes('safari/') && !ua.includes('chrome/')) return 'Safari';
+  return 'Other';
 }
 
 export async function POST(request: Request) {
@@ -45,13 +58,16 @@ export async function POST(request: Request) {
   const userAgent = request.headers.get('user-agent');
   const country = request.headers.get('x-vercel-ip-country');
   const referrer = payload.referrer || request.headers.get('referer');
+  const pageTitle = payload.title?.trim() || null;
 
   const { error } = await supabase.from('analytics_pageviews').insert({
     path,
+    page_title: pageTitle,
     referrer: referrer || null,
     visitor_id: visitorId,
     session_id: sessionId,
     user_agent: userAgent,
+    browser_name: inferBrowserName(userAgent),
     country: country || null,
     device_type: inferDeviceType(userAgent),
     metadata: {
