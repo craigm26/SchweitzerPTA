@@ -29,6 +29,11 @@ export default function AdminAnalyticsPage() {
   const [analytics, setAnalytics] = useState<DashboardAnalytics>(emptyAnalytics);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [importVisitors, setImportVisitors] = useState('');
+  const [importPageViews, setImportPageViews] = useState('');
+  const [importBounceRate, setImportBounceRate] = useState('');
+  const [importTopPage, setImportTopPage] = useState('');
+  const [importStatus, setImportStatus] = useState<string | null>(null);
 
   async function loadAnalytics() {
     setLoading(true);
@@ -49,6 +54,48 @@ export default function AdminAnalyticsPage() {
   useEffect(() => {
     loadAnalytics();
   }, []);
+
+  async function importSnapshot() {
+    setImportStatus(null);
+    const visitors = Number(importVisitors);
+    const pageViews = Number(importPageViews);
+    const bounceRate = importBounceRate.trim() === '' ? null : Number(importBounceRate);
+
+    if (!Number.isFinite(visitors) || visitors < 0 || !Number.isInteger(visitors)) {
+      setImportStatus('Visitors must be a non-negative whole number.');
+      return;
+    }
+    if (!Number.isFinite(pageViews) || pageViews < 0 || !Number.isInteger(pageViews)) {
+      setImportStatus('Page views must be a non-negative whole number.');
+      return;
+    }
+    if (bounceRate !== null && (!Number.isFinite(bounceRate) || bounceRate < 0 || bounceRate > 100)) {
+      setImportStatus('Bounce rate must be between 0 and 100.');
+      return;
+    }
+
+    const res = await fetch('/api/analytics/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        periodDays: 30,
+        visitors,
+        pageViews,
+        bounceRate,
+        topPage: importTopPage.trim() || null,
+        source: 'vercel_import',
+      }),
+    });
+
+    if (!res.ok) {
+      const errorBody = (await res.json().catch(() => ({}))) as { error?: string };
+      setImportStatus(errorBody.error || 'Import failed.');
+      return;
+    }
+
+    setImportStatus('Imported successfully.');
+    await loadAnalytics();
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth">
@@ -107,6 +154,59 @@ export default function AdminAnalyticsPage() {
               </span>
             </p>
             {analytics.note && <p className="text-amber-600 dark:text-amber-400">Note: {analytics.note}</p>}
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+          <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-3">Import Vercel Snapshot (30 Days)</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Copy the top summary values from Vercel Analytics and import them as a baseline while first-party data ramps up.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <input
+              type="number"
+              min={0}
+              step={1}
+              placeholder="Visitors"
+              value={importVisitors}
+              onChange={(e) => setImportVisitors(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181411] text-sm"
+            />
+            <input
+              type="number"
+              min={0}
+              step={1}
+              placeholder="Page Views"
+              value={importPageViews}
+              onChange={(e) => setImportPageViews(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181411] text-sm"
+            />
+            <input
+              type="number"
+              min={0}
+              max={100}
+              step={0.1}
+              placeholder="Bounce Rate (%)"
+              value={importBounceRate}
+              onChange={(e) => setImportBounceRate(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181411] text-sm"
+            />
+            <input
+              type="text"
+              placeholder="Top Page (optional)"
+              value={importTopPage}
+              onChange={(e) => setImportTopPage(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181411] text-sm"
+            />
+          </div>
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              onClick={importSnapshot}
+              className="bg-primary hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+            >
+              Import Snapshot
+            </button>
+            {importStatus && <span className="text-sm text-gray-600 dark:text-gray-300">{importStatus}</span>}
           </div>
         </div>
 

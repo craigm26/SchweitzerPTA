@@ -86,9 +86,16 @@ export default function AdminDashboard() {
       iconColor: 'text-indigo-600 dark:text-indigo-400',
       label: 'Visitors (30 Days)',
       value: formatNumber(analytics.visitors),
-      badge: analytics.source === 'first_party' ? 'First-Party Analytics' : 'Unavailable',
+      badge:
+        analytics.source === 'combined'
+          ? 'Combined (Vercel + First-Party)'
+          : analytics.source === 'vercel_import'
+            ? 'Imported Vercel Snapshot'
+            : analytics.source === 'first_party'
+              ? 'First-Party Analytics'
+              : 'Unavailable',
       badgeColor:
-        analytics.source === 'first_party'
+        analytics.source !== 'unavailable'
           ? 'bg-green-100 text-green-600'
           : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
       link: { href: '/admin/analytics', label: 'View Analytics' },

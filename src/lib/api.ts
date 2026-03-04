@@ -215,12 +215,15 @@ export interface DashboardAnalytics {
   pageViews: number | null;
   bounceRate: number | null;
   topPage: string | null;
-  source: 'first_party' | 'unavailable';
+  source: 'first_party' | 'vercel_import' | 'combined' | 'unavailable';
   note?: string;
   debug?: {
     eventsInWindow?: number;
     sessionsInWindow?: number;
     bounceSessions?: number;
+    importedSnapshotVisitors?: number | null;
+    importedSnapshotPageViews?: number | null;
+    importedSnapshotBounceRate?: number | null;
     rangeDays: number;
     dataSource: string;
   };
