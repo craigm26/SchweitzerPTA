@@ -1,92 +1,23 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-type JsonRecord = Record<string, unknown>;
 
 interface DashboardAnalyticsResponse {
   visitors: number | null;
   pageViews: number | null;
   bounceRate: number | null;
   topPage: string | null;
-  source: 'vercel' | 'unavailable';
+  source: 'first_party' | 'unavailable';
   note?: string;
   debug?: {
-    hasAccessToken: boolean;
-    projectId: string | null;
-    teamId: string | null;
-    teamIdLooksLikeSlug?: boolean;
+    eventsInWindow?: number;
+    sessionsInWindow?: number;
+    bounceSessions?: number;
     rangeDays: number;
-    endpointPath: string;
-    vercelStatus?: number;
+    dataSource: string;
   };
-}
-
-function readNumber(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
-
-function pickFirstNumber(obj: unknown, keys: string[]): number | null {
-  if (!obj || typeof obj !== 'object') return null;
-
-  const queue: unknown[] = [obj];
-  while (queue.length > 0) {
-    const current = queue.shift();
-    if (!current || typeof current !== 'object') continue;
-
-    if (Array.isArray(current)) {
-      for (const item of current) queue.push(item);
-      continue;
-    }
-
-    const record = current as JsonRecord;
-    for (const key of keys) {
-      const value = readNumber(record[key]);
-      if (value !== null) return value;
-    }
-
-    for (const value of Object.values(record)) queue.push(value);
-  }
-
-  return null;
-}
-
-function pickTopPage(obj: unknown): string | null {
-  if (!obj || typeof obj !== 'object') return null;
-
-  const queue: unknown[] = [obj];
-  while (queue.length > 0) {
-    const current = queue.shift();
-    if (!current || typeof current !== 'object') continue;
-
-    if (Array.isArray(current)) {
-      for (const item of current) queue.push(item);
-      continue;
-    }
-
-    const record = current as JsonRecord;
-    for (const key of ['topPages', 'pages', 'paths', 'routes']) {
-      const maybeList = record[key];
-      if (!Array.isArray(maybeList) || maybeList.length === 0) continue;
-      const first = maybeList[0];
-      if (!first || typeof first !== 'object') continue;
-      const firstRecord = first as JsonRecord;
-      const candidate = firstRecord.path ?? firstRecord.route ?? firstRecord.page ?? firstRecord.name;
-      if (typeof candidate === 'string' && candidate.trim().length > 0) {
-        return candidate;
-      }
-    }
-
-    for (const value of Object.values(record)) queue.push(value);
-  }
-
-  return null;
 }
 
 function defaultUnavailable(note: string): DashboardAnalyticsResponse {
@@ -100,114 +31,83 @@ function defaultUnavailable(note: string): DashboardAnalyticsResponse {
   };
 }
 
-function maskValue(value: string | undefined): string | null {
-  if (!value) return null;
-  if (value.length <= 6) return value;
-  return `${value.slice(0, 3)}...${value.slice(-3)}`;
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const debugRequested = searchParams.get('debug') === '1';
-  const token = process.env.VERCEL_ACCESS_TOKEN;
-  const projectId = process.env.VERCEL_PROJECT_ID;
-  const teamId = process.env.VERCEL_TEAM_ID;
+  const rangeDays = 30;
+  const windowStart = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString();
+  const supabase = await createClient();
 
-  if (!token || !projectId) {
-    const baseResponse = defaultUnavailable('Missing VERCEL_ACCESS_TOKEN or VERCEL_PROJECT_ID environment variables.');
-    if (debugRequested) {
-      baseResponse.debug = {
-        hasAccessToken: Boolean(token),
-        projectId: maskValue(projectId),
-        teamId: maskValue(teamId),
-        teamIdLooksLikeSlug: Boolean(teamId && !teamId.startsWith('team_')),
-        rangeDays: 30,
-        endpointPath: '/v1/web/analytics',
-      };
-    }
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user;
 
-    return NextResponse.json(baseResponse);
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const to = Date.now();
-  const from = to - 30 * 24 * 60 * 60 * 1000;
-  const params = new URLSearchParams({
-    projectId,
-    from: from.toString(),
-    to: to.toString(),
-  });
+  const { data: currentProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
 
-  if (teamId) params.set('teamId', teamId);
+  if (currentProfile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
-  const endpoint = `https://api.vercel.com/v1/web/analytics?${params.toString()}`;
+  const { data, error } = await supabase
+    .from('analytics_pageviews')
+    .select('path, visitor_id, session_id')
+    .gte('occurred_at', windowStart);
 
-  try {
-    const response = await fetch(endpoint, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: 'no-store',
-    });
+  if (error) {
+    return NextResponse.json(defaultUnavailable(`Failed to query analytics: ${error.message}`), { status: 500 });
+  }
 
-    if (!response.ok) {
-      const details = await response.text();
-      const baseResponse = defaultUnavailable(`Vercel API request failed: ${response.status} ${details}`);
-      if (debugRequested) {
-        baseResponse.debug = {
-          hasAccessToken: true,
-          projectId: maskValue(projectId),
-          teamId: maskValue(teamId),
-          teamIdLooksLikeSlug: Boolean(teamId && !teamId.startsWith('team_')),
-          rangeDays: 30,
-          endpointPath: '/v1/web/analytics',
-          vercelStatus: response.status,
-        };
-      }
+  const rows = data || [];
+  const pageViews = rows.length;
+  const uniqueVisitors = new Set(rows.map((row) => row.visitor_id)).size;
 
-      return NextResponse.json(baseResponse);
+  const sessionCounts = new Map<string, number>();
+  const pageCounts = new Map<string, number>();
+
+  for (const row of rows) {
+    sessionCounts.set(row.session_id, (sessionCounts.get(row.session_id) || 0) + 1);
+    pageCounts.set(row.path, (pageCounts.get(row.path) || 0) + 1);
+  }
+
+  let bounceSessions = 0;
+  for (const count of sessionCounts.values()) {
+    if (count === 1) bounceSessions += 1;
+  }
+  const totalSessions = sessionCounts.size;
+
+  let topPage: string | null = null;
+  let topPageViews = 0;
+  for (const [path, count] of pageCounts.entries()) {
+    if (count > topPageViews) {
+      topPageViews = count;
+      topPage = path;
     }
+  }
 
-    const payload = (await response.json()) as unknown;
-    const visitors = pickFirstNumber(payload, ['visitors', 'uniqueVisitors', 'visitorCount']);
-    const pageViews = pickFirstNumber(payload, ['pageViews', 'views', 'pageviews']);
-    const bounceRate = pickFirstNumber(payload, ['bounceRate', 'bounce_rate']);
-    const topPage = pickTopPage(payload);
+  const response: DashboardAnalyticsResponse = {
+    visitors: uniqueVisitors,
+    pageViews,
+    bounceRate: totalSessions > 0 ? (bounceSessions / totalSessions) * 100 : null,
+    topPage,
+    source: 'first_party',
+  };
 
-    const payloadResponse: DashboardAnalyticsResponse = {
-      visitors,
-      pageViews,
-      bounceRate,
-      topPage,
-      source: 'vercel',
+  if (debugRequested) {
+    response.debug = {
+      eventsInWindow: rows.length,
+      sessionsInWindow: totalSessions,
+      bounceSessions,
+      rangeDays,
+      dataSource: 'public.analytics_pageviews',
     };
-
-    if (debugRequested) {
-      payloadResponse.debug = {
-        hasAccessToken: true,
-        projectId: maskValue(projectId),
-        teamId: maskValue(teamId),
-        teamIdLooksLikeSlug: Boolean(teamId && !teamId.startsWith('team_')),
-        rangeDays: 30,
-        endpointPath: '/v1/web/analytics',
-        vercelStatus: response.status,
-      };
-    }
-
-    return NextResponse.json(payloadResponse);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    const baseResponse = defaultUnavailable(`Failed to fetch Vercel analytics: ${message}`);
-    if (debugRequested) {
-      baseResponse.debug = {
-        hasAccessToken: Boolean(token),
-        projectId: maskValue(projectId),
-        teamId: maskValue(teamId),
-        teamIdLooksLikeSlug: Boolean(teamId && !teamId.startsWith('team_')),
-        rangeDays: 30,
-        endpointPath: '/v1/web/analytics',
-      };
-    }
-
-    return NextResponse.json(baseResponse);
   }
+
+  return NextResponse.json(response);
 }

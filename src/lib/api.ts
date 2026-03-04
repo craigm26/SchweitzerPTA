@@ -215,16 +215,14 @@ export interface DashboardAnalytics {
   pageViews: number | null;
   bounceRate: number | null;
   topPage: string | null;
-  source: 'vercel' | 'unavailable';
+  source: 'first_party' | 'unavailable';
   note?: string;
   debug?: {
-    hasAccessToken: boolean;
-    projectId: string | null;
-    teamId: string | null;
-    teamIdLooksLikeSlug?: boolean;
+    eventsInWindow?: number;
+    sessionsInWindow?: number;
+    bounceSessions?: number;
     rangeDays: number;
-    endpointPath: string;
-    vercelStatus?: number;
+    dataSource: string;
   };
 }
 

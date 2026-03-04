@@ -74,7 +74,7 @@ export default function AdminDashboard() {
   };
 
   const analyticsDebugText = analytics.debug
-    ? `Analytics debug: token=${analytics.debug.hasAccessToken ? 'yes' : 'no'} | project=${analytics.debug.projectId || 'n/a'} | team=${analytics.debug.teamId || 'none'}${analytics.debug.vercelStatus ? ` | status=${analytics.debug.vercelStatus}` : ''}`
+    ? `Analytics debug: rows=${analytics.debug.eventsInWindow ?? 0} | sessions=${analytics.debug.sessionsInWindow ?? 0} | bounces=${analytics.debug.bounceSessions ?? 0} | source=${analytics.debug.dataSource}`
     : analytics.note
       ? `Analytics note: ${analytics.note}`
       : 'Analytics debug unavailable';
@@ -86,9 +86,9 @@ export default function AdminDashboard() {
       iconColor: 'text-indigo-600 dark:text-indigo-400',
       label: 'Visitors (30 Days)',
       value: formatNumber(analytics.visitors),
-      badge: analytics.source === 'vercel' ? 'Vercel Analytics' : 'Unavailable',
+      badge: analytics.source === 'first_party' ? 'First-Party Analytics' : 'Unavailable',
       badgeColor:
-        analytics.source === 'vercel'
+        analytics.source === 'first_party'
           ? 'bg-green-100 text-green-600'
           : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
       link: { href: '/admin/analytics', label: 'View Analytics' },

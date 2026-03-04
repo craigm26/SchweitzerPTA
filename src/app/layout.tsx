@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Analytics } from "@vercel/analytics/next"
+import FirstPartyAnalyticsTracker from '@/components/FirstPartyAnalyticsTracker';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const lexend = Lexend({ subsets: ['latin'], variable: '--font-lexend' });
@@ -32,6 +33,7 @@ export default function RootLayout({
         <Header />
         <main>{children}</main>
         <Footer />
+        <FirstPartyAnalyticsTracker />
         <Analytics />
       </body>
     </html>

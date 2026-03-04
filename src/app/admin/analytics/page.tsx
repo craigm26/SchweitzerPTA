@@ -29,7 +29,6 @@ export default function AdminAnalyticsPage() {
   const [analytics, setAnalytics] = useState<DashboardAnalytics>(emptyAnalytics);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const teamIdLooksLikeSlug = analytics.debug?.teamIdLooksLikeSlug === true;
 
   async function loadAnalytics() {
     setLoading(true);
@@ -57,7 +56,7 @@ export default function AdminAnalyticsPage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-[#181411] dark:text-white text-3xl font-bold tracking-tight">Analytics</h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Internal dashboard view for Vercel traffic metrics and debug details.
+            Internal first-party analytics from Supabase, with Vercel dashboard link for comparison.
           </p>
         </div>
 
@@ -104,7 +103,7 @@ export default function AdminAnalyticsPage() {
             <p>
               Source:{' '}
               <span className="font-semibold">
-                {loading ? 'Loading...' : analytics.source === 'vercel' ? 'Vercel' : 'Unavailable'}
+                {loading ? 'Loading...' : analytics.source === 'first_party' ? 'First-Party (Supabase)' : 'Unavailable'}
               </span>
             </p>
             {analytics.note && <p className="text-amber-600 dark:text-amber-400">Note: {analytics.note}</p>}
@@ -113,33 +112,24 @@ export default function AdminAnalyticsPage() {
 
         <div className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="text-[#181411] dark:text-white text-lg font-bold mb-3">Debug Details</h2>
-          {teamIdLooksLikeSlug && (
-            <p className="mb-3 text-sm text-amber-600 dark:text-amber-400">
-              Team ID appears to be a slug/name. Use the actual Vercel Team ID (usually starts with{' '}
-              <code className="px-1 rounded bg-amber-50 dark:bg-amber-900/30">team_</code>) or remove
-              <code className="px-1 rounded bg-amber-50 dark:bg-amber-900/30"> VERCEL_TEAM_ID</code> if not needed.
-            </p>
-          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <div className="text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Access token present:</span>{' '}
-              {analytics.debug?.hasAccessToken ? 'Yes' : 'No'}
+              <span className="font-semibold">Events in range:</span> {analytics.debug?.eventsInWindow ?? 0}
             </div>
             <div className="text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Project ID:</span> {analytics.debug?.projectId || 'n/a'}
+              <span className="font-semibold">Sessions in range:</span> {analytics.debug?.sessionsInWindow ?? 0}
             </div>
             <div className="text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Team ID:</span> {analytics.debug?.teamId || 'none'}
+              <span className="font-semibold">Bounce sessions:</span> {analytics.debug?.bounceSessions ?? 0}
             </div>
             <div className="text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Vercel API Status:</span>{' '}
-              {analytics.debug?.vercelStatus ? analytics.debug.vercelStatus : 'n/a'}
+              <span className="font-semibold">Data source:</span> {analytics.debug?.dataSource || 'n/a'}
             </div>
             <div className="text-gray-700 dark:text-gray-300">
               <span className="font-semibold">Range (days):</span> {analytics.debug?.rangeDays ?? 30}
             </div>
             <div className="text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Endpoint:</span> {analytics.debug?.endpointPath || '/v1/web/analytics'}
+              <span className="font-semibold">Endpoint:</span> /api/analytics
             </div>
           </div>
         </div>
