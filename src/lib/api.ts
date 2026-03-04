@@ -217,10 +217,22 @@ export interface DashboardAnalytics {
   topPage: string | null;
   source: 'vercel' | 'unavailable';
   note?: string;
+  debug?: {
+    hasAccessToken: boolean;
+    projectId: string | null;
+    teamId: string | null;
+    rangeDays: number;
+    endpointPath: string;
+    vercelStatus?: number;
+  };
 }
 
-export async function getDashboardAnalytics() {
-  const res = await fetch(`${API_BASE}/api/analytics`, {
+export async function getDashboardAnalytics(options?: { debug?: boolean }) {
+  const params = new URLSearchParams();
+  if (options?.debug) params.set('debug', '1');
+  const query = params.toString();
+
+  const res = await fetch(`${API_BASE}/api/analytics${query ? `?${query}` : ''}`, {
     cache: 'no-store',
   });
   if (!res.ok) throw new Error('Failed to fetch analytics');

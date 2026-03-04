@@ -36,7 +36,9 @@ export default function AdminDashboard() {
           getEvents({ upcoming: true }),
           getDonors({ includeInactive: true }),
         ]);
-        const analyticsData = await getDashboardAnalytics().catch(() => ({
+        const analyticsData = await getDashboardAnalytics({
+          debug: process.env.NODE_ENV !== 'production',
+        }).catch(() => ({
           visitors: null,
           pageViews: null,
           bounceRate: null,
@@ -70,6 +72,12 @@ export default function AdminDashboard() {
     const asPercent = value <= 1 ? value * 100 : value;
     return `${asPercent.toFixed(1)}% Bounce`;
   };
+
+  const analyticsDebugText = analytics.debug
+    ? `Analytics debug: token=${analytics.debug.hasAccessToken ? 'yes' : 'no'} | project=${analytics.debug.projectId || 'n/a'} | team=${analytics.debug.teamId || 'none'}${analytics.debug.vercelStatus ? ` | status=${analytics.debug.vercelStatus}` : ''}`
+    : analytics.note
+      ? `Analytics note: ${analytics.note}`
+      : 'Analytics debug unavailable';
 
   const stats = [
     {
@@ -208,6 +216,11 @@ export default function AdminDashboard() {
             </div>
           ))}
         </div>
+        {process.env.NODE_ENV !== 'production' && (
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {analyticsDebugText}
+          </div>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

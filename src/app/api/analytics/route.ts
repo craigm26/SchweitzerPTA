@@ -12,6 +12,14 @@ interface DashboardAnalyticsResponse {
   topPage: string | null;
   source: 'vercel' | 'unavailable';
   note?: string;
+  debug?: {
+    hasAccessToken: boolean;
+    projectId: string | null;
+    teamId: string | null;
+    rangeDays: number;
+    endpointPath: string;
+    vercelStatus?: number;
+  };
 }
 
 function readNumber(value: unknown): number | null {
@@ -91,15 +99,32 @@ function defaultUnavailable(note: string): DashboardAnalyticsResponse {
   };
 }
 
-export async function GET() {
+function maskValue(value: string | undefined): string | null {
+  if (!value) return null;
+  if (value.length <= 6) return value;
+  return `${value.slice(0, 3)}...${value.slice(-3)}`;
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const debugRequested = searchParams.get('debug') === '1';
   const token = process.env.VERCEL_ACCESS_TOKEN;
   const projectId = process.env.VERCEL_PROJECT_ID;
   const teamId = process.env.VERCEL_TEAM_ID;
 
   if (!token || !projectId) {
-    return NextResponse.json(
-      defaultUnavailable('Missing VERCEL_ACCESS_TOKEN or VERCEL_PROJECT_ID environment variables.')
-    );
+    const baseResponse = defaultUnavailable('Missing VERCEL_ACCESS_TOKEN or VERCEL_PROJECT_ID environment variables.');
+    if (debugRequested) {
+      baseResponse.debug = {
+        hasAccessToken: Boolean(token),
+        projectId: maskValue(projectId),
+        teamId: maskValue(teamId),
+        rangeDays: 30,
+        endpointPath: '/v1/web/analytics',
+      };
+    }
+
+    return NextResponse.json(baseResponse);
   }
 
   const to = Date.now();
@@ -124,7 +149,19 @@ export async function GET() {
 
     if (!response.ok) {
       const details = await response.text();
-      return NextResponse.json(defaultUnavailable(`Vercel API request failed: ${response.status} ${details}`));
+      const baseResponse = defaultUnavailable(`Vercel API request failed: ${response.status} ${details}`);
+      if (debugRequested) {
+        baseResponse.debug = {
+          hasAccessToken: true,
+          projectId: maskValue(projectId),
+          teamId: maskValue(teamId),
+          rangeDays: 30,
+          endpointPath: '/v1/web/analytics',
+          vercelStatus: response.status,
+        };
+      }
+
+      return NextResponse.json(baseResponse);
     }
 
     const payload = (await response.json()) as unknown;
@@ -133,15 +170,39 @@ export async function GET() {
     const bounceRate = pickFirstNumber(payload, ['bounceRate', 'bounce_rate']);
     const topPage = pickTopPage(payload);
 
-    return NextResponse.json({
+    const payloadResponse: DashboardAnalyticsResponse = {
       visitors,
       pageViews,
       bounceRate,
       topPage,
       source: 'vercel',
-    } satisfies DashboardAnalyticsResponse);
+    };
+
+    if (debugRequested) {
+      payloadResponse.debug = {
+        hasAccessToken: true,
+        projectId: maskValue(projectId),
+        teamId: maskValue(teamId),
+        rangeDays: 30,
+        endpointPath: '/v1/web/analytics',
+        vercelStatus: response.status,
+      };
+    }
+
+    return NextResponse.json(payloadResponse);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json(defaultUnavailable(`Failed to fetch Vercel analytics: ${message}`));
+    const baseResponse = defaultUnavailable(`Failed to fetch Vercel analytics: ${message}`);
+    if (debugRequested) {
+      baseResponse.debug = {
+        hasAccessToken: Boolean(token),
+        projectId: maskValue(projectId),
+        teamId: maskValue(teamId),
+        rangeDays: 30,
+        endpointPath: '/v1/web/analytics',
+      };
+    }
+
+    return NextResponse.json(baseResponse);
   }
 }
