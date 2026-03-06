@@ -8,7 +8,25 @@ type SignupState = {
   email: string;
   loading: boolean;
   error: string | null;
+};
+
+type SignupSuccessPayload = {
   success: boolean;
+  shift_id: number;
+  spots_filled: number;
+  emailSent?: boolean;
+  eventTitle?: string | null;
+  shiftTitle?: string | null;
+  shiftTimeLabel?: string | null;
+};
+
+type SuccessModalState = {
+  volunteerName: string;
+  volunteerEmail: string;
+  eventTitle: string;
+  shiftTitle: string;
+  shiftTimeLabel: string;
+  emailSent: boolean;
 };
 
 function parseTimeParts(time: string | null): { hour: number; minute: number } | null {
@@ -34,17 +52,18 @@ function formatTimeLabel(time: string | null): string | null {
 
 function ShiftSignup({
   shift,
+  eventTitle,
   onSignedUp,
 }: {
   shift: VolunteerShift;
-  onSignedUp: (shiftId: number) => void;
+  eventTitle: string;
+  onSignedUp: (payload: SuccessModalState & { shiftId: number }) => void;
 }) {
   const [state, setState] = useState<SignupState>({
     name: '',
     email: '',
     loading: false,
     error: null,
-    success: false,
   });
 
   const isFull = shift.spots_filled >= shift.spots_available;
@@ -54,19 +73,27 @@ function ShiftSignup({
     if (isFull || state.loading) return;
 
     if (!state.name.trim() || !state.email.trim()) {
-      setState((prev) => ({ ...prev, error: 'Name and email are required.', success: false }));
+      setState((prev) => ({ ...prev, error: 'Name and email are required.' }));
       return;
     }
 
-    setState((prev) => ({ ...prev, loading: true, error: null, success: false }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      await signUpForVolunteerShift({
+      const result = (await signUpForVolunteerShift({
         shift_id: shift.id,
         name: state.name.trim(),
         email: state.email.trim(),
+      })) as SignupSuccessPayload;
+      onSignedUp({
+        shiftId: shift.id,
+        volunteerName: state.name.trim(),
+        volunteerEmail: state.email.trim(),
+        eventTitle: result.eventTitle || eventTitle,
+        shiftTitle: result.shiftTitle || shift.job_title,
+        shiftTimeLabel: result.shiftTimeLabel || 'Time flexible',
+        emailSent: result.emailSent === true,
       });
-      setState({ name: '', email: '', loading: false, error: null, success: true });
-      onSignedUp(shift.id);
+      setState({ name: '', email: '', loading: false, error: null });
     } catch (error) {
       console.error('Error signing up:', error);
       const message =
@@ -88,7 +115,7 @@ function ShiftSignup({
           type="text"
           placeholder="Name"
           value={state.name}
-          onChange={(e) => setState((prev) => ({ ...prev, name: e.target.value, success: false }))}
+          onChange={(e) => setState((prev) => ({ ...prev, name: e.target.value }))}
           disabled={isFull}
           className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
@@ -96,7 +123,7 @@ function ShiftSignup({
           type="email"
           placeholder="Email"
           value={state.email}
-          onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value, success: false }))}
+          onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
           disabled={isFull}
           className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
@@ -109,7 +136,6 @@ function ShiftSignup({
         >
           {isFull ? 'Shift Full' : state.loading ? 'Signing Up...' : 'Sign Up'}
         </button>
-        {state.success && <span className="text-sm text-green-600">Thanks for signing up!</span>}
         {state.error && <span className="text-sm text-red-500">{state.error}</span>}
       </div>
     </form>
@@ -119,6 +145,7 @@ function ShiftSignup({
 export default function VolunteerPage() {
   const [events, setEvents] = useState<VolunteerEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [successModal, setSuccessModal] = useState<SuccessModalState | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -143,15 +170,23 @@ export default function VolunteerPage() {
     });
   };
 
-  const handleSignedUp = (shiftId: number) => {
+  const handleSignedUp = (payload: SuccessModalState & { shiftId: number }) => {
     setEvents((prev) =>
       prev.map((event) => ({
         ...event,
         shifts: event.shifts.map((shift) =>
-          shift.id === shiftId ? { ...shift, spots_filled: shift.spots_filled + 1 } : shift
+          shift.id === payload.shiftId ? { ...shift, spots_filled: shift.spots_filled + 1 } : shift
         ),
       }))
     );
+    setSuccessModal({
+      volunteerName: payload.volunteerName,
+      volunteerEmail: payload.volunteerEmail,
+      eventTitle: payload.eventTitle,
+      shiftTitle: payload.shiftTitle,
+      shiftTimeLabel: payload.shiftTimeLabel,
+      emailSent: payload.emailSent,
+    });
   };
 
   return (
@@ -262,7 +297,11 @@ export default function VolunteerPage() {
                                   )}
                                   <p className="text-xs text-gray-500 mt-1">Time: {timeLabel}</p>
                                 </div>
-                                <ShiftSignup shift={shift} onSignedUp={handleSignedUp} />
+                                <ShiftSignup
+                                  shift={shift}
+                                  eventTitle={event.title}
+                                  onSignedUp={handleSignedUp}
+                                />
                               </div>
                             );
                           })
@@ -276,6 +315,49 @@ export default function VolunteerPage() {
           )}
         </div>
       </div>
+
+      {successModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-[#2a221a]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-[#181411] dark:text-white">Thanks for volunteering!</h2>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                  We received your signup for <span className="font-semibold">{successModal.eventTitle}</span>.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSuccessModal(null)}
+                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-[#181411]"
+                aria-label="Close acknowledgement"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-[#181411] dark:text-gray-200">
+              <p><span className="font-semibold">Volunteer:</span> {successModal.volunteerName}</p>
+              <p><span className="font-semibold">Email:</span> {successModal.volunteerEmail}</p>
+              <p><span className="font-semibold">Shift:</span> {successModal.shiftTitle}</p>
+              <p><span className="font-semibold">Time:</span> {successModal.shiftTimeLabel}</p>
+            </div>
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
+              {successModal.emailSent
+                ? 'A confirmation email is on its way, and the PTA inbox was copied.'
+                : 'Your signup was saved. If email is not configured yet, the PTA will still have your response.'}
+            </p>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSuccessModal(null)}
+                className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-orange-600"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
