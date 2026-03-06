@@ -344,7 +344,7 @@ export default function VolunteerPage() {
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
               {successModal.emailSent
                 ? 'A confirmation email is on its way, and the PTA inbox was copied.'
-                : 'Your signup was saved. If email is not configured yet, the PTA will still have your response.'}
+                : 'Your signup was saved, but the confirmation email could not be sent. The PTA still received your response.'}
             </p>
             <div className="mt-6 flex justify-end">
               <button
