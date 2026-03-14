@@ -114,10 +114,7 @@ export default function AuctionPage() {
                     No-Host Bar
                   </div>
                 </div>
-                <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 dark:bg-[#1c150f] px-3 py-1 text-xs text-gray-600 dark:text-gray-300">
-                  <span className="material-symbols-outlined text-base text-primary">lock</span>
-                  Ticketing powered by Zeffy
-                </div>
+                
               </div>
               <div className="flex h-[560px] w-full items-center justify-center rounded-3xl bg-white px-6 text-center dark:bg-[#1c150f] lg:h-[640px]">
                 <p className="text-xl font-semibold text-gray-900 dark:text-white">
