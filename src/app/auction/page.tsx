@@ -119,14 +119,10 @@ export default function AuctionPage() {
                   Ticketing powered by Zeffy
                 </div>
               </div>
-              <div className="relative h-[560px] lg:h-[640px] w-full bg-white dark:bg-[#1c150f]">
-                <iframe
-                  title="Donation form powered by Zeffy"
-                  className="absolute inset-0 h-full w-full border-0"
-                  src="https://www.zeffy.com/embed/ticketing/boardwalk-bash-and-benefit-night"
-                  allow="payment"
-                  allowTransparency
-                />
+              <div className="flex h-[560px] w-full items-center justify-center rounded-3xl bg-white px-6 text-center dark:bg-[#1c150f] lg:h-[640px]">
+                <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Online ticket sales have ended, you may purchase tickets at the door.
+                </p>
               </div>
             </div>
           </div>
