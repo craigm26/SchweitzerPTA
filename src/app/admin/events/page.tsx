@@ -74,7 +74,7 @@ export default function EventManagementPage() {
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
-      uploadFormData.append('bucket', 'auction-item-photos');
+      uploadFormData.append('bucket', 'event-images');
 
       const response = await fetch('/api/upload', {
         method: 'POST',
