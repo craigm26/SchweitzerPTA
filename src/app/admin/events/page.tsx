@@ -1,19 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { getEvents, createEvent, updateEvent, deleteEvent, Event } from '@/lib/api';
+import { createEvent, deleteEvent, Event, getEvents, updateEvent } from '@/lib/api';
+
+const sortEvents = (events: Event[]) =>
+  [...events].sort((a, b) => {
+    const aDate = new Date(a.date).getTime();
+    const bDate = new Date(b.date).getTime();
+    if (aDate !== bDate) return aDate - bDate;
+    return b.id - a.id;
+  });
 
 export default function EventManagementPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  
-  // Form state
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -22,7 +31,7 @@ export default function EventManagementPage() {
     time: '',
     end_time: '',
     location: '',
-    category: 'general',
+    category: 'meeting',
     image: '',
     is_featured: false,
     is_all_day: false,
@@ -35,7 +44,7 @@ export default function EventManagementPage() {
   async function fetchEvents() {
     try {
       const data = await getEvents();
-      setEvents(data || []);
+      setEvents(sortEvents(data || []));
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {
@@ -43,32 +52,86 @@ export default function EventManagementPage() {
     }
   }
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload an image file (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+
+    setUploadingImage(true);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('bucket', 'auction-item-photos');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const { url } = await response.json();
+      setFormData((prev) => ({ ...prev, image: url }));
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert(error instanceof Error ? error.message : 'Failed to upload image');
+      setImagePreview(null);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData((prev) => ({ ...prev, image: '' }));
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionLoading(-1);
 
-    // Prepare data (handle optional fields and all-day events)
-    const dataToSubmit = {
-      ...formData,
-      time: formData.is_all_day ? null : (formData.time || null),
-      end_time: formData.is_all_day ? null : (formData.end_time || null),
+    const payload = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      date: formData.date,
       end_date: formData.end_date || null,
+      time: formData.is_all_day ? null : formData.time || null,
+      end_time: formData.is_all_day ? null : formData.end_time || null,
+      location: formData.location.trim(),
+      category: formData.category,
+      image: formData.image.trim() || undefined,
+      is_featured: formData.is_featured,
+      is_all_day: formData.is_all_day,
     };
 
     try {
       if (editingEvent) {
-        await updateEvent(editingEvent.id, dataToSubmit);
+        await updateEvent(editingEvent.id, payload);
         setEvents((prev) =>
-          prev.map((e) => (e.id === editingEvent.id ? { ...e, ...dataToSubmit } as Event : e))
+          sortEvents(prev.map((item) => (item.id === editingEvent.id ? { ...item, ...payload } as Event : item)))
         );
       } else {
-        const newEvent = await createEvent(dataToSubmit);
-        setEvents((prev) => [...prev, newEvent]); // Add to beginning or end? usually backend sorts by date
-        // Re-fetch to ensure correct order or manually sort? 
-        // Let's just re-fetch to be safe and simple for now, or just append and let user refresh.
-        // Actually, let's just push it and maybe sort locally if needed. 
-        // But for now, simple append is fine.
-        fetchEvents(); 
+        const newEvent = await createEvent(payload);
+        setEvents((prev) => sortEvents([newEvent, ...prev]));
       }
       closeModal();
     } catch (error) {
@@ -85,83 +148,13 @@ export default function EventManagementPage() {
     setActionLoading(id);
     try {
       await deleteEvent(id);
-      setEvents((prev) => prev.filter((e) => e.id !== id));
+      setEvents((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error('Error deleting event:', error);
       alert('Failed to delete event');
     } finally {
       setActionLoading(null);
     }
-  };
-
-  const toggleFeatured = async (event: Event) => {
-    setActionLoading(event.id);
-    try {
-      await updateEvent(event.id, { is_featured: !event.is_featured });
-      setEvents((prev) =>
-        prev.map((e) => (e.id === event.id ? { ...e, is_featured: !e.is_featured } : e))
-      );
-    } catch (error) {
-      console.error('Error updating event:', error);
-      alert('Failed to update event');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const openAddModal = () => {
-    setFormData({
-      title: '',
-      description: '',
-      date: new Date().toISOString().split('T')[0], // Default to today
-      end_date: '',
-      time: '18:00',
-      end_time: '',
-      location: '',
-      category: 'meeting',
-      image: '',
-      is_featured: false,
-      is_all_day: false,
-    });
-    setEditingEvent(null);
-    setShowAddModal(true);
-  };
-
-  const openEditModal = (event: Event) => {
-    // Check if time is a valid time format (HH:mm) or treat as all-day
-    const isValidTime = event.time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.time);
-    const isAllDay = !isValidTime || (event as any).is_all_day;
-    setFormData({
-      title: event.title,
-      description: event.description,
-      date: event.date,
-      end_date: (event as any).end_date || '',
-      time: isValidTime && event.time ? event.time : '',
-      end_time: event.end_time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.end_time) ? event.end_time : '',
-      location: event.location,
-      category: event.category || 'general',
-      image: event.image || '',
-      is_featured: event.is_featured,
-      is_all_day: isAllDay,
-    });
-    setEditingEvent(event);
-    setShowAddModal(true);
-  };
-
-  const closeModal = () => {
-    setShowAddModal(false);
-    setEditingEvent(null);
-  };
-
-  const getPacificTimeZoneLabel = (dateString: string) => {
-    const [year, month, day] = dateString.split('-').map(Number);
-    if (!year || !month || !day) return 'PT';
-    const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/Los_Angeles',
-      timeZoneName: 'short',
-    }).formatToParts(date);
-    return parts.find((part) => part.type === 'timeZoneName')?.value ?? 'PT';
   };
 
   const formatTime12Hour = (time: string) => {
@@ -174,48 +167,91 @@ export default function EventManagementPage() {
     return `${hour12}:${minute} ${period}`;
   };
 
-  const formatEventTimeRange = (event: Event) => {
+  const formatEventSchedule = (event: Event) => {
+    const startDate = new Date(`${event.date}T12:00:00`).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+
     if (event.is_all_day || !event.time) {
-      return 'All Day';
+      return event.end_date && event.end_date !== event.date ? `${startDate} onwards • All Day` : `${startDate} • All Day`;
     }
-    const tzLabel = getPacificTimeZoneLabel(event.date);
-    const start = formatTime12Hour(event.time);
-    if (event.end_time) {
-      const end = formatTime12Hour(event.end_time);
-      return `${start} - ${end} ${tzLabel}`;
-    }
-    return `${start} ${tzLabel}`;
+
+    const startTime = formatTime12Hour(event.time);
+    const endTime = event.end_time ? ` - ${formatTime12Hour(event.end_time)}` : '';
+    return `${startDate} • ${startTime}${endTime}`;
   };
 
-  const getEventEndDate = (event: Event) => {
-    if (event.end_date && event.end_date >= event.date) {
-      return event.end_date;
-    }
-    return event.date;
+  const openAddModal = () => {
+    setFormData({
+      title: '',
+      description: '',
+      date: new Date().toISOString().split('T')[0],
+      end_date: '',
+      time: '18:00',
+      end_time: '',
+      location: '',
+      category: 'meeting',
+      image: '',
+      is_featured: false,
+      is_all_day: false,
+    });
+    setEditingEvent(null);
+    setImagePreview(null);
+    setShowAddModal(true);
   };
 
-  // Filter events
+  const openEditModal = (event: Event) => {
+    setFormData({
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      end_date: event.end_date || '',
+      time: event.time || '',
+      end_time: event.end_time || '',
+      location: event.location,
+      category: event.category || 'general',
+      image: event.image || '',
+      is_featured: event.is_featured,
+      is_all_day: event.is_all_day,
+    });
+    setEditingEvent(event);
+    setImagePreview(event.image || null);
+    setShowAddModal(true);
+  };
+
+  const closeModal = () => {
+    setShowAddModal(false);
+    setEditingEvent(null);
+    setFormData({
+      title: '',
+      description: '',
+      date: '',
+      end_date: '',
+      time: '',
+      end_time: '',
+      location: '',
+      category: 'meeting',
+      image: '',
+      is_featured: false,
+      is_all_day: false,
+    });
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          event.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || event.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const query = searchQuery.toLowerCase();
+    return (
+      event.title.toLowerCase().includes(query) ||
+      event.description.toLowerCase().includes(query) ||
+      event.location.toLowerCase().includes(query) ||
+      (event.category || '').toLowerCase().includes(query)
+    );
   });
-
-  const getCategoryColor = (category: string | null) => {
-    switch (category) {
-      case 'meeting':
-        return 'bg-blue-100 text-blue-600';
-      case 'fundraiser':
-        return 'bg-green-100 text-green-600';
-      case 'social':
-        return 'bg-purple-100 text-purple-600';
-      case 'volunteer':
-        return 'bg-orange-100 text-orange-600';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  };
 
   if (loading) {
     return (
@@ -231,7 +267,6 @@ export default function EventManagementPage() {
   return (
     <div className="p-6 lg:p-10">
       <div className="mx-auto max-w-6xl space-y-8">
-        {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Link className="hover:text-primary transition-colors" href="/admin">
@@ -246,7 +281,7 @@ export default function EventManagementPage() {
                 Event Management
               </h2>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Schedule and manage school events, meetings, and fundraisers.
+                Manage event visibility, images, schedule details, and front-end presentation.
               </p>
             </div>
             <button
@@ -254,12 +289,11 @@ export default function EventManagementPage() {
               className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <span className="material-symbols-outlined">add</span>
-              Add New Event
+              Add Event
             </button>
           </div>
         </div>
 
-        {/* Search and Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -267,33 +301,20 @@ export default function EventManagementPage() {
             </span>
             <input
               type="text"
-              placeholder="Search events by title or location..."
+              placeholder="Search events..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            <option value="all">All Categories</option>
-            <option value="meeting">Meeting</option>
-            <option value="fundraiser">Fundraiser</option>
-            <option value="social">Social</option>
-            <option value="volunteer">Volunteer</option>
-            <option value="general">General</option>
-          </select>
         </div>
 
-        {/* Table */}
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#2a221a] shadow-sm">
           {filteredEvents.length === 0 ? (
             <div className="p-12 text-center">
               <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">event_busy</span>
               <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No events found</h3>
-              <p className="text-gray-500 mb-4">Create your first event to get started.</p>
+              <p className="text-gray-500 mb-4">Add your first event to get started.</p>
               <button
                 onClick={openAddModal}
                 className="inline-flex items-center gap-2 bg-primary hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold transition-colors"
@@ -308,8 +329,9 @@ export default function EventManagementPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-[#181411]">
-                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Date & Time</th>
-                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Event Details</th>
+                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Photo</th>
+                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
+                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Schedule</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Location</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Category</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Featured</th>
@@ -318,81 +340,61 @@ export default function EventManagementPage() {
                   </thead>
                   <tbody>
                     {filteredEvents.map((event) => {
-                      const isLoading = actionLoading === event.id;
-                      const endDate = getEventEndDate(event);
-                      const isPast = new Date() > new Date(endDate + 'T23:59:59');
+                      const isRowLoading = actionLoading === event.id;
 
                       return (
                         <tr
                           key={event.id}
                           className={`border-b border-gray-50 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-[#181411] transition-colors ${
-                            isLoading ? 'opacity-50' : ''
-                          } ${isPast ? 'bg-gray-50/50 dark:bg-[#181411]/50' : ''}`}
+                            isRowLoading ? 'opacity-50' : ''
+                          }`}
                         >
                           <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className={`font-bold ${isPast ? 'text-gray-500' : 'text-[#181411] dark:text-white'}`}>
-                                {(() => {
-                                  const [y, m, d] = event.date.split('-').map(Number);
-                                  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                                })()}
-                                {event.end_date && event.end_date !== event.date && (
-                                  <span className="font-normal"> - {(() => {
-                                    const [y, m, d] = event.end_date.split('-').map(Number);
-                                    return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                                  })()}</span>
-                                )}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                {formatEventTimeRange(event)}
-                              </span>
+                            <div className="w-14 h-14 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+                              {event.image ? (
+                                <img src={event.image} alt={event.title} className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="material-symbols-outlined text-2xl text-gray-400">photo</span>
+                              )}
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col">
-                              <span className={`font-medium ${isPast ? 'text-gray-500' : 'text-[#181411] dark:text-white'}`}>
-                                {event.title}
-                              </span>
-                              <span className="text-xs text-gray-500 max-w-xs truncate">
-                                {event.description}
-                              </span>
+                          <td className="px-6 py-4 text-sm font-medium text-[#181411] dark:text-white">
+                            <div className="flex flex-col gap-1">
+                              <span>{event.title}</span>
+                              <span className="line-clamp-1 text-xs text-gray-500">{event.description}</span>
                             </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            {formatEventSchedule(event)}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                             {event.location}
                           </td>
-                          <td className="px-6 py-4">
-                            <span className={`text-xs font-bold px-2 py-1 rounded capitalize ${getCategoryColor(event.category)}`}>
-                              {event.category || 'general'}
-                            </span>
+                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 capitalize">
+                            {event.category || 'general'}
                           </td>
                           <td className="px-6 py-4">
-                            <button
-                              onClick={() => toggleFeatured(event)}
-                              disabled={isLoading}
-                              className={`text-2xl transition-colors ${
-                                event.is_featured ? 'text-amber-400 hover:text-amber-500' : 'text-gray-300 hover:text-gray-400'
+                            <span
+                              className={`text-xs font-bold px-2 py-1 rounded ${
+                                event.is_featured ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
                               }`}
-                              title={event.is_featured ? 'Remove from featured' : 'Mark as featured'}
                             >
-                              ★
-                            </button>
+                              {event.is_featured ? 'Featured' : 'Standard'}
+                            </span>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => openEditModal(event)}
-                                disabled={isLoading}
+                                disabled={isRowLoading}
                                 className="p-2 text-gray-400 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                                title="Edit"
                               >
                                 <span className="material-symbols-outlined text-lg">edit</span>
                               </button>
                               <button
                                 onClick={() => handleDelete(event.id)}
-                                disabled={isLoading}
+                                disabled={isRowLoading}
                                 className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                                title="Delete"
                               >
                                 <span className="material-symbols-outlined text-lg">delete</span>
                               </button>
@@ -412,10 +414,9 @@ export default function EventManagementPage() {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 max-w-2xl w-full shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-[#181411] dark:text-white">
                 {editingEvent ? 'Edit Event' : 'Add New Event'}
@@ -426,30 +427,100 @@ export default function EventManagementPage() {
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Event Title *</label>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Title *</label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="e.g. Monthly PTA Meeting"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Location *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="e.g. School Cafeteria"
+                  placeholder="Event title"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-2">Photo</label>
+
+                {(imagePreview || formData.image) && (
+                  <div className="mb-3 relative inline-block">
+                    <div className="w-24 h-24 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={imagePreview || formData.image}
+                        alt="Event preview"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="event-photo-upload"
+                  />
+                  <label
+                    htmlFor="event-photo-upload"
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm font-medium text-[#181411] dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                      uploadingImage ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {uploadingImage ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-lg">upload</span>
+                        {formData.image ? 'Change Photo' : 'Upload Photo'}
+                      </>
+                    )}
+                  </label>
+                  <span className="text-xs text-gray-500">JPEG, PNG, GIF, WebP (max 10MB)</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Location *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder="School Cafeteria"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Category *</label>
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  >
+                    <option value="meeting">Meeting</option>
+                    <option value="fundraiser">Fundraiser</option>
+                    <option value="social">Social</option>
+                    <option value="volunteer">Volunteer</option>
+                    <option value="general">General</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Start Date *</label>
                   <input
@@ -472,7 +543,7 @@ export default function EventManagementPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 py-2">
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="is_all_day"
@@ -480,12 +551,12 @@ export default function EventManagementPage() {
                   onChange={(e) => setFormData({ ...formData, is_all_day: e.target.checked })}
                   className="rounded border-gray-300"
                 />
-                <label htmlFor="is_all_day" className="text-sm font-medium text-[#181411] dark:text-white">
+                <label htmlFor="is_all_day" className="text-sm text-[#181411] dark:text-white">
                   All Day Event
                 </label>
               </div>
 
-              <div className={`grid grid-cols-2 gap-4 transition-opacity ${formData.is_all_day ? 'opacity-40 pointer-events-none' : ''}`}>
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${formData.is_all_day ? 'opacity-40 pointer-events-none' : ''}`}>
                 <div>
                   <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Start Time</label>
                   <input
@@ -508,43 +579,15 @@ export default function EventManagementPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Category *</label>
-                  <select
-                    required
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  >
-                    <option value="meeting">Meeting</option>
-                    <option value="fundraiser">Fundraiser</option>
-                    <option value="social">Social</option>
-                    <option value="volunteer">Volunteer</option>
-                    <option value="general">General</option>
-                  </select>
-                </div>
-                 <div>
-                    <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Image URL</label>
-                    <input
-                      type="url"
-                      value={formData.image}
-                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                 </div>
-              </div>
-
               <div>
-                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Description</label>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Description *</label>
                 <textarea
                   rows={4}
                   required
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                  placeholder="Details about the event..."
+                  placeholder="Description for the event block..."
                 />
               </div>
 
@@ -557,7 +600,7 @@ export default function EventManagementPage() {
                   className="rounded border-gray-300"
                 />
                 <label htmlFor="is_featured" className="text-sm text-[#181411] dark:text-white">
-                  Feature this event (show on homepage)
+                  Feature this event
                 </label>
               </div>
 
@@ -571,10 +614,10 @@ export default function EventManagementPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={actionLoading === -1}
+                  disabled={actionLoading === -1 || uploadingImage}
                   className="flex-1 py-3 px-4 rounded-lg bg-primary hover:bg-orange-600 text-white font-bold transition-colors disabled:opacity-50"
                 >
-                  {actionLoading === -1 ? 'Saving...' : editingEvent ? 'Update Event' : 'Create Event'}
+                  {actionLoading === -1 ? 'Saving...' : editingEvent ? 'Update Event' : 'Add Event'}
                 </button>
               </div>
             </form>
