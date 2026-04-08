@@ -113,7 +113,7 @@ export default function EventsPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#181411] via-transparent to-transparent"></div>
           <div className="relative z-10 flex flex-col items-center gap-4 text-center px-4 max-w-4xl">
             <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
-              Events
+              Upcoming Events
             </h1>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
               Stay connected with upcoming PTA meetings, school celebrations, volunteer opportunities, and community events.
