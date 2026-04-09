@@ -61,15 +61,69 @@ export async function deleteNews(id: number) {
   return res.json();
 }
 
-// Events API
+// Calendar API (calendar_events table → /api/calendar)
+export async function getCalendarEvents(options?: { category?: string; featured?: boolean; upcoming?: boolean }) {
+  const params = new URLSearchParams();
+  if (options?.category) params.set('category', options.category);
+  if (options?.featured) params.set('featured', 'true');
+  if (options?.upcoming) params.set('upcoming', 'true');
+
+  const res = await fetch(`${API_BASE}/api/calendar?${params}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Failed to fetch calendar events');
+  return res.json();
+}
+
+export async function createCalendarEvent(data: {
+  title: string;
+  description: string;
+  date: string;
+  end_date?: string | null;
+  time?: string | null;
+  end_time?: string | null;
+  location: string;
+  category?: string;
+  image?: string;
+  is_featured?: boolean;
+  is_all_day?: boolean;
+}) {
+  const res = await fetch(`${API_BASE}/api/calendar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create calendar event');
+  return res.json();
+}
+
+export async function updateCalendarEvent(id: number, data: Record<string, unknown>) {
+  const res = await fetch(`${API_BASE}/api/calendar`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, ...data }),
+  });
+  if (!res.ok) throw new Error('Failed to update calendar event');
+  return res.json();
+}
+
+export async function deleteCalendarEvent(id: number) {
+  const res = await fetch(`${API_BASE}/api/calendar?id=${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete calendar event');
+  return res.json();
+}
+
+// Events API (events table → /api/events)
 export async function getEvents(options?: { category?: string; featured?: boolean; upcoming?: boolean }) {
   const params = new URLSearchParams();
   if (options?.category) params.set('category', options.category);
   if (options?.featured) params.set('featured', 'true');
   if (options?.upcoming) params.set('upcoming', 'true');
-  
-  const res = await fetch(`${API_BASE}/api/calendar?${params}`, {
-    cache: 'no-store', // Always fetch fresh data from Supabase
+
+  const res = await fetch(`${API_BASE}/api/events?${params}`, {
+    cache: 'no-store',
   });
   if (!res.ok) throw new Error('Failed to fetch events');
   return res.json();
@@ -88,7 +142,7 @@ export async function createEvent(data: {
   is_featured?: boolean;
   is_all_day?: boolean;
 }) {
-  const res = await fetch(`${API_BASE}/api/calendar`, {
+  const res = await fetch(`${API_BASE}/api/events`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -98,7 +152,7 @@ export async function createEvent(data: {
 }
 
 export async function updateEvent(id: number, data: Record<string, unknown>) {
-  const res = await fetch(`${API_BASE}/api/calendar`, {
+  const res = await fetch(`${API_BASE}/api/events`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, ...data }),
@@ -108,7 +162,7 @@ export async function updateEvent(id: number, data: Record<string, unknown>) {
 }
 
 export async function deleteEvent(id: number) {
-  const res = await fetch(`${API_BASE}/api/calendar?id=${id}`, {
+  const res = await fetch(`${API_BASE}/api/events?id=${id}`, {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete event');
@@ -571,7 +625,7 @@ export interface NewsArticle {
   published_at: string | null;
 }
 
-export interface Event {
+export interface CalendarEvent {
   id: number;
   title: string;
   description: string;
@@ -586,6 +640,23 @@ export interface Event {
   is_all_day: boolean;
   volunteer_active: boolean;
   volunteer_display_order: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Event {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  end_date: string | null;
+  time: string | null;
+  end_time: string | null;
+  location: string;
+  category: string | null;
+  image: string | null;
+  is_featured: boolean;
+  is_all_day: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -677,7 +748,7 @@ export interface VolunteerShift {
   updated_at: string;
 }
 
-export interface VolunteerEvent extends Event {
+export interface VolunteerEvent extends CalendarEvent {
   shifts: VolunteerShift[];
 }
 

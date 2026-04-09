@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// Force dynamic rendering and disable caching
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -14,7 +13,7 @@ export async function GET(request: Request) {
     const upcoming = searchParams.get('upcoming');
 
     let query = supabase
-      .from('calendar_events')
+      .from('events')
       .select('*')
       .order('date', { ascending: true });
 
@@ -41,16 +40,16 @@ export async function GET(request: Request) {
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Error in events API route:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: error.message || 'Failed to connect to Supabase',
-      details: error.cause?.message || error.stack
+      details: error.cause?.message || error.stack,
     }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   const supabase = await createClient();
-  
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -60,7 +59,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const { data, error } = await supabase
-      .from('calendar_events')
+      .from('events')
       .insert({
         title: body.title,
         description: body.description,
@@ -70,7 +69,7 @@ export async function POST(request: Request) {
         end_time: body.end_time || null,
         location: body.location,
         category: body.category,
-        image: body.image,
+        image: body.image || null,
         is_featured: body.is_featured || false,
         is_all_day: body.is_all_day || false,
       })
@@ -91,7 +90,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   const supabase = await createClient();
-  
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -106,7 +105,7 @@ export async function PUT(request: Request) {
     }
 
     const { data, error } = await supabase
-      .from('calendar_events')
+      .from('events')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -126,7 +125,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   const supabase = await createClient();
-  
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -140,7 +139,7 @@ export async function DELETE(request: Request) {
   }
 
   const { error } = await supabase
-    .from('calendar_events')
+    .from('events')
     .delete()
     .eq('id', id);
 

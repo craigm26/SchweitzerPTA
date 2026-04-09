@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getEvents, createEvent, updateEvent, deleteEvent, Event } from '@/lib/api';
+import { getCalendarEvents, createCalendarEvent, updateCalendarEvent, deleteCalendarEvent, CalendarEvent } from '@/lib/api';
 
-export default function EventManagementPage() {
-  const [events, setEvents] = useState<Event[]>([]);
+export default function CalendarManagementPage() {
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -33,10 +33,10 @@ export default function EventManagementPage() {
 
   async function fetchEvents() {
     try {
-      const data = await getEvents();
+      const data = await getCalendarEvents();
       setEvents(data || []);
     } catch (error) {
-      console.error('Error fetching events:', error);
+      console.error('Error fetching calendar events:', error);
     } finally {
       setLoading(false);
     }
@@ -55,49 +55,49 @@ export default function EventManagementPage() {
 
     try {
       if (editingEvent) {
-        await updateEvent(editingEvent.id, dataToSubmit);
+        await updateCalendarEvent(editingEvent.id, dataToSubmit);
         setEvents((prev) =>
-          prev.map((e) => (e.id === editingEvent.id ? { ...e, ...dataToSubmit } as Event : e))
+          prev.map((e) => (e.id === editingEvent.id ? { ...e, ...dataToSubmit } as CalendarEvent : e))
         );
       } else {
-        const newEvent = await createEvent(dataToSubmit);
+        const newEvent = await createCalendarEvent(dataToSubmit);
         setEvents((prev) => [...prev, newEvent]);
         fetchEvents();
       }
       closeModal();
     } catch (error) {
-      console.error('Error saving event:', error);
-      alert('Failed to save event');
+      console.error('Error saving calendar event:', error);
+      alert('Failed to save calendar entry');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this event?')) return;
+    if (!confirm('Are you sure you want to delete this calendar entry?')) return;
 
     setActionLoading(id);
     try {
-      await deleteEvent(id);
+      await deleteCalendarEvent(id);
       setEvents((prev) => prev.filter((e) => e.id !== id));
     } catch (error) {
-      console.error('Error deleting event:', error);
-      alert('Failed to delete event');
+      console.error('Error deleting calendar event:', error);
+      alert('Failed to delete calendar entry');
     } finally {
       setActionLoading(null);
     }
   };
 
-  const toggleFeatured = async (event: Event) => {
+  const toggleFeatured = async (event: CalendarEvent) => {
     setActionLoading(event.id);
     try {
-      await updateEvent(event.id, { is_featured: !event.is_featured });
+      await updateCalendarEvent(event.id, { is_featured: !event.is_featured });
       setEvents((prev) =>
         prev.map((e) => (e.id === event.id ? { ...e, is_featured: !e.is_featured } : e))
       );
     } catch (error) {
-      console.error('Error updating event:', error);
-      alert('Failed to update event');
+      console.error('Error updating calendar event:', error);
+      alert('Failed to update calendar entry');
     } finally {
       setActionLoading(null);
     }
@@ -112,7 +112,7 @@ export default function EventManagementPage() {
       time: '18:00',
       end_time: '',
       location: '',
-      category: 'general',
+      category: 'meeting',
       image: '',
       is_featured: false,
       is_all_day: false,
@@ -121,7 +121,7 @@ export default function EventManagementPage() {
     setShowAddModal(true);
   };
 
-  const openEditModal = (event: Event) => {
+  const openEditModal = (event: CalendarEvent) => {
     const isValidTime = event.time && /^\d{2}:\d{2}(:\d{2})?$/.test(event.time);
     const isAllDay = !isValidTime || event.is_all_day;
     setFormData({
@@ -167,7 +167,7 @@ export default function EventManagementPage() {
     return `${hour12}:${minute} ${period}`;
   };
 
-  const formatEventTimeRange = (event: Event) => {
+  const formatEventTimeRange = (event: CalendarEvent) => {
     if (event.is_all_day || !event.time) return 'All Day';
     const tzLabel = getPacificTimeZoneLabel(event.date);
     const start = formatTime12Hour(event.time);
@@ -177,7 +177,7 @@ export default function EventManagementPage() {
     return `${start} ${tzLabel}`;
   };
 
-  const getEventEndDate = (event: Event) => {
+  const getEventEndDate = (event: CalendarEvent) => {
     if (event.end_date && event.end_date >= event.date) return event.end_date;
     return event.date;
   };
@@ -192,10 +192,10 @@ export default function EventManagementPage() {
 
   const getCategoryColor = (category: string | null) => {
     switch (category) {
-      case 'workshop': return 'bg-blue-100 text-blue-600';
+      case 'meeting': return 'bg-blue-100 text-blue-600';
       case 'fundraiser': return 'bg-green-100 text-green-600';
       case 'social': return 'bg-purple-100 text-purple-600';
-      case 'community': return 'bg-orange-100 text-orange-600';
+      case 'volunteer': return 'bg-orange-100 text-orange-600';
       default: return 'bg-gray-100 text-gray-600';
     }
   };
@@ -205,7 +205,7 @@ export default function EventManagementPage() {
       <div className="p-6 lg:p-10 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500">Loading events...</p>
+          <p className="text-gray-500">Loading calendar...</p>
         </div>
       </div>
     );
@@ -220,15 +220,15 @@ export default function EventManagementPage() {
               Admin
             </Link>
             <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-            <span className="font-medium text-gray-900 dark:text-white">Events</span>
+            <span className="font-medium text-gray-900 dark:text-white">Calendar</span>
           </div>
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-                Event Management
+                Calendar Management
               </h2>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Manage events displayed on the public events page.
+                Schedule and manage calendar entries, meetings, and school dates.
               </p>
             </div>
             <button
@@ -236,7 +236,7 @@ export default function EventManagementPage() {
               className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >
               <span className="material-symbols-outlined">add</span>
-              Add New Event
+              Add Calendar Entry
             </button>
           </div>
         </div>
@@ -246,7 +246,7 @@ export default function EventManagementPage() {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
             <input
               type="text"
-              placeholder="Search events by title or location..."
+              placeholder="Search calendar by title or location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -258,10 +258,10 @@ export default function EventManagementPage() {
             className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
             <option value="all">All Categories</option>
-            <option value="workshop">Workshop</option>
+            <option value="meeting">Meeting</option>
             <option value="fundraiser">Fundraiser</option>
             <option value="social">Social</option>
-            <option value="community">Community</option>
+            <option value="volunteer">Volunteer</option>
             <option value="general">General</option>
           </select>
         </div>
@@ -269,15 +269,15 @@ export default function EventManagementPage() {
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#2a221a] shadow-sm">
           {filteredEvents.length === 0 ? (
             <div className="p-12 text-center">
-              <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">event_busy</span>
-              <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No events found</h3>
-              <p className="text-gray-500 mb-4">Create your first event to get started.</p>
+              <span className="material-symbols-outlined text-5xl text-gray-300 mb-4">calendar_month</span>
+              <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">No calendar entries found</h3>
+              <p className="text-gray-500 mb-4">Create your first calendar entry to get started.</p>
               <button
                 onClick={openAddModal}
                 className="inline-flex items-center gap-2 bg-primary hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold transition-colors"
               >
                 <span className="material-symbols-outlined">add</span>
-                Add Event
+                Add Calendar Entry
               </button>
             </div>
           ) : (
@@ -287,7 +287,7 @@ export default function EventManagementPage() {
                   <thead>
                     <tr className="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-[#181411]">
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Date & Time</th>
-                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Event Details</th>
+                      <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Details</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Location</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Category</th>
                       <th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">Featured</th>
@@ -371,7 +371,7 @@ export default function EventManagementPage() {
                 </table>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
-                Showing {filteredEvents.length} of {events.length} events
+                Showing {filteredEvents.length} of {events.length} calendar entries
               </div>
             </>
           )}
@@ -383,7 +383,7 @@ export default function EventManagementPage() {
           <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-[#181411] dark:text-white">
-                {editingEvent ? 'Edit Event' : 'Add New Event'}
+                {editingEvent ? 'Edit Calendar Entry' : 'Add Calendar Entry'}
               </h3>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                 <span className="material-symbols-outlined">close</span>
@@ -391,14 +391,14 @@ export default function EventManagementPage() {
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Event Title *</label>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-1">Title *</label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="e.g. Spring Community Fair"
+                  placeholder="e.g. Monthly PTA Meeting"
                 />
               </div>
 
@@ -410,7 +410,7 @@ export default function EventManagementPage() {
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="e.g. School Gymnasium"
+                  placeholder="e.g. School Cafeteria"
                 />
               </div>
 
@@ -440,12 +440,12 @@ export default function EventManagementPage() {
               <div className="flex items-center gap-2 py-2">
                 <input
                   type="checkbox"
-                  id="evt_is_all_day"
+                  id="cal_is_all_day"
                   checked={formData.is_all_day}
                   onChange={(e) => setFormData({ ...formData, is_all_day: e.target.checked })}
                   className="rounded border-gray-300"
                 />
-                <label htmlFor="evt_is_all_day" className="text-sm font-medium text-[#181411] dark:text-white">
+                <label htmlFor="cal_is_all_day" className="text-sm font-medium text-[#181411] dark:text-white">
                   All Day Event
                 </label>
               </div>
@@ -482,10 +482,10 @@ export default function EventManagementPage() {
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
-                    <option value="workshop">Workshop</option>
+                    <option value="meeting">Meeting</option>
                     <option value="fundraiser">Fundraiser</option>
                     <option value="social">Social</option>
-                    <option value="community">Community</option>
+                    <option value="volunteer">Volunteer</option>
                     <option value="general">General</option>
                   </select>
                 </div>
@@ -509,20 +509,20 @@ export default function EventManagementPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                  placeholder="Details about the event..."
+                  placeholder="Details about this calendar entry..."
                 />
               </div>
 
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  id="evt_is_featured"
+                  id="cal_is_featured"
                   checked={formData.is_featured}
                   onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
                   className="rounded border-gray-300"
                 />
-                <label htmlFor="evt_is_featured" className="text-sm text-[#181411] dark:text-white">
-                  Feature this event (show on homepage)
+                <label htmlFor="cal_is_featured" className="text-sm text-[#181411] dark:text-white">
+                  Feature this entry (show on homepage)
                 </label>
               </div>
 
@@ -539,7 +539,7 @@ export default function EventManagementPage() {
                   disabled={actionLoading === -1}
                   className="flex-1 py-3 px-4 rounded-lg bg-primary hover:bg-orange-600 text-white font-bold transition-colors disabled:opacity-50"
                 >
-                  {actionLoading === -1 ? 'Saving...' : editingEvent ? 'Update Event' : 'Create Event'}
+                  {actionLoading === -1 ? 'Saving...' : editingEvent ? 'Update Entry' : 'Create Entry'}
                 </button>
               </div>
             </form>

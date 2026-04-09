@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getNews, getEvents, getDonors, NewsArticle, Event, Donor } from '@/lib/api';
+import { getNews, getCalendarEvents, getDonors, NewsArticle, CalendarEvent, Donor } from '@/lib/api';
 
 export default function NewsPage() {
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [featuredArticle, setFeaturedArticle] = useState<NewsArticle | null>(null);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,7 +17,7 @@ export default function NewsPage() {
       try {
         const [newsData, eventsData, donorsData] = await Promise.all([
           getNews({ status: 'published' }),
-          getEvents({ upcoming: true }),
+          getCalendarEvents({ upcoming: true }),
           getDonors(),
         ]);
         

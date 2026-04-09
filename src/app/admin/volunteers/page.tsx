@@ -9,7 +9,7 @@ import {
   deleteVolunteerShift,
   getVolunteerEvents,
   updateVolunteerSignup,
-  updateEvent,
+  updateCalendarEvent,
   updateVolunteerShift,
   VolunteerEvent,
   VolunteerShift,
@@ -122,7 +122,7 @@ export default function VolunteerManagementPage() {
     const loadingKey = `event-${event.id}`;
     setActionLoading(loadingKey);
     try {
-      await updateEvent(event.id, { volunteer_active: !event.volunteer_active });
+      await updateCalendarEvent(event.id, { volunteer_active: !event.volunteer_active });
       setEvents((prev) =>
         prev.map((item) =>
           item.id === event.id ? { ...item, volunteer_active: !item.volunteer_active } : item
@@ -148,7 +148,7 @@ export default function VolunteerManagementPage() {
 
     setActionLoading(loadingKey);
     try {
-      await updateEvent(event.id, { volunteer_display_order: parsedOrder });
+      await updateCalendarEvent(event.id, { volunteer_display_order: parsedOrder });
       setEvents((prev) =>
         [...prev]
           .map((item) =>

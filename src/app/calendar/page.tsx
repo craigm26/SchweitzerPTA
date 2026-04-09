@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getEvents, getDonors, Event, Donor } from '@/lib/api';
+import { getCalendarEvents, getDonors, CalendarEvent, Donor } from '@/lib/api';
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -14,7 +14,7 @@ export default function EventsPage() {
     async function fetchData() {
       try {
         const [eventsData, donorsData] = await Promise.all([
-          getEvents({ upcoming: true }),
+          getCalendarEvents({ upcoming: true }),
           getDonors(),
         ]);
         setEvents(eventsData || []);
@@ -60,7 +60,7 @@ export default function EventsPage() {
     return `${hour12}:${minute} ${period}`;
   };
 
-  const formatEventTimeRange = (event: Event) => {
+  const formatEventTimeRange = (event: CalendarEvent) => {
     if (event.is_all_day || !event.time) {
       return 'All Day';
     }
@@ -73,14 +73,14 @@ export default function EventsPage() {
     return `${start} ${tzLabel}`;
   };
 
-  const getEventEndDate = (event: Event) => {
+  const getEventEndDate = (event: CalendarEvent) => {
     if (event.end_date && event.end_date >= event.date) {
       return event.end_date;
     }
     return event.date;
   };
 
-  const isEventOnDate = (dateStr: string, event: Event) => {
+  const isEventOnDate = (dateStr: string, event: CalendarEvent) => {
     const endDate = getEventEndDate(event);
     return dateStr >= event.date && dateStr <= endDate;
   };

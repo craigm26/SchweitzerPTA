@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import {
   getNews,
-  getEvents,
+  getCalendarEvents,
   getDonors,
   getDashboardAnalytics,
   NewsArticle,
-  Event,
+  CalendarEvent,
   Donor,
   DashboardAnalytics,
 } from '@/lib/api';
@@ -17,7 +17,7 @@ import {
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [news, setNews] = useState<NewsArticle[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [donors, setDonors] = useState<Donor[]>([]);
   const [analytics, setAnalytics] = useState<DashboardAnalytics>({
     visitors: null,
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
       try {
         const [newsData, eventsData, donorsData] = await Promise.all([
           getNews(),
-          getEvents({ upcoming: true }),
+          getCalendarEvents({ upcoming: true }),
           getDonors({ includeInactive: true }),
         ]);
         const analyticsData = await getDashboardAnalytics({
