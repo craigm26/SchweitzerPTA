@@ -160,13 +160,13 @@ export default function EventsPage() {
               Upcoming Events
             </h1>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
-              Join us for PTA meetings, school spirit events, and community fundraisers! Stay involved and help our
-              Wildcats roar.
+              Browse upcoming PTA meetings, school spirit days, and community fundraisers. Subscribe to get event
+              updates delivered straight to your inbox.
             </h2>
             <div className="mt-4 flex gap-3">
               <button className="flex cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-orange-600 text-white text-base font-bold transition-all shadow-lg shadow-orange-900/50">
-                <span className="mr-2 material-symbols-outlined text-[20px]">calendar_add_on</span>
-                Subscribe to Calendar
+                <span className="mr-2 material-symbols-outlined text-[20px]">notifications_active</span>
+                Subscribe to Events
               </button>
             </div>
           </div>
@@ -230,7 +230,7 @@ export default function EventsPage() {
                     <div>
                       <p className="font-medium text-[#181411] dark:text-white">Did you know?</p>
                       <p className="text-xs mt-1">
-                        You can sync these events directly to your phone calendar by clicking &quot;Subscribe&quot;.
+                        Subscribe to get notified when new events are added or details change.
                       </p>
                     </div>
                   </div>
