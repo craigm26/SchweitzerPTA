@@ -261,7 +261,7 @@ export default function VolunteerPage() {
                             {event.location}
                           </span>
                         </div>
-                        <p className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed mt-3">
+                        <p className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed mt-3 whitespace-pre-line">
                           {event.description}
                         </p>
                       </div>
