@@ -50,6 +50,48 @@ function formatTimeLabel(time: string | null): string | null {
   return `${hour12}:${parts.minute.toString().padStart(2, '0')} ${period}`;
 }
 
+function renderEventDescription(description: string | null | undefined) {
+  if (!description) return null;
+  const paragraphs = description.replace(/\r\n/g, '\n').split(/\n\s*\n/);
+  const labelLine = /^([A-Z][A-Za-z ]{0,15}):\s+(.+)$/;
+
+  return paragraphs.map((paragraph, idx) => {
+    const lines = paragraph.split('\n').map((l) => l.trim()).filter(Boolean);
+    const allLabelLines = lines.length > 0 && lines.every((line) => labelLine.test(line));
+
+    if (allLabelLines) {
+      return (
+        <div
+          key={idx}
+          className="mt-3 rounded-lg border-l-4 border-primary bg-primary/5 dark:bg-primary/10 px-4 py-3"
+        >
+          {lines.map((line, lineIdx) => {
+            const match = line.match(labelLine)!;
+            return (
+              <p
+                key={lineIdx}
+                className="text-sm text-[#181411] dark:text-gray-100"
+              >
+                <span className="font-bold">{match[1]}:</span>{' '}
+                <span>{match[2]}</span>
+              </p>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <p
+        key={idx}
+        className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed mt-3"
+      >
+        {paragraph}
+      </p>
+    );
+  });
+}
+
 function ShiftSignup({
   shift,
   eventTitle,
@@ -261,9 +303,7 @@ export default function VolunteerPage() {
                             {event.location}
                           </span>
                         </div>
-                        <p className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed mt-3 whitespace-pre-line">
-                          {event.description}
-                        </p>
+                        {renderEventDescription(event.description)}
                       </div>
 
                       <div className="flex flex-col gap-4">
