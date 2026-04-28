@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     }
 
     let eventsQuery = supabase
-      .from('events')
+      .from('calendar_events')
       .select('*')
       .order('volunteer_display_order', { ascending: true, nullsFirst: false })
       .order('date', { ascending: true });

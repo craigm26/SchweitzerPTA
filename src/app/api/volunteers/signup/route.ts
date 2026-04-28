@@ -86,7 +86,7 @@ export async function POST(request: Request) {
         .eq('id', body.shift_id);
 
       const { data: event } = await supabase
-        .from('events')
+        .from('calendar_events')
         .select('title, date, location')
         .eq('id', shift.event_id)
         .single();
