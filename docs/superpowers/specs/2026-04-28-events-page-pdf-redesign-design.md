@@ -1,7 +1,7 @@
 # Events Page PDF Flyers + Fundraiser-Style Redesign
 
 **Date:** 2026-04-28
-**Scope:** Public `/events` page and `/admin/events` panel.
+**Scope:** Public `/events` page, `/admin/events` panel, public `/calendar` page, home page (`/`).
 
 ## Problem
 
@@ -13,6 +13,8 @@ The public `/events` page currently shows a calendar widget, an event list, and 
 2. Show that PDF as a clickable thumbnail on the public events page (first-page preview rendered server-side at upload time).
 3. Replace the existing events page layout with a fundraiser-style card list.
 4. Remove the calendar widget from the events page.
+5. Show full event descriptions (no truncation) on the public events page and calendar page.
+6. Remove the "Join the PTA" CTA button from the home page.
 
 ## Non-goals
 
@@ -121,6 +123,22 @@ Content column:
 2. `image` (existing field, fallback for events without a PDF).
 3. Placeholder.
 
+## Additional small changes
+
+These are unrelated to the PDF feature but bundled into the same workstream.
+
+### Calendar page: full descriptions
+
+`src/app/calendar/page.tsx:275` currently caps event descriptions at `line-clamp-2`. Drop the `line-clamp-2` class so the full description is visible. No other layout changes — the existing card just grows in height.
+
+### Events page: full descriptions
+
+Already covered by the Part 3 rewrite — the new card explicitly does not clamp the description (matching the fundraiser cards). No additional change beyond Part 3.
+
+### Home page: remove "Join the PTA" CTA
+
+`src/app/page.tsx:125-129` wraps a `<Button>Join the PTA</Button>` inside a `<Link href="/about">`, which sits inside its own flex `<div>`. Remove the entire wrapping `<div>` (lines 125-129). The newsletter subscribe form directly below remains.
+
 ## Files to change
 
 - `supabase/migrations/<new>_events_pdf_flyer.sql` — new migration for the three columns.
@@ -129,7 +147,9 @@ Content column:
 - `src/app/api/events/route.ts` — pass new fields through `POST` and `PUT`.
 - `src/app/api/events/upload-flyer/route.ts` — **new file**, PDF upload + thumbnail render endpoint.
 - `src/app/admin/events/page.tsx` — add PDF upload UI to the modal, extend form state.
-- `src/app/events/page.tsx` — full body rewrite to fundraiser-style cards; remove calendar + sidebar.
+- `src/app/events/page.tsx` — full body rewrite to fundraiser-style cards; remove calendar + sidebar; full descriptions.
+- `src/app/calendar/page.tsx` — drop `line-clamp-2` on the event description.
+- `src/app/page.tsx` — remove the "Join the PTA" Link/Button block.
 - `package.json` — add `pdfjs-dist` and `@napi-rs/canvas`.
 
 ## Testing
