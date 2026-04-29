@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
   // build is loaded dynamically and shouldn't be split either.
   serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist'],
 
+  // pdfjs-dist v5 dynamically imports its worker module, which Vercel's file
+  // tracer doesn't statically detect. Force-include it for the upload route.
+  outputFileTracingIncludes: {
+    '/api/events/upload-flyer': [
+      './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
+    ],
+  },
+
   // Optimize images
   images: {
     formats: ['image/avif', 'image/webp'],
