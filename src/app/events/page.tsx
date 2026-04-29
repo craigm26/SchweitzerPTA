@@ -1,25 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { getEvents, getDonors, Event, Donor } from '@/lib/api';
-import React from 'react';
+import { getEvents, Event } from '@/lib/api';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [eventsData, donorsData] = await Promise.all([
-          getEvents({ upcoming: true }),
-          getDonors(),
-        ]);
+        const eventsData = await getEvents({ upcoming: true });
         setEvents(eventsData || []);
-        setDonors(donorsData?.slice(0, 3) || []);
       } catch (error) {
         console.error('Error fetching events data:', error);
       } finally {
@@ -30,10 +22,8 @@ export default function EventsPage() {
   }, []);
 
   const getDateParts = (dateString: string) => {
-    // Parse date string directly to avoid timezone issues
-    // dateString format: "YYYY-MM-DD"
     const [year, month, day] = dateString.split('-').map(Number);
-    const date = new Date(year, month - 1, day); // month is 0-indexed
+    const date = new Date(year, month - 1, day);
     return {
       month: date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
       day: day.toString().padStart(2, '0'),
@@ -74,58 +64,6 @@ export default function EventsPage() {
     return `${start} ${tzLabel}`;
   };
 
-  const getEventEndDate = (event: Event) => {
-    if (event.end_date && event.end_date >= event.date) {
-      return event.end_date;
-    }
-    return event.date;
-  };
-
-  const isEventOnDate = (dateStr: string, event: Event) => {
-    const endDate = getEventEndDate(event);
-    return dateStr >= event.date && dateStr <= endDate;
-  };
-
-
-  // Generate calendar days for current month
-  const generateCalendarDays = () => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    const days: { day: number | ''; events: boolean; highlight: boolean }[] = [];
-    
-    // Empty cells for days before the 1st
-    for (let i = 0; i < firstDay; i++) {
-      days.push({ day: '', events: false, highlight: false });
-    }
-    
-    // Days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const hasEvent = events.some((e) => isEventOnDate(dateStr, e));
-      const isToday = new Date().toISOString().split('T')[0] === dateStr;
-      days.push({ day, events: hasEvent, highlight: isToday });
-    }
-    
-    return days;
-  };
-
-  const calendarDays = generateCalendarDays();
-
-  const formatMonthYear = (date: Date) => {
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  };
-
-  const prevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
-  };
-
   if (loading) {
     return (
       <main className="layout-container flex h-full grow flex-col pb-20">
@@ -141,7 +79,7 @@ export default function EventsPage() {
 
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
-      {/* Hero Section */}
+      {/* Hero */}
       <div className="w-full bg-[#181411]">
         <div className="relative w-full h-[320px] flex items-center justify-center overflow-hidden">
           <div
@@ -153,15 +91,12 @@ export default function EventsPage() {
           ></div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#181411] via-transparent to-transparent"></div>
           <div className="relative z-10 flex flex-col items-center gap-4 text-center px-4 max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-2">
-              <span className="material-symbols-outlined text-sm">event</span> School Year {new Date().getFullYear()}-{new Date().getFullYear() + 1}
-            </div>
             <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
               Upcoming Events
             </h1>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
-              Browse upcoming PTA meetings, school spirit days, and community fundraisers. Subscribe to get event
-              updates delivered straight to your inbox.
+              Browse upcoming PTA meetings, school spirit days, and community fundraisers. Subscribe to get
+              event updates delivered straight to your inbox.
             </h2>
             <div className="mt-4 flex gap-3">
               <button className="flex cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-orange-600 text-white text-base font-bold transition-all shadow-lg shadow-orange-900/50">
@@ -174,187 +109,110 @@ export default function EventsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
-        <div className="flex flex-col lg:flex-row gap-8 max-w-[1400px] w-full">
-          {/* Main content area */}
-          <div className="flex-1 flex flex-col gap-6">
-            {/* Header */}
-            <div className="flex flex-wrap gap-3 items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-2xl font-bold text-[#181411] dark:text-white hidden md:block">
-                {formatMonthYear(currentMonth)}
-              </h3>
+      <div className="px-4 md:px-10 lg:px-20 py-10 flex justify-center">
+        <div className="flex w-full max-w-6xl flex-col gap-6">
+          {events.length === 0 ? (
+            <div className="text-center py-12 bg-white dark:bg-[#2a221a] rounded-xl border border-gray-100 dark:border-gray-800">
+              <span className="material-symbols-outlined text-4xl text-gray-300 mb-4">event_busy</span>
+              <p className="text-gray-500">No upcoming events.</p>
             </div>
+          ) : (
+            events.map((event) => {
+              const { month, day } = getDateParts(event.date);
+              const thumbnail = event.pdf_thumbnail_url || event.image;
+              const hasPdf = !!event.pdf_url;
 
-            {/* Calendar and Events Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
-              {/* Calendar Widget */}
-              <div className="xl:col-span-2 bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 h-fit">
-                <div className="flex items-center justify-between mb-4">
-                  <button onClick={prevMonth} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                    <span className="material-symbols-outlined text-gray-500">chevron_left</span>
-                  </button>
-                  <span className="font-bold text-[#181411] dark:text-white">{formatMonthYear(currentMonth)}</span>
-                  <button onClick={nextMonth} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                    <span className="material-symbols-outlined text-gray-500">chevron_right</span>
-                  </button>
-                </div>
-                <div className="grid grid-cols-7 gap-1 text-center text-sm">
-                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                    <div key={i} className="py-2 text-gray-400 font-medium">
-                      {day}
-                    </div>
-                  ))}
-                  {calendarDays.map((d, i) => (
-                    <div
-                      key={i}
-                      className={`py-2 rounded-full relative cursor-pointer transition-colors ${
-                        d.highlight
-                          ? 'bg-primary text-white font-bold'
-                          : d.events
-                            ? 'text-primary font-bold hover:bg-primary/10'
-                            : d.day
-                              ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-[#181411] dark:text-white'
-                              : ''
-                      }`}
-                    >
-                      {d.day}
-                      {d.events && !d.highlight && (
-                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"></span>
+              return (
+                <div
+                  key={event.id}
+                  className="w-full overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] shadow-sm"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
+                    {thumbnail ? (
+                      hasPdf ? (
+                        <a
+                          href={event.pdf_url || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="relative h-56 md:h-full w-full bg-gray-100 dark:bg-[#1f1a14] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          title="Open flyer (PDF)"
+                          aria-label={`Open flyer PDF for ${event.title}`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={thumbnail}
+                            alt={event.title}
+                            className="h-full w-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
+                        </a>
+                      ) : (
+                        <div className="relative h-56 md:h-full w-full bg-gray-100 dark:bg-[#1f1a14] overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={thumbnail}
+                            alt={event.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      )
+                    ) : (
+                      <div className="relative h-56 md:h-full bg-gray-100 dark:bg-[#1f1a14] flex items-center justify-center text-sm text-gray-400">
+                        No flyer available
+                      </div>
+                    )}
+                    <div className="p-6 flex flex-col gap-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col items-center justify-center min-w-14 px-2 py-1 rounded-md bg-primary/10">
+                            <span className="text-primary text-xs font-bold uppercase">{month}</span>
+                            <span className="text-[#181411] dark:text-white text-xl font-bold leading-none">
+                              {day}
+                            </span>
+                          </div>
+                          <h3 className="text-2xl font-bold text-[#181411] dark:text-white">
+                            {event.title}
+                          </h3>
+                        </div>
+                        {event.is_featured && (
+                          <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-2 py-1 rounded-md uppercase">
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">schedule</span>
+                          {formatEventTimeRange(event)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">location_on</span>
+                          {event.location}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed whitespace-pre-line">
+                        {event.description}
+                      </p>
+                      {hasPdf && (
+                        <div className="flex flex-wrap items-center gap-3">
+                          <a
+                            href={event.pdf_url || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-primary font-bold hover:bg-primary/20 transition-colors"
+                            title={event.pdf_filename || 'View flyer'}
+                          >
+                            View Flyer (PDF)
+                            <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                          </a>
+                        </div>
                       )}
                     </div>
-                  ))}
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <div className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
-                    <span className="material-symbols-outlined text-primary text-lg">lightbulb</span>
-                    <div>
-                      <p className="font-medium text-[#181411] dark:text-white">Did you know?</p>
-                      <p className="text-xs mt-1">
-                        Subscribe to get notified when new events are added or details change.
-                      </p>
-                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Event Cards */}
-              <div className="xl:col-span-3 flex flex-col gap-4">
-                {events.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-[#2a221a] rounded-xl">
-                    <span className="material-symbols-outlined text-4xl text-gray-300 mb-4">event_busy</span>
-                    <p className="text-gray-500">No events found.</p>
-                  </div>
-                ) : (
-                  events.map((event) => {
-                    const { month, day } = getDateParts(event.date);
-                    return (
-                      <div
-                        key={event.id}
-                        className="bg-white dark:bg-[#2a221a] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex gap-4"
-                      >
-                        {/* Date Block */}
-                        <div className="flex flex-col items-center justify-center w-16 shrink-0">
-                          <span className="text-primary text-xs font-bold uppercase">{month}</span>
-                          <span className="text-[#181411] dark:text-white text-2xl font-bold">{day}</span>
-                        </div>
-                        {/* Event Details */}
-                        <div className="flex-1 flex flex-col gap-2">
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-[#181411] dark:text-white font-bold text-lg">{event.title}</h4>
-                            {event.is_featured && (
-                              <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-2 py-1 rounded-md uppercase">
-                                Featured
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400">
-                            <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-sm">schedule</span>
-                              {formatEventTimeRange(event)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-sm">location_on</span> {event.location}
-                            </span>
-                          </div>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">{event.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <button className="px-4 py-2 rounded-lg text-sm font-bold transition-colors bg-primary hover:bg-orange-600 text-white">
-                              RSVP
-                            </button>
-                            <button className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                              <span className="material-symbols-outlined text-gray-500 text-lg">share</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:w-80 shrink-0 flex flex-col gap-6">
-            {/* Community Partners Card */}
-            <div className="bg-[#181411] text-white rounded-xl p-6">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary text-2xl">volunteer_activism</span>
-                </div>
-                <h4 className="text-lg font-bold text-center">Community Partners</h4>
-                <p className="text-gray-400 text-sm text-center">
-                  A huge thank you to our donors for supporting our Wildcats!
-                </p>
-                <div className="flex flex-col gap-3 w-full">
-                  {donors.length === 0 ? (
-                    [1, 2, 3].map((i) => (
-                      <div key={i} className="bg-white rounded-lg p-3 flex items-center justify-center h-12">
-                        <span className="material-symbols-outlined text-gray-300">volunteer_activism</span>
-                      </div>
-                    ))
-                  ) : (
-                    donors.map((donor) => (
-                      <a
-                        key={donor.id}
-                        href={donor.website || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-white rounded-lg p-3 flex items-center justify-center h-12 hover:bg-gray-100 transition-colors"
-                      >
-                        {donor.logo ? (
-                          <img src={donor.logo} alt={donor.name} className="max-h-6 max-w-full object-contain" />
-                        ) : (
-                          <span className="text-xs font-bold text-gray-600">{donor.name}</span>
-                        )}
-                      </a>
-                    ))
-                  )}
-                </div>
-                <Link href="/donors" className="text-primary text-sm font-bold hover:underline flex items-center gap-1">
-                  Become a Donor <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Newsletter Signup */}
-            <div className="bg-white dark:bg-[#2a221a] rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-              <h4 className="font-bold text-[#181411] dark:text-white mb-2">Stay in the Loop</h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Get the weekly Wildcat Tales newsletter delivered to your inbox.
-              </p>
-              <div className="flex flex-col gap-3">
-                <input
-                  type="email"
-                  placeholder="Parent's Email"
-                  className="px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                />
-                <button className="w-full bg-[#181411] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-[#181411] font-bold py-3 px-4 rounded-lg transition-colors text-sm">
-                  Subscribe
-                </button>
-              </div>
-            </div>
-          </div>
+              );
+            })
+          )}
         </div>
       </div>
     </main>
