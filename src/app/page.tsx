@@ -1,9 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import Button from '@/components/Button';
 
 export default function Home() {
   const [email, setEmail] = useState('');
@@ -121,11 +119,6 @@ export default function Home() {
                     Once a Wildcat, always a Wildcat!
                   </p>
                 </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/about">
-                  <Button size="large">Join the PTA</Button>
-                </Link>
               </div>
               <form onSubmit={handleSubscribe} className="max-w-xl">
                 <label
