@@ -90,13 +90,14 @@ The form's `formData` state grows three fields: `pdf_url`, `pdf_filename`, `pdf_
 
 ### Public events page (`src/app/events/page.tsx`)
 
-Replace the page body. Hero stays (orange "Subscribe to Events" button included).
+Replace the page body. Hero stays (orange "Subscribe to Events" button included), with one tweak: the "School Year YYYY-YYYY" pill at the top of the hero is removed (it doesn't exist on the fundraiser hero either).
 
 **Removed:**
 - Calendar widget and its month nav (`generateCalendarDays`, `prevMonth`, `nextMonth`, `currentMonth` state, the calendar grid).
 - Right sidebar (Community Partners card + Newsletter signup).
 - The 3-column grid layout.
 - Donor fetch (`getDonors`, `donors` state).
+- "School Year YYYY-YYYY" pill in the hero.
 
 **New layout** — mirrors `/fundraisers`:
 - Centered container, `max-w-6xl`, vertical stack of cards with `gap-6`.
