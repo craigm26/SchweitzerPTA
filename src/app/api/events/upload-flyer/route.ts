@@ -17,7 +17,10 @@ async function renderFirstPageToPng(pdfBuffer: ArrayBuffer): Promise<Buffer | nu
     const loadingTask = pdfjs.getDocument({
       data: new Uint8Array(pdfBuffer),
       useWorkerFetch: false,
-      useSystemFonts: true,
+      // Vercel's serverless filesystem has no system fonts and no FontFace
+      // API; both have to be off or pdfjs throws when text glyphs are missing.
+      useSystemFonts: false,
+      disableFontFace: true,
     });
     const doc = await loadingTask.promise;
     const page = await doc.getPage(1);
@@ -33,7 +36,10 @@ async function renderFirstPageToPng(pdfBuffer: ArrayBuffer): Promise<Buffer | nu
     }).promise;
     return canvas.toBuffer('image/png');
   } catch (error) {
-    console.error('PDF thumbnail render failed:', error);
+    const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    console.error('PDF thumbnail render failed:', message);
+    if (stack) console.error(stack);
     return null;
   }
 }
