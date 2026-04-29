@@ -11,9 +11,12 @@ const nextConfig: NextConfig = {
 
   // pdfjs-dist v5 dynamically imports its worker module, which Vercel's file
   // tracer doesn't statically detect. Force-include it for the upload route.
+  // Glob the real path under pnpm's content-addressed store so Vercel doesn't
+  // try to package the symlinked node_modules/pdfjs-dist directory directly
+  // (which produces an "invalid deployment package" error).
   outputFileTracingIncludes: {
     '/api/events/upload-flyer': [
-      './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
+      './node_modules/.pnpm/pdfjs-dist@*/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
     ],
   },
 
