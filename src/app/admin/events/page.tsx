@@ -623,6 +623,12 @@ export default function EventManagementPage() {
                     </label>
                   </div>
                 )}
+                {pdfUploading && formData.pdf_url && (
+                  <p className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                    <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                    Uploading replacement and rendering preview...
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -688,10 +694,16 @@ export default function EventManagementPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={actionLoading === -1}
+                  disabled={actionLoading === -1 || pdfUploading}
                   className="flex-1 py-3 px-4 rounded-lg bg-primary hover:bg-orange-600 text-white font-bold transition-colors disabled:opacity-50"
                 >
-                  {actionLoading === -1 ? 'Saving...' : editingEvent ? 'Update Event' : 'Create Event'}
+                  {actionLoading === -1
+                    ? 'Saving...'
+                    : pdfUploading
+                      ? 'Waiting for flyer...'
+                      : editingEvent
+                        ? 'Update Event'
+                        : 'Create Event'}
                 </button>
               </div>
             </form>
