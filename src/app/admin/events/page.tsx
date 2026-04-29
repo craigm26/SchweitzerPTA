@@ -31,6 +31,9 @@ export default function EventManagementPage() {
   });
 
   const pdfInputRef = useRef<HTMLInputElement>(null);
+  // Bumped on every modal close so a late-arriving upload response can't
+  // pollute the form state of a subsequently opened modal.
+  const pdfUploadSessionRef = useRef(0);
   const [pdfUploading, setPdfUploading] = useState(false);
 
   useEffect(() => {
@@ -127,6 +130,7 @@ export default function EventManagementPage() {
       return;
     }
 
+    const session = pdfUploadSessionRef.current;
     setPdfUploading(true);
     try {
       const fd = new FormData();
@@ -140,6 +144,7 @@ export default function EventManagementPage() {
         throw new Error(err.error || 'Upload failed');
       }
       const { pdf_url, pdf_filename, pdf_thumbnail_url } = await res.json();
+      if (session !== pdfUploadSessionRef.current) return;
       setFormData((prev) => ({
         ...prev,
         pdf_url: pdf_url || '',
@@ -148,9 +153,12 @@ export default function EventManagementPage() {
       }));
     } catch (error) {
       console.error('Error uploading flyer:', error);
+      if (session !== pdfUploadSessionRef.current) return;
       alert(error instanceof Error ? error.message : 'Failed to upload PDF');
     } finally {
-      setPdfUploading(false);
+      if (session === pdfUploadSessionRef.current) {
+        setPdfUploading(false);
+      }
       if (pdfInputRef.current) pdfInputRef.current.value = '';
     }
   };
@@ -210,8 +218,10 @@ export default function EventManagementPage() {
   };
 
   const closeModal = () => {
+    pdfUploadSessionRef.current += 1;
     setShowAddModal(false);
     setEditingEvent(null);
+    setPdfUploading(false);
   };
 
   const getPacificTimeZoneLabel = (dateString: string) => {
