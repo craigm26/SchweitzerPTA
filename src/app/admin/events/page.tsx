@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { getEvents, createEvent, updateEvent, deleteEvent, Event } from '@/lib/api';
 
@@ -23,9 +23,15 @@ export default function EventManagementPage() {
     location: '',
     category: 'general',
     image: '',
+    pdf_url: '',
+    pdf_filename: '',
+    pdf_thumbnail_url: '',
     is_featured: false,
     is_all_day: false,
   });
+
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [pdfUploading, setPdfUploading] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -51,6 +57,9 @@ export default function EventManagementPage() {
       time: formData.is_all_day ? null : (formData.time || null),
       end_time: formData.is_all_day ? null : (formData.end_time || null),
       end_date: formData.end_date || null,
+      pdf_url: formData.pdf_url || null,
+      pdf_filename: formData.pdf_filename || null,
+      pdf_thumbnail_url: formData.pdf_thumbnail_url || null,
     };
 
     try {
@@ -103,6 +112,59 @@ export default function EventManagementPage() {
     }
   };
 
+  const handlePdfSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      alert('Only PDF files are allowed');
+      if (pdfInputRef.current) pdfInputRef.current.value = '';
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      if (pdfInputRef.current) pdfInputRef.current.value = '';
+      return;
+    }
+
+    setPdfUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/events/upload-flyer', {
+        method: 'POST',
+        body: fd,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Upload failed');
+      }
+      const { pdf_url, pdf_filename, pdf_thumbnail_url } = await res.json();
+      setFormData((prev) => ({
+        ...prev,
+        pdf_url: pdf_url || '',
+        pdf_filename: pdf_filename || '',
+        pdf_thumbnail_url: pdf_thumbnail_url || '',
+      }));
+    } catch (error) {
+      console.error('Error uploading flyer:', error);
+      alert(error instanceof Error ? error.message : 'Failed to upload PDF');
+    } finally {
+      setPdfUploading(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = '';
+    }
+  };
+
+  const handlePdfRemove = () => {
+    setFormData((prev) => ({
+      ...prev,
+      pdf_url: '',
+      pdf_filename: '',
+      pdf_thumbnail_url: '',
+    }));
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
+  };
+
   const openAddModal = () => {
     setFormData({
       title: '',
@@ -114,6 +176,9 @@ export default function EventManagementPage() {
       location: '',
       category: 'general',
       image: '',
+      pdf_url: '',
+      pdf_filename: '',
+      pdf_thumbnail_url: '',
       is_featured: false,
       is_all_day: false,
     });
@@ -134,6 +199,9 @@ export default function EventManagementPage() {
       location: event.location,
       category: event.category || 'general',
       image: event.image || '',
+      pdf_url: event.pdf_url || '',
+      pdf_filename: event.pdf_filename || '',
+      pdf_thumbnail_url: event.pdf_thumbnail_url || '',
       is_featured: event.is_featured,
       is_all_day: isAllDay,
     });
@@ -471,6 +539,80 @@ export default function EventManagementPage() {
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:bg-gray-100 dark:disabled:bg-gray-800"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#181411] dark:text-white mb-2">
+                  Flyer (PDF, optional)
+                </label>
+                {formData.pdf_url ? (
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20">
+                    {formData.pdf_thumbnail_url ? (
+                      <img
+                        src={formData.pdf_thumbnail_url}
+                        alt=""
+                        className="w-16 h-20 object-cover rounded border border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-16 h-20 flex items-center justify-center rounded border border-gray-200 bg-white">
+                        <span className="material-symbols-outlined text-3xl text-gray-400">picture_as_pdf</span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#181411] dark:text-white truncate">
+                        {formData.pdf_filename || 'Flyer'}
+                      </p>
+                      <div className="flex gap-3 mt-1">
+                        <label className="text-xs text-primary font-bold cursor-pointer hover:underline">
+                          Replace
+                          <input
+                            ref={pdfInputRef}
+                            type="file"
+                            accept="application/pdf"
+                            onChange={handlePdfSelect}
+                            className="hidden"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handlePdfRemove}
+                          className="text-xs text-red-500 font-bold hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center hover:border-primary transition-colors">
+                    <input
+                      ref={pdfInputRef}
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handlePdfSelect}
+                      className="hidden"
+                      id="pdf-flyer-upload"
+                    />
+                    <label
+                      htmlFor="pdf-flyer-upload"
+                      className={`cursor-pointer ${pdfUploading ? 'pointer-events-none' : ''}`}
+                    >
+                      {pdfUploading ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                          <p className="text-xs text-gray-500">Uploading and rendering preview...</p>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-3xl text-gray-400">upload_file</span>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                            Click to upload a flyer (PDF, max 10MB)
+                          </p>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
