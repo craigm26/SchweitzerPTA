@@ -9,7 +9,7 @@ if (!g.DOMMatrix) g.DOMMatrix = DOMMatrix;
 
 const MAX_PDF_SIZE = 10 * 1024 * 1024; // 10MB
 const THUMBNAIL_SCALE = 1.5;
-const BUCKET = 'documents';
+const BUCKET = 'event-flyers';
 
 async function renderFirstPageToPng(pdfBuffer: ArrayBuffer): Promise<Buffer | null> {
   try {
@@ -64,9 +64,9 @@ export async function POST(request: Request) {
     }
 
     const pdfBuffer = await file.arrayBuffer();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '');
+    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '') || 'flyer.pdf';
     const timestamp = Date.now();
-    const pdfPath = `event-flyers/${timestamp}-${safeName}`;
+    const pdfPath = `${timestamp}-${safeName}`;
 
     const { error: pdfUploadError } = await supabase.storage
       .from(BUCKET)
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
 
     if (pngBuffer) {
       const thumbBaseName = safeName.replace(/\.pdf$/i, '') || 'flyer';
-      const thumbPath = `event-flyers/${timestamp}-${thumbBaseName}-thumb.png`;
+      const thumbPath = `${timestamp}-${thumbBaseName}-thumb.png`;
       const { error: thumbUploadError } = await supabase.storage
         .from(BUCKET)
         .upload(thumbPath, pngBuffer, {
