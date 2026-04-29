@@ -9,8 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
-    "coverage": "vitest run --coverage",
-    "postinstall": "node scripts/install-native-deps.js"
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.100",
