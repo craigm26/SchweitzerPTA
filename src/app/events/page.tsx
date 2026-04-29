@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getEvents, Event } from '@/lib/api';
+import { linkify } from '@/lib/linkify';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -121,13 +122,16 @@ export default function EventsPage() {
               const { month, day } = getDateParts(event.date);
               const thumbnail = event.pdf_thumbnail_url || event.image;
               const pdfUrl = event.pdf_url;
+              const showImageColumn = Boolean(thumbnail || pdfUrl);
 
               return (
                 <div
                   key={event.id}
                   className="w-full overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] shadow-sm"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
+                  <div
+                    className={`grid grid-cols-1${showImageColumn ? ' md:grid-cols-[280px_1fr]' : ''}`}
+                  >
                     {thumbnail && pdfUrl ? (
                       <a
                         href={pdfUrl}
@@ -166,11 +170,7 @@ export default function EventsPage() {
                         <span className="material-symbols-outlined text-4xl">picture_as_pdf</span>
                         <span className="text-sm">View Flyer (PDF)</span>
                       </a>
-                    ) : (
-                      <div className="relative h-56 md:h-full bg-gray-100 dark:bg-[#1f1a14] flex items-center justify-center text-sm text-gray-400">
-                        No flyer available
-                      </div>
-                    )}
+                    ) : null}
                     <div className="p-6 flex flex-col gap-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3">
@@ -201,7 +201,7 @@ export default function EventsPage() {
                         </span>
                       </div>
                       <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed whitespace-pre-line">
-                        {event.description}
+                        {linkify(event.description)}
                       </p>
                       {pdfUrl && (
                         <div className="flex flex-wrap items-center gap-3">

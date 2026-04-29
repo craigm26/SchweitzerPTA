@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getCalendarEvents, getDonors, CalendarEvent, Donor } from '@/lib/api';
+import { linkify } from '@/lib/linkify';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -272,7 +273,7 @@ export default function EventsPage() {
                               <span className="material-symbols-outlined text-sm">location_on</span> {event.location}
                             </span>
                           </div>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{event.description}</p>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{linkify(event.description)}</p>
                         </div>
                       </div>
                     );

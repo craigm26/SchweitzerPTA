@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getVolunteerEvents, signUpForVolunteerShift, VolunteerEvent, VolunteerShift } from '@/lib/api';
+import { linkify } from '@/lib/linkify';
 
 type SignupState = {
   name: string;
@@ -73,7 +74,7 @@ function renderEventDescription(description: string | null | undefined) {
                 className="text-sm text-[#181411] dark:text-gray-100"
               >
                 <span className="font-bold">{match[1]}:</span>{' '}
-                <span>{match[2]}</span>
+                <span>{linkify(match[2])}</span>
               </p>
             );
           })}
@@ -84,9 +85,9 @@ function renderEventDescription(description: string | null | undefined) {
     return (
       <p
         key={idx}
-        className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed mt-3"
+        className="text-[#181411]/80 dark:text-gray-300 text-base leading-relaxed mt-3 whitespace-pre-line"
       >
-        {paragraph}
+        {linkify(paragraph)}
       </p>
     );
   });
