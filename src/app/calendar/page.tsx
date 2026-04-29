@@ -272,7 +272,7 @@ export default function EventsPage() {
                               <span className="material-symbols-outlined text-sm">location_on</span> {event.location}
                             </span>
                           </div>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">{event.description}</p>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{event.description}</p>
                         </div>
                       </div>
                     );
