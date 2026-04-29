@@ -68,6 +68,9 @@ export interface Database {
           category: string | null;
           image: string | null;
           is_featured: boolean;
+          pdf_url: string | null;
+          pdf_filename: string | null;
+          pdf_thumbnail_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -82,6 +85,9 @@ export interface Database {
           category?: string | null;
           image?: string | null;
           is_featured?: boolean;
+          pdf_url?: string | null;
+          pdf_filename?: string | null;
+          pdf_thumbnail_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -96,6 +102,9 @@ export interface Database {
           category?: string | null;
           image?: string | null;
           is_featured?: boolean;
+          pdf_url?: string | null;
+          pdf_filename?: string | null;
+          pdf_thumbnail_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };

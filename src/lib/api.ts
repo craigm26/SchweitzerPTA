@@ -139,6 +139,9 @@ export async function createEvent(data: {
   location: string;
   category?: string;
   image?: string;
+  pdf_url?: string | null;
+  pdf_filename?: string | null;
+  pdf_thumbnail_url?: string | null;
   is_featured?: boolean;
   is_all_day?: boolean;
 }) {
@@ -655,6 +658,9 @@ export interface Event {
   location: string;
   category: string | null;
   image: string | null;
+  pdf_url: string | null;
+  pdf_filename: string | null;
+  pdf_thumbnail_url: string | null;
   is_featured: boolean;
   is_all_day: boolean;
   created_at: string;
