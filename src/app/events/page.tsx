@@ -120,7 +120,7 @@ export default function EventsPage() {
             events.map((event) => {
               const { month, day } = getDateParts(event.date);
               const thumbnail = event.pdf_thumbnail_url || event.image;
-              const hasPdf = !!event.pdf_url;
+              const pdfUrl = event.pdf_url;
 
               return (
                 <div
@@ -128,34 +128,44 @@ export default function EventsPage() {
                   className="w-full overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] shadow-sm"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
-                    {thumbnail ? (
-                      hasPdf ? (
-                        <a
-                          href={event.pdf_url || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="relative h-56 md:h-full w-full bg-gray-100 dark:bg-[#1f1a14] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                          title="Open flyer (PDF)"
-                          aria-label={`Open flyer PDF for ${event.title}`}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={thumbnail}
-                            alt={event.title}
-                            className="h-full w-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
-                        </a>
-                      ) : (
-                        <div className="relative h-56 md:h-full w-full bg-gray-100 dark:bg-[#1f1a14] overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={thumbnail}
-                            alt={event.title}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      )
+                    {thumbnail && pdfUrl ? (
+                      <a
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative h-56 md:h-full w-full bg-gray-100 dark:bg-[#1f1a14] overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        title="Open flyer (PDF)"
+                        aria-label={`Open flyer PDF for ${event.title}`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={thumbnail}
+                          alt={event.title}
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
+                      </a>
+                    ) : thumbnail ? (
+                      <div className="relative h-56 md:h-full w-full bg-gray-100 dark:bg-[#1f1a14] overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={thumbnail}
+                          alt={event.title}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : pdfUrl ? (
+                      <a
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative h-56 md:h-full bg-primary/5 dark:bg-primary/10 flex flex-col items-center justify-center gap-2 text-primary font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:bg-primary/10 transition-colors"
+                        title="Open flyer (PDF)"
+                        aria-label={`Open flyer PDF for ${event.title}`}
+                      >
+                        <span className="material-symbols-outlined text-4xl">picture_as_pdf</span>
+                        <span className="text-sm">View Flyer (PDF)</span>
+                      </a>
                     ) : (
                       <div className="relative h-56 md:h-full bg-gray-100 dark:bg-[#1f1a14] flex items-center justify-center text-sm text-gray-400">
                         No flyer available
@@ -193,10 +203,10 @@ export default function EventsPage() {
                       <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed whitespace-pre-line">
                         {event.description}
                       </p>
-                      {hasPdf && (
+                      {pdfUrl && (
                         <div className="flex flex-wrap items-center gap-3">
                           <a
-                            href={event.pdf_url || '#'}
+                            href={pdfUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-primary font-bold hover:bg-primary/20 transition-colors"
