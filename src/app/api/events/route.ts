@@ -70,6 +70,9 @@ export async function POST(request: Request) {
         location: body.location,
         category: body.category,
         image: body.image || null,
+        pdf_url: body.pdf_url || null,
+        pdf_filename: body.pdf_filename || null,
+        pdf_thumbnail_url: body.pdf_thumbnail_url || null,
         is_featured: body.is_featured || false,
         is_all_day: body.is_all_day || false,
       })
