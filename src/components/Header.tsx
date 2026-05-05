@@ -138,6 +138,13 @@ const Header = () => {
                 Events
               </Link>
               <Link
+                href="/photos"
+                className={`text-sm font-medium transition-colors ${isActive('/photos') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
+              >
+                Photos
+              </Link>
+              <Link
                 href="/resources"
                 className={`text-sm font-medium transition-colors ${isActive('/resources') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
                   }`}
@@ -240,6 +247,14 @@ const Header = () => {
                 }`}
             >
               Events
+            </Link>
+            <Link
+              href="/photos"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors ${isActive('/photos') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
+            >
+              Photos
             </Link>
             <Link
               href="/resources"

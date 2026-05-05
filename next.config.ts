@@ -6,8 +6,9 @@ const nextConfig: NextConfig = {
 
   // Keep native modules out of the bundler. @napi-rs/canvas ships a .node
   // binding that Turbopack can't place in an ESM chunk; pdfjs-dist's legacy
-  // build is loaded dynamically and shouldn't be split either.
-  serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist'],
+  // build is loaded dynamically and shouldn't be split either; sharp has a
+  // platform-specific .node binding under @img/sharp-* and must not be split.
+  serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist', 'sharp'],
 
   // pdfjs-dist v5 dynamically imports its worker module, which Vercel's file
   // tracer doesn't statically detect. Force-include it for the upload route.

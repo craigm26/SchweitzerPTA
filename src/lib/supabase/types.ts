@@ -195,6 +195,68 @@ export interface Database {
           last_login?: string | null;
         };
       };
+      photos: {
+        Row: {
+          id: number;
+          storage_path: string;
+          thumb_path: string;
+          medium_path: string;
+          width: number;
+          height: number;
+          mime_type: string;
+          file_size: number;
+          caption: string | null;
+          alt_text: string | null;
+          date_taken: string;
+          school_year: string;
+          event_id: number | null;
+          uploader_id: string | null;
+          content_hash: string | null;
+          is_published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          storage_path: string;
+          thumb_path: string;
+          medium_path: string;
+          width: number;
+          height: number;
+          mime_type: string;
+          file_size: number;
+          caption?: string | null;
+          alt_text?: string | null;
+          date_taken?: string;
+          school_year: string;
+          event_id?: number | null;
+          uploader_id?: string | null;
+          content_hash?: string | null;
+          is_published?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          storage_path?: string;
+          thumb_path?: string;
+          medium_path?: string;
+          width?: number;
+          height?: number;
+          mime_type?: string;
+          file_size?: number;
+          caption?: string | null;
+          alt_text?: string | null;
+          date_taken?: string;
+          school_year?: string;
+          event_id?: number | null;
+          uploader_id?: string | null;
+          content_hash?: string | null;
+          is_published?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       volunteer_opportunities: {
         Row: {
           id: number;

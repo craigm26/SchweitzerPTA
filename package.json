@@ -21,8 +21,10 @@
     "pdfjs-dist": "^5.7.284",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "sharp": "^0.34.5",
     "stripe": "^20.1.0",
-    "styled-jsx": "^5.1.7"
+    "styled-jsx": "^5.1.7",
+    "yet-another-react-lightbox": "^3.32.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",

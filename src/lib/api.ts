@@ -842,6 +842,132 @@ export async function deleteDocument(id: number) {
   return res.json();
 }
 
+// Photos API
+export function photoUrl(path: string): string {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  return `${base}/storage/v1/object/public/event-photos/${path}`;
+}
+
+export interface PhotoEventRef {
+  id: number;
+  title: string;
+  date: string;
+}
+
+export interface Photo {
+  id: number;
+  storage_path: string;
+  thumb_path: string;
+  medium_path: string;
+  width: number;
+  height: number;
+  mime_type: string;
+  file_size: number;
+  caption: string | null;
+  alt_text: string | null;
+  date_taken: string;
+  school_year: string;
+  event_id: number | null;
+  uploader_id: string | null;
+  content_hash: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  event?: PhotoEventRef | null;
+}
+
+export async function getPhotos(options?: {
+  school_year?: string;
+  event_id?: number | 'none';
+  limit?: number;
+  offset?: number;
+  include_unpublished?: boolean;
+}) {
+  const params = new URLSearchParams();
+  if (options?.school_year) params.set('school_year', options.school_year);
+  if (options?.event_id !== undefined) params.set('event_id', options.event_id.toString());
+  if (options?.limit) params.set('limit', options.limit.toString());
+  if (options?.offset) params.set('offset', options.offset.toString());
+  if (options?.include_unpublished) params.set('include_unpublished', 'true');
+
+  const res = await fetch(`${API_BASE}/api/photos?${params}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch photos');
+  return (await res.json()) as Photo[];
+}
+
+export async function requestPhotoUploadUrl(meta: { mime_type: string; size: number }) {
+  const res = await fetch(`${API_BASE}/api/photos/upload-url`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(meta),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to request upload URL');
+  }
+  return (await res.json()) as { storage_path: string; token: string; signed_url: string };
+}
+
+export async function createPhoto(data: {
+  storage_path: string;
+  caption?: string | null;
+  alt_text?: string | null;
+  date_taken?: string;
+  school_year?: string;
+  event_id?: number | null;
+  is_published?: boolean;
+}) {
+  const res = await fetch(`${API_BASE}/api/photos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to create photo');
+  }
+  return (await res.json()) as Photo;
+}
+
+export async function updatePhoto(id: number, data: Partial<Pick<Photo,
+  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'is_published'
+>>) {
+  const res = await fetch(`${API_BASE}/api/photos/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to update photo');
+  }
+  return (await res.json()) as Photo;
+}
+
+export async function deletePhoto(id: number) {
+  const res = await fetch(`${API_BASE}/api/photos/${id}`, { method: 'DELETE' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to delete photo');
+  }
+  return res.json();
+}
+
+export async function batchUpdatePhotos(ids: number[], patch: Partial<Pick<Photo,
+  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'is_published'
+>>) {
+  const res = await fetch(`${API_BASE}/api/photos/batch`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, patch }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to batch update photos');
+  }
+  return (await res.json()) as { updated: number };
+}
+
 // File upload utility
 export async function uploadFile(file: File, bucket: 'sponsor-logos' | 'documents' = 'sponsor-logos') {
   const formData = new FormData();
