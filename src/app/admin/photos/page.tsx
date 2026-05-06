@@ -14,14 +14,13 @@ import {
   Photo,
   Event,
 } from '@/lib/api';
-import { createClient } from '@/lib/supabase/client';
 import { schoolYearFromDate, isValidSchoolYear, currentSchoolYear } from '@/lib/school-year';
 import EventPicker from '@/components/photos/EventPicker';
 
-const BUCKET = 'event-photos';
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
 const HEIC_MIME = ['image/heic', 'image/heif'];
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
+const PUT_TIMEOUT_MS = 60_000;
 
 type UploadItem = {
   localId: string;
@@ -172,17 +171,41 @@ export default function AdminPhotosPage() {
   async function uploadOne(item: UploadItem): Promise<void> {
     try {
       updateItem(item.localId, { status: 'uploading', progress: 5 });
-      const { storage_path, token } = await requestPhotoUploadUrl({
+      const { storage_path, signed_url } = await requestPhotoUploadUrl({
         mime_type: item.file.type,
         size: item.file.size,
       });
       updateItem(item.localId, { progress: 25 });
 
-      const supabase = createClient();
-      const upload = await supabase.storage
-        .from(BUCKET)
-        .uploadToSignedUrl(storage_path, token, item.file, { contentType: item.file.type });
-      if (upload.error) throw upload.error;
+      // PUT the bytes directly to the signed URL. Bypassing supabase-js here
+      // gives us a real timeout and visible error responses (the JS wrapper
+      // wraps fetch with no timeout, so failed PUTs hang forever).
+      const ctrl = new AbortController();
+      const timeoutId = setTimeout(() => ctrl.abort(), PUT_TIMEOUT_MS);
+      let putRes: Response;
+      try {
+        putRes = await fetch(signed_url, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': item.file.type,
+            'x-upsert': 'false',
+          },
+          body: item.file,
+          signal: ctrl.signal,
+        });
+      } catch (err) {
+        if (ctrl.signal.aborted) {
+          throw new Error(`Upload timed out after ${PUT_TIMEOUT_MS / 1000}s. Check your network.`);
+        }
+        throw err;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+      if (!putRes.ok) {
+        const text = await putRes.text().catch(() => '');
+        console.error('Storage PUT failed', { status: putRes.status, body: text, url: signed_url });
+        throw new Error(`Storage upload failed (${putRes.status}): ${text || putRes.statusText}`);
+      }
       updateItem(item.localId, { status: 'processing', progress: 65 });
 
       const latest = itemsRef.current.find((it) => it.localId === item.localId);
