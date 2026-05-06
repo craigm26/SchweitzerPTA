@@ -24,9 +24,12 @@ export async function GET(request: Request) {
     const offset = Number(searchParams.get('offset')) || 0;
     const includeUnpublished = searchParams.get('include_unpublished') === 'true';
 
+    // display_order (NULLS LAST) puts admin-pinned order first, then falls
+    // back to date_taken DESC so unsorted photos stay newest-first.
     let query = supabase
       .from('photos')
       .select('*, event:events(id, title, date)')
+      .order('display_order', { ascending: true, nullsFirst: false })
       .order('date_taken', { ascending: false })
       .range(offset, offset + limit - 1);
 

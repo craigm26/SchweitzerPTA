@@ -871,6 +871,7 @@ export interface Photo {
   uploader_id: string | null;
   content_hash: string | null;
   is_published: boolean;
+  display_order: number | null;
   created_at: string;
   updated_at: string;
   event?: PhotoEventRef | null;
@@ -930,7 +931,7 @@ export async function createPhoto(data: {
 }
 
 export async function updatePhoto(id: number, data: Partial<Pick<Photo,
-  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'is_published'
+  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'is_published' | 'display_order'
 >>) {
   const res = await fetch(`${API_BASE}/api/photos/${id}`, {
     method: 'PUT',
@@ -954,7 +955,7 @@ export async function deletePhoto(id: number) {
 }
 
 export async function batchUpdatePhotos(ids: number[], patch: Partial<Pick<Photo,
-  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'is_published'
+  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'is_published' | 'display_order'
 >>) {
   const res = await fetch(`${API_BASE}/api/photos/batch`, {
     method: 'PATCH',
@@ -964,6 +965,19 @@ export async function batchUpdatePhotos(ids: number[], patch: Partial<Pick<Photo
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to batch update photos');
+  }
+  return (await res.json()) as { updated: number };
+}
+
+export async function reorderPhotos(orderedIds: number[]) {
+  const res = await fetch(`${API_BASE}/api/photos/reorder`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ordered_ids: orderedIds }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to reorder photos');
   }
   return (await res.json()) as { updated: number };
 }

@@ -10,6 +10,8 @@ import {
   updatePhoto,
   deletePhoto,
   batchUpdatePhotos,
+  reorderPhotos,
+  createEvent,
   photoUrl,
   Photo,
   Event,
@@ -27,6 +29,10 @@ type UploadItem = {
   file: File;
   previewUrl: string;
   caption: string;
+  // Last caption value the server has acknowledged. Used post-upload to
+  // detect when an edit needs to be PATCH'd to /api/photos/:id.
+  savedCaption: string;
+  captionSaveState: 'idle' | 'saving' | 'saved' | 'error';
   status: 'queued' | 'uploading' | 'processing' | 'done' | 'error';
   progress: number;
   error?: string;
@@ -55,6 +61,24 @@ export default function AdminPhotosPage() {
   const isRunningRef = useRef(false);
   const inFlightRef = useRef<Set<string>>(new Set());
   const [dragActive, setDragActive] = useState(false);
+
+  // Drag-reorder state for the gallery list. Only meaningful when filterEvent
+  // is a single event id — reordering across "all" or "untagged" doesn't have
+  // a stable home for display_order.
+  const [draggingPhotoId, setDraggingPhotoId] = useState<number | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<number | null>(null);
+
+  // Quick-create-event modal state. Triggered from the upload form so a
+  // photographer can tag their batch with a brand-new event without leaving
+  // this page.
+  const [showNewEvent, setShowNewEvent] = useState(false);
+  const [creatingEvent, setCreatingEvent] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    date: new Date().toISOString().slice(0, 10),
+    location: '',
+    description: '',
+  });
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<{
@@ -95,12 +119,23 @@ export default function AdminPhotosPage() {
   }, [batchDate]);
 
   const filteredPhotos = useMemo(() => {
-    return photos.filter((p) => {
+    const list = photos.filter((p) => {
       if (filterYear !== 'all' && p.school_year !== filterYear) return false;
       if (filterEvent === 'none') return p.event_id === null;
       if (filterEvent !== 'all' && p.event_id !== filterEvent) return false;
       return true;
     });
+    // When viewing a single event, sort by display_order (NULL last) then
+    // date_taken DESC so the drag-reorder UI matches what the gallery sees.
+    if (typeof filterEvent === 'number') {
+      return [...list].sort((a, b) => {
+        const ao = a.display_order ?? Number.POSITIVE_INFINITY;
+        const bo = b.display_order ?? Number.POSITIVE_INFINITY;
+        if (ao !== bo) return ao - bo;
+        return b.date_taken.localeCompare(a.date_taken);
+      });
+    }
+    return list;
   }, [photos, filterYear, filterEvent]);
 
   const allYears = useMemo(() => {
@@ -117,7 +152,7 @@ export default function AdminPhotosPage() {
         next.push({
           localId: uid(), file,
           previewUrl: URL.createObjectURL(file),
-          caption: '',
+          caption: '', savedCaption: '', captionSaveState: 'idle',
           status: 'error', progress: 0,
           error: 'HEIC/HEIF not supported. Please convert to JPEG.',
         });
@@ -127,7 +162,7 @@ export default function AdminPhotosPage() {
         next.push({
           localId: uid(), file,
           previewUrl: URL.createObjectURL(file),
-          caption: '',
+          caption: '', savedCaption: '', captionSaveState: 'idle',
           status: 'error', progress: 0,
           error: 'Only JPEG, PNG, or WebP allowed.',
         });
@@ -137,7 +172,7 @@ export default function AdminPhotosPage() {
         next.push({
           localId: uid(), file,
           previewUrl: URL.createObjectURL(file),
-          caption: '',
+          caption: '', savedCaption: '', captionSaveState: 'idle',
           status: 'error', progress: 0,
           error: `Max size is ${MAX_FILE_SIZE / 1024 / 1024}MB.`,
         });
@@ -146,7 +181,7 @@ export default function AdminPhotosPage() {
       next.push({
         localId: uid(), file,
         previewUrl: URL.createObjectURL(file),
-        caption: '',
+        caption: '', savedCaption: '', captionSaveState: 'idle',
         status: 'queued', progress: 0,
       });
     }
@@ -217,7 +252,12 @@ export default function AdminPhotosPage() {
         event_id: batchEventId ? Number(batchEventId) : null,
         caption: captionText,
       });
-      updateItem(item.localId, { status: 'done', progress: 100, photo: created });
+      updateItem(item.localId, {
+        status: 'done',
+        progress: 100,
+        photo: created,
+        savedCaption: captionText || '',
+      });
       setPhotos((prev) => [created, ...prev]);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Upload failed';
@@ -310,6 +350,111 @@ export default function AdminPhotosPage() {
     }
   }
 
+  // Save caption edits made after the upload has finished. The upload pipeline
+  // races user typing — small files often POST before the user gets to the
+  // input — so this is the recovery path that keeps captions editable in the
+  // upload list itself.
+  async function handleCaptionBlur(item: UploadItem) {
+    if (item.status !== 'done' || !item.photo) return;
+    const trimmed = item.caption.trim();
+    if (trimmed === (item.savedCaption || '').trim()) return;
+    updateItem(item.localId, { captionSaveState: 'saving' });
+    try {
+      const updated = await updatePhoto(item.photo.id, { caption: trimmed || null });
+      updateItem(item.localId, {
+        captionSaveState: 'saved',
+        savedCaption: trimmed,
+        photo: updated,
+      });
+      setPhotos((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      // Drop the "saved" badge after a beat so it doesn't linger.
+      setTimeout(() => {
+        const cur = itemsRef.current.find((it) => it.localId === item.localId);
+        if (cur?.captionSaveState === 'saved') {
+          updateItem(item.localId, { captionSaveState: 'idle' });
+        }
+      }, 1500);
+    } catch (err) {
+      console.error('caption save failed', err);
+      updateItem(item.localId, { captionSaveState: 'error' });
+    }
+  }
+
+  async function handleSubmitNewEvent() {
+    const title = newEvent.title.trim();
+    const location = newEvent.location.trim();
+    const description = newEvent.description.trim() || title;
+    if (!title || !newEvent.date || !location) {
+      alert('Title, date, and location are required.');
+      return;
+    }
+    setCreatingEvent(true);
+    try {
+      const created = (await createEvent({
+        title,
+        description,
+        date: newEvent.date,
+        location,
+      })) as Event;
+      setEvents((prev) => [...prev, created]);
+      setBatchEventId(String(created.id));
+      // Roll the date over so the next quick-add doesn't reuse the old one.
+      setNewEvent({
+        title: '',
+        date: new Date().toISOString().slice(0, 10),
+        location: '',
+        description: '',
+      });
+      setShowNewEvent(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to create event');
+    } finally {
+      setCreatingEvent(false);
+    }
+  }
+
+  // Drag-reorder handlers. Only active when filterEvent is a single event id.
+  // Optimistically reorder photos[] in place, then persist via /api/photos/reorder.
+  async function commitReorder(orderedIds: number[]) {
+    try {
+      await reorderPhotos(orderedIds);
+    } catch (err) {
+      console.error('reorder failed, refetching to recover', err);
+      const refreshed = await getPhotos({ limit: 500, include_unpublished: true });
+      setPhotos(refreshed || []);
+    }
+  }
+
+  function handlePhotoDrop(targetId: number) {
+    const sourceId = draggingPhotoId;
+    setDraggingPhotoId(null);
+    setDropTargetId(null);
+    if (sourceId === null || sourceId === targetId) return;
+    if (typeof filterEvent !== 'number') return;
+
+    // Reorder only the currently-filtered subset; keep other photos untouched
+    // in photos[] (they belong to different events).
+    const subset = photos.filter((p) => p.event_id === filterEvent);
+    const fromIdx = subset.findIndex((p) => p.id === sourceId);
+    const toIdx = subset.findIndex((p) => p.id === targetId);
+    if (fromIdx < 0 || toIdx < 0) return;
+    const reordered = [...subset];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+
+    // Re-stamp display_order locally so the gallery sort reflects the new
+    // ordering immediately, before the network round-trip resolves.
+    const idToOrder = new Map(reordered.map((p, i) => [p.id, i]));
+    setPhotos((prev) =>
+      prev.map((p) =>
+        p.event_id === filterEvent && idToOrder.has(p.id)
+          ? { ...p, display_order: idToOrder.get(p.id) ?? null }
+          : p,
+      ),
+    );
+    void commitReorder(reordered.map((p) => p.id));
+  }
+
   async function handleDelete(id: number) {
     if (!confirm('Delete this photo? This removes the original and all derived sizes.')) return;
     try {
@@ -384,7 +529,20 @@ export default function AdminPhotosPage() {
             />
           </label>
           <div className="flex flex-col gap-1 text-xs">
-            <span className="text-gray-500 dark:text-white/60 font-medium uppercase tracking-wide">Event (optional)</span>
+            <span className="text-gray-500 dark:text-white/60 font-medium uppercase tracking-wide flex items-center justify-between">
+              <span>Event (optional)</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setNewEvent((prev) => ({ ...prev, date: batchDate || prev.date }));
+                  setShowNewEvent(true);
+                }}
+                className="normal-case tracking-normal text-primary hover:underline text-xs font-medium inline-flex items-center gap-0.5"
+              >
+                <span className="material-symbols-outlined text-sm">add</span>
+                New event
+              </button>
+            </span>
             <EventPicker
               events={events}
               value={batchEventId ? Number(batchEventId) : null}
@@ -458,7 +616,8 @@ export default function AdminPhotosPage() {
             </div>
             <ul className="divide-y divide-gray-100 dark:divide-white/10 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#2a221a]/40">
               {items.map((it) => {
-                const captionDisabled = it.status === 'processing' || it.status === 'done';
+                const hasUnsavedCaption =
+                  it.status === 'done' && it.caption.trim() !== (it.savedCaption || '').trim();
                 return (
                   <li key={it.localId} className="flex items-start gap-3 p-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -475,15 +634,27 @@ export default function AdminPhotosPage() {
                         </div>
                       )}
                       {it.status !== 'error' && (
-                        <input
-                          type="text"
-                          value={it.caption}
-                          onChange={(e) => updateItem(it.localId, { caption: e.target.value })}
-                          placeholder="Caption (optional)"
-                          disabled={captionDisabled}
-                          maxLength={300}
-                          className="mt-2 w-full h-9 rounded-md border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
-                        />
+                        <div className="mt-2 flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={it.caption}
+                            onChange={(e) => updateItem(it.localId, { caption: e.target.value, captionSaveState: 'idle' })}
+                            onBlur={() => void handleCaptionBlur(it)}
+                            placeholder="Caption (optional)"
+                            maxLength={300}
+                            className="flex-1 h-9 rounded-md border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          {it.status === 'done' && (
+                            <span className="text-xs whitespace-nowrap min-w-[4rem] text-right">
+                              {it.captionSaveState === 'saving' && <span className="text-gray-500">Saving…</span>}
+                              {it.captionSaveState === 'saved' && <span className="text-green-600 dark:text-green-400">Saved</span>}
+                              {it.captionSaveState === 'error' && <span className="text-red-600 dark:text-red-400">Retry</span>}
+                              {it.captionSaveState === 'idle' && hasUnsavedCaption && (
+                                <span className="text-amber-600 dark:text-amber-400">Unsaved</span>
+                              )}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                     <button
@@ -540,14 +711,56 @@ export default function AdminPhotosPage() {
           </div>
         </div>
 
+        {typeof filterEvent === 'number' && filteredPhotos.length > 1 && (
+          <p className="text-xs text-gray-500 dark:text-white/60 mb-3 flex items-center gap-1">
+            <span className="material-symbols-outlined text-base">drag_indicator</span>
+            Drag photos to reorder them within this event. The public gallery uses the same order.
+          </p>
+        )}
+
         {loading ? (
           <p className="text-gray-500 text-sm">Loading photos...</p>
         ) : filteredPhotos.length === 0 ? (
           <p className="text-gray-500 text-sm">No photos match these filters.</p>
         ) : (
           <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {filteredPhotos.map((p) => (
-              <li key={p.id} className="rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-[#2a221a]">
+            {filteredPhotos.map((p) => {
+              const reorderable = typeof filterEvent === 'number';
+              const isDragging = draggingPhotoId === p.id;
+              const isDropTarget = dropTargetId === p.id && draggingPhotoId !== p.id;
+              return (
+              <li
+                key={p.id}
+                draggable={reorderable}
+                onDragStart={reorderable ? (e) => {
+                  setDraggingPhotoId(p.id);
+                  e.dataTransfer.effectAllowed = 'move';
+                  // Some browsers need data set or the drag is rejected.
+                  e.dataTransfer.setData('text/plain', String(p.id));
+                } : undefined}
+                onDragEnd={reorderable ? () => {
+                  setDraggingPhotoId(null);
+                  setDropTargetId(null);
+                } : undefined}
+                onDragOver={reorderable ? (e) => {
+                  if (draggingPhotoId === null || draggingPhotoId === p.id) return;
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                  if (dropTargetId !== p.id) setDropTargetId(p.id);
+                } : undefined}
+                onDragLeave={reorderable ? () => {
+                  if (dropTargetId === p.id) setDropTargetId(null);
+                } : undefined}
+                onDrop={reorderable ? (e) => {
+                  e.preventDefault();
+                  handlePhotoDrop(p.id);
+                } : undefined}
+                className={`rounded-lg overflow-hidden border bg-white dark:bg-[#2a221a] transition-all ${
+                  isDropTarget
+                    ? 'border-primary ring-2 ring-primary/40'
+                    : 'border-gray-200 dark:border-white/10'
+                } ${isDragging ? 'opacity-50' : ''} ${reorderable ? 'cursor-move' : ''}`}
+              >
                 <div className="relative aspect-square bg-gray-100 dark:bg-black/30">
                   <Image
                     src={photoUrl(p.thumb_path)}
@@ -559,6 +772,12 @@ export default function AdminPhotosPage() {
                   {!p.is_published && (
                     <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs font-medium">
                       Hidden
+                    </span>
+                  )}
+                  {reorderable && (
+                    <span className="absolute top-1 right-1 rounded bg-black/55 text-white text-xs px-1.5 py-0.5 flex items-center gap-0.5">
+                      <span className="material-symbols-outlined text-sm">drag_indicator</span>
+                      {(p.display_order ?? null) !== null ? (p.display_order ?? 0) + 1 : '—'}
                     </span>
                   )}
                 </div>
@@ -583,7 +802,8 @@ export default function AdminPhotosPage() {
                   </div>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
       </section>
@@ -663,6 +883,78 @@ export default function AdminPhotosPage() {
                 className="rounded-lg bg-primary text-white text-sm font-medium px-4 h-10 hover:bg-orange-600"
               >
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNewEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white dark:bg-[#221910] p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">New event</h3>
+            <p className="text-xs text-gray-500 dark:text-white/60 mb-4">
+              Create an event so you can tag this batch of photos with it.
+            </p>
+            <div className="space-y-3">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-700 dark:text-white/80">Title</span>
+                <input
+                  type="text"
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                  placeholder="e.g. Spring Carnival"
+                  className="h-10 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-gray-700 dark:text-white/80">Date</span>
+                  <input
+                    type="date"
+                    value={newEvent.date}
+                    onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                    className="h-10 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-gray-700 dark:text-white/80">Location</span>
+                  <input
+                    type="text"
+                    value={newEvent.location}
+                    onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                    placeholder="e.g. Schweitzer gym"
+                    className="h-10 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </label>
+              </div>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-700 dark:text-white/80">Description (optional)</span>
+                <textarea
+                  value={newEvent.description}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                  rows={3}
+                  placeholder="Defaults to the title if left blank."
+                  className="rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+                />
+              </label>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowNewEvent(false)}
+                disabled={creatingEvent}
+                className="rounded-lg border border-gray-200 dark:border-white/15 text-sm px-4 h-10 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitNewEvent}
+                disabled={creatingEvent || !newEvent.title.trim() || !newEvent.location.trim() || !newEvent.date}
+                className="rounded-lg bg-primary text-white text-sm font-medium px-4 h-10 hover:bg-orange-600 disabled:opacity-50"
+              >
+                {creatingEvent ? 'Creating…' : 'Create event'}
               </button>
             </div>
           </div>

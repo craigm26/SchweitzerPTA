@@ -17,7 +17,7 @@ export default function PhotosPage() {
 
   const [schoolYear, setSchoolYear] = useState<string>('all');
   const [eventId, setEventId] = useState<number | 'all' | 'none'>('all');
-  const [view, setView] = useState<ViewMode>('grid');
+  const [view, setView] = useState<ViewMode>('masonry');
   const [lightboxIndex, setLightboxIndex] = useState(-1);
 
   useEffect(() => {

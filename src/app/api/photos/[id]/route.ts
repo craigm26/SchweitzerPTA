@@ -14,6 +14,7 @@ const EDITABLE = new Set([
   'school_year',
   'event_id',
   'is_published',
+  'display_order',
 ]);
 
 export async function PUT(
