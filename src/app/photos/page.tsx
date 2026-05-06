@@ -1,22 +1,39 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { getPhotos, getEvents, Photo, Event } from '@/lib/api';
+import {
+  getPhotos,
+  getEvents,
+  getCalendarEvents,
+  Photo,
+  Event,
+  CalendarEvent,
+  PhotoEventRefValue,
+} from '@/lib/api';
 import GalleryGrid from '@/components/photos/GalleryGrid';
 import GalleryMasonry from '@/components/photos/GalleryMasonry';
 import GalleryByEvent from '@/components/photos/GalleryByEvent';
 import PhotoLightbox from '@/components/photos/PhotoLightbox';
-import PhotoFilters from '@/components/photos/PhotoFilters';
+import PhotoFilters, { PhotoFilterEventOption } from '@/components/photos/PhotoFilters';
 import { ViewMode } from '@/components/photos/types';
+
+function refMatchesPhoto(ref: PhotoEventRefValue, p: Photo): boolean {
+  return ref.source === 'events'
+    ? p.event_id === ref.id
+    : p.calendar_event_id === ref.id;
+}
 
 export default function PhotosPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [schoolYear, setSchoolYear] = useState<string>('all');
-  const [eventId, setEventId] = useState<number | 'all' | 'none'>('all');
+  // 'all' = no event filter; 'none' = untagged photos; otherwise a unified
+  // ref into either source table.
+  const [eventFilter, setEventFilter] = useState<PhotoEventRefValue | 'all' | 'none'>('all');
   const [view, setView] = useState<ViewMode>('masonry');
   const [lightboxIndex, setLightboxIndex] = useState(-1);
 
@@ -26,10 +43,15 @@ export default function PhotosPage() {
       setLoading(true);
       setError(null);
       try {
-        const [p, e] = await Promise.all([getPhotos({ limit: 500 }), getEvents()]);
+        const [p, e, c] = await Promise.all([
+          getPhotos({ limit: 500 }),
+          getEvents(),
+          getCalendarEvents(),
+        ]);
         if (cancelled) return;
         setPhotos(p || []);
         setEvents(e || []);
+        setCalendarEvents(c || []);
       } catch (err) {
         if (cancelled) return;
         console.error('Failed to load photos page:', err);
@@ -47,22 +69,30 @@ export default function PhotosPage() {
     return Array.from(set).sort((a, b) => b.localeCompare(a));
   }, [photos]);
 
-  const eventsWithPhotos = useMemo(() => {
-    const ids = new Set(photos.map((p) => p.event_id).filter((v): v is number => v !== null));
-    return events
-      .filter((e) => ids.has(e.id))
-      .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-      .map((e) => ({ id: e.id, title: e.title }));
-  }, [photos, events]);
+  const eventsWithPhotos = useMemo<PhotoFilterEventOption[]>(() => {
+    const eventIds = new Set(photos.map((p) => p.event_id).filter((v): v is number => v !== null));
+    const calIds = new Set(photos.map((p) => p.calendar_event_id).filter((v): v is number => v !== null));
+    const fromEvents: PhotoFilterEventOption[] = events
+      .filter((e) => eventIds.has(e.id))
+      .map((e) => ({ source: 'events', id: e.id, title: e.title, date: e.date }));
+    const fromCal: PhotoFilterEventOption[] = calendarEvents
+      .filter((e) => calIds.has(e.id))
+      .map((e) => ({ source: 'calendar_events', id: e.id, title: e.title, date: e.date }));
+    return [...fromEvents, ...fromCal].sort((a, b) =>
+      (b.date || '').localeCompare(a.date || ''),
+    );
+  }, [photos, events, calendarEvents]);
 
   const filtered = useMemo(() => {
     return photos.filter((p) => {
       if (schoolYear !== 'all' && p.school_year !== schoolYear) return false;
-      if (eventId === 'none') return p.event_id === null;
-      if (eventId !== 'all' && p.event_id !== eventId) return false;
+      if (eventFilter === 'none') {
+        return p.event_id === null && p.calendar_event_id === null;
+      }
+      if (eventFilter !== 'all' && !refMatchesPhoto(eventFilter, p)) return false;
       return true;
     });
-  }, [photos, schoolYear, eventId]);
+  }, [photos, schoolYear, eventFilter]);
 
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
@@ -81,11 +111,11 @@ export default function PhotosPage() {
             schoolYears={schoolYears}
             events={eventsWithPhotos}
             schoolYear={schoolYear}
-            eventId={eventId}
+            eventFilter={eventFilter}
             view={view}
             count={filtered.length}
             onSchoolYearChange={setSchoolYear}
-            onEventChange={setEventId}
+            onEventChange={setEventFilter}
             onViewChange={setView}
           />
 

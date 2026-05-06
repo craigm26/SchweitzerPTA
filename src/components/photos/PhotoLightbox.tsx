@@ -19,7 +19,7 @@ export default function PhotoLightbox({ photos, index, onClose, onIndexChange }:
     width: p.width,
     height: p.height,
     alt: p.alt_text || p.caption || '',
-    title: p.event?.title || undefined,
+    title: p.event?.title || p.calendar_event?.title || undefined,
     description: p.caption || undefined,
   }));
 

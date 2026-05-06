@@ -868,6 +868,7 @@ export interface Photo {
   date_taken: string;
   school_year: string;
   event_id: number | null;
+  calendar_event_id: number | null;
   uploader_id: string | null;
   content_hash: string | null;
   is_published: boolean;
@@ -875,11 +876,19 @@ export interface Photo {
   created_at: string;
   updated_at: string;
   event?: PhotoEventRef | null;
+  calendar_event?: PhotoEventRef | null;
 }
+
+// Unified picker reference. Photos can attach to either the events table
+// (special PDF-bearing events) or calendar_events (the school calendar) —
+// the source discriminator tells the API which FK to set.
+export type PhotoEventSource = 'events' | 'calendar_events';
+export type PhotoEventRefValue = { source: PhotoEventSource; id: number };
 
 export async function getPhotos(options?: {
   school_year?: string;
   event_id?: number | 'none';
+  calendar_event_id?: number;
   limit?: number;
   offset?: number;
   include_unpublished?: boolean;
@@ -887,6 +896,7 @@ export async function getPhotos(options?: {
   const params = new URLSearchParams();
   if (options?.school_year) params.set('school_year', options.school_year);
   if (options?.event_id !== undefined) params.set('event_id', options.event_id.toString());
+  if (options?.calendar_event_id !== undefined) params.set('calendar_event_id', options.calendar_event_id.toString());
   if (options?.limit) params.set('limit', options.limit.toString());
   if (options?.offset) params.set('offset', options.offset.toString());
   if (options?.include_unpublished) params.set('include_unpublished', 'true');
@@ -916,6 +926,7 @@ export async function createPhoto(data: {
   date_taken?: string;
   school_year?: string;
   event_id?: number | null;
+  calendar_event_id?: number | null;
   is_published?: boolean;
 }) {
   const res = await fetch(`${API_BASE}/api/photos`, {
@@ -931,7 +942,7 @@ export async function createPhoto(data: {
 }
 
 export async function updatePhoto(id: number, data: Partial<Pick<Photo,
-  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'is_published' | 'display_order'
+  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'calendar_event_id' | 'is_published' | 'display_order'
 >>) {
   const res = await fetch(`${API_BASE}/api/photos/${id}`, {
     method: 'PUT',
@@ -955,7 +966,7 @@ export async function deletePhoto(id: number) {
 }
 
 export async function batchUpdatePhotos(ids: number[], patch: Partial<Pick<Photo,
-  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'is_published' | 'display_order'
+  'caption' | 'alt_text' | 'date_taken' | 'school_year' | 'event_id' | 'calendar_event_id' | 'is_published' | 'display_order'
 >>) {
   const res = await fetch(`${API_BASE}/api/photos/batch`, {
     method: 'PATCH',

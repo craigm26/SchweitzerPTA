@@ -1,12 +1,24 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Event } from '@/lib/api';
+import type { PhotoEventRefValue, PhotoEventSource } from '@/lib/api';
+
+// A combined option for the picker. The admin photos page assembles these
+// from both events (special PDF events) and calendar_events (school
+// calendar) so a single dropdown covers either source.
+export type EventPickerOption = {
+  source: PhotoEventSource;
+  id: number;
+  title: string;
+  date: string | null;
+  location?: string | null;
+  category?: string | null;
+};
 
 type Props = {
-  events: Event[];
-  value: number | null;
-  onChange: (id: number | null) => void;
+  options: EventPickerOption[];
+  value: PhotoEventRefValue | null;
+  onChange: (value: PhotoEventRefValue | null) => void;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -19,8 +31,16 @@ function formatEventDate(d: string | null | undefined): string {
   return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function sourceLabel(source: PhotoEventSource): string {
+  return source === 'calendar_events' ? 'Calendar' : 'Event';
+}
+
+function optionKey(o: { source: PhotoEventSource; id: number }): string {
+  return `${o.source}:${o.id}`;
+}
+
 export default function EventPicker({
-  events,
+  options,
   value,
   onChange,
   placeholder = 'Search events…',
@@ -34,26 +54,26 @@ export default function EventPicker({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const selected = useMemo(
-    () => (value !== null ? events.find((e) => e.id === value) || null : null),
-    [events, value],
-  );
+  const selected = useMemo(() => {
+    if (!value) return null;
+    return options.find((o) => o.source === value.source && o.id === value.id) || null;
+  }, [options, value]);
 
-  // Sort events by date desc so "most recent" shows up first when picker opens.
-  const sortedEvents = useMemo(() => {
-    return [...events].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  }, [events]);
+  // Sort by date desc so most-recent shows first; nulls drop to the end.
+  const sortedOptions = useMemo(() => {
+    return [...options].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  }, [options]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return sortedEvents.slice(0, 50);
-    return sortedEvents
-      .filter((e) => {
-        const hay = `${e.title} ${e.location} ${e.category || ''} ${e.date || ''}`.toLowerCase();
+    if (!q) return sortedOptions.slice(0, 50);
+    return sortedOptions
+      .filter((o) => {
+        const hay = `${o.title} ${o.location || ''} ${o.category || ''} ${o.date || ''} ${sourceLabel(o.source)}`.toLowerCase();
         return hay.includes(q);
       })
       .slice(0, 50);
-  }, [sortedEvents, query]);
+  }, [sortedOptions, query]);
 
   useEffect(() => {
     if (!open) return;
@@ -66,12 +86,10 @@ export default function EventPicker({
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open]);
 
-  // Clamp highlight to current filtered length when rendering instead of storing
-  // a stale out-of-range index (avoids cascading-render lint).
   const safeHighlight = filtered.length === 0 ? 0 : Math.min(highlight, filtered.length - 1);
 
-  function handleSelect(ev: Event) {
-    onChange(ev.id);
+  function handleSelect(opt: EventPickerOption) {
+    onChange({ source: opt.source, id: opt.id });
     setQuery('');
     setOpen(false);
   }
@@ -107,8 +125,6 @@ export default function EventPicker({
     }
   }
 
-  // Display value: when not focused and an event is selected, show its title.
-  // When focused/typing, show what the user is typing.
   const displayValue = open ? query : selected ? `${selected.title}` : query;
 
   return (
@@ -170,25 +186,36 @@ export default function EventPicker({
               No events match &ldquo;{query}&rdquo;.
             </li>
           ) : (
-            filtered.map((ev, i) => (
-              <li key={ev.id}>
+            filtered.map((opt, i) => (
+              <li key={optionKey(opt)}>
                 <button
                   type="button"
                   role="option"
                   aria-selected={i === safeHighlight}
                   onMouseDown={(e) => e.preventDefault()}
                   onMouseEnter={() => setHighlight(i)}
-                  onClick={() => handleSelect(ev)}
+                  onClick={() => handleSelect(opt)}
                   className={`w-full text-left px-3 py-2 text-sm flex flex-col gap-0.5 ${
                     i === safeHighlight
                       ? 'bg-primary/10 text-gray-900 dark:text-white'
                       : 'text-gray-800 dark:text-white/90 hover:bg-gray-50 dark:hover:bg-white/5'
                   }`}
                 >
-                  <span className="font-medium truncate">{ev.title}</span>
+                  <span className="font-medium truncate flex items-center gap-2">
+                    {opt.title}
+                    <span
+                      className={`text-[10px] uppercase tracking-wide font-medium px-1.5 py-0.5 rounded ${
+                        opt.source === 'calendar_events'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'
+                          : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+                      }`}
+                    >
+                      {sourceLabel(opt.source)}
+                    </span>
+                  </span>
                   <span className="text-xs text-gray-500 dark:text-white/50">
-                    {formatEventDate(ev.date)}
-                    {ev.location ? ` · ${ev.location}` : ''}
+                    {formatEventDate(opt.date)}
+                    {opt.location ? ` · ${opt.location}` : ''}
                   </span>
                 </button>
               </li>

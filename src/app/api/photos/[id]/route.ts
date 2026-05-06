@@ -13,6 +13,7 @@ const EDITABLE = new Set([
   'date_taken',
   'school_year',
   'event_id',
+  'calendar_event_id',
   'is_published',
   'display_order',
 ]);
@@ -37,6 +38,15 @@ export async function PUT(
     if (typeof update.school_year === 'string' && !isValidSchoolYear(update.school_year)) {
       return NextResponse.json({ error: 'Invalid school_year format (expect YYYY-YYYY).' }, { status: 400 });
     }
+    // The two event refs are mutually exclusive (DB CHECK enforces this).
+    // When the caller switches one on, automatically null the other so the
+    // CHECK doesn't reject the update.
+    if ('event_id' in update && update.event_id !== null && !('calendar_event_id' in update)) {
+      update.calendar_event_id = null;
+    }
+    if ('calendar_event_id' in update && update.calendar_event_id !== null && !('event_id' in update)) {
+      update.event_id = null;
+    }
     if (Object.keys(update).length === 0) {
       return NextResponse.json({ error: 'No editable fields supplied' }, { status: 400 });
     }
@@ -45,7 +55,7 @@ export async function PUT(
       .from('photos')
       .update(update)
       .eq('id', Number(id))
-      .select('*, event:events(id, title, date)')
+      .select('*, event:events(id, title, date), calendar_event:calendar_events(id, title, date)')
       .single();
 
     if (error) {

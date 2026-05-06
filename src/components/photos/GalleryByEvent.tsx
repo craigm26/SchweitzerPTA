@@ -19,16 +19,27 @@ type Group = {
 function groupByEvent(photos: Photo[]): Group[] {
   const map = new Map<string, Group>();
   photos.forEach((photo, flatIndex) => {
-    const key = photo.event_id ? `e:${photo.event_id}` : `u:${photo.school_year}`;
+    // Distinct keys per source so an event id 5 in `events` doesn't collide
+    // with calendar_event id 5.
+    let key: string;
+    let title: string;
+    let date: string | null;
+    if (photo.event_id !== null) {
+      key = `e:${photo.event_id}`;
+      title = photo.event?.title || 'Untagged';
+      date = photo.event?.date || null;
+    } else if (photo.calendar_event_id !== null) {
+      key = `c:${photo.calendar_event_id}`;
+      title = photo.calendar_event?.title || 'Untagged';
+      date = photo.calendar_event?.date || null;
+    } else {
+      key = `u:${photo.school_year}`;
+      title = 'Untagged';
+      date = null;
+    }
     let g = map.get(key);
     if (!g) {
-      g = {
-        key,
-        title: photo.event?.title || 'Untagged',
-        date: photo.event?.date || null,
-        schoolYear: photo.school_year,
-        photos: [],
-      };
+      g = { key, title, date, schoolYear: photo.school_year, photos: [] };
       map.set(key, g);
     }
     g.photos.push({ photo, flatIndex });
@@ -61,7 +72,7 @@ export default function GalleryByEvent({ photos, onSelect }: Props) {
                 type="button"
                 onClick={() => onSelect(flatIndex)}
                 className="group relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-[#2a221a] focus:outline-none focus:ring-2 focus:ring-primary"
-                aria-label={photo.alt_text || photo.caption || photo.event?.title || `Photo ${flatIndex + 1}`}
+                aria-label={photo.alt_text || photo.caption || photo.event?.title || photo.calendar_event?.title || `Photo ${flatIndex + 1}`}
               >
                 <Image
                   src={photoUrl(photo.thumb_path)}

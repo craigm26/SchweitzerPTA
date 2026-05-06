@@ -1,16 +1,24 @@
 'use client';
 
+import type { PhotoEventRefValue, PhotoEventSource } from '@/lib/api';
 import { ViewMode } from './types';
+
+export type PhotoFilterEventOption = {
+  source: PhotoEventSource;
+  id: number;
+  title: string;
+  date: string | null;
+};
 
 type Props = {
   schoolYears: string[];
-  events: { id: number; title: string }[];
+  events: PhotoFilterEventOption[];
   schoolYear: string;
-  eventId: number | 'all' | 'none';
+  eventFilter: PhotoEventRefValue | 'all' | 'none';
   view: ViewMode;
   count: number;
   onSchoolYearChange: (v: string) => void;
-  onEventChange: (v: number | 'all' | 'none') => void;
+  onEventChange: (v: PhotoEventRefValue | 'all' | 'none') => void;
   onViewChange: (v: ViewMode) => void;
 };
 
@@ -20,17 +28,34 @@ const VIEW_OPTIONS: { value: ViewMode; label: string; icon: string }[] = [
   { value: 'by-event', label: 'By event', icon: 'event' },
 ];
 
+function encodeRef(ref: PhotoEventRefValue): string {
+  return `${ref.source === 'calendar_events' ? 'c' : 'e'}:${ref.id}`;
+}
+function decodeRef(s: string): PhotoEventRefValue | null {
+  const [src, idStr] = s.split(':');
+  const id = Number(idStr);
+  if (!Number.isInteger(id)) return null;
+  if (src === 'e') return { source: 'events', id };
+  if (src === 'c') return { source: 'calendar_events', id };
+  return null;
+}
+
 export default function PhotoFilters({
   schoolYears,
   events,
   schoolYear,
-  eventId,
+  eventFilter,
   view,
   count,
   onSchoolYearChange,
   onEventChange,
   onViewChange,
 }: Props) {
+  const calendarOptions = events.filter((e) => e.source === 'calendar_events');
+  const eventOptions = events.filter((e) => e.source === 'events');
+  const selectValue =
+    eventFilter === 'all' || eventFilter === 'none' ? eventFilter : encodeRef(eventFilter);
+
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-wrap items-center gap-3">
@@ -51,20 +76,38 @@ export default function PhotoFilters({
         <label className="flex flex-col gap-1 text-xs">
           <span className="text-gray-500 dark:text-white/60 font-medium uppercase tracking-wide">Event</span>
           <select
-            value={eventId === 'all' ? 'all' : eventId === 'none' ? 'none' : String(eventId)}
+            value={selectValue}
             onChange={(e) => {
               const v = e.target.value;
               if (v === 'all') onEventChange('all');
               else if (v === 'none') onEventChange('none');
-              else onEventChange(Number(v));
+              else {
+                const ref = decodeRef(v);
+                if (ref) onEventChange(ref);
+              }
             }}
             className="h-10 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary min-w-[12rem]"
           >
             <option value="all">All events</option>
             <option value="none">Untagged</option>
-            {events.map((ev) => (
-              <option key={ev.id} value={ev.id}>{ev.title}</option>
-            ))}
+            {calendarOptions.length > 0 && (
+              <optgroup label="Calendar">
+                {calendarOptions.map((ev) => (
+                  <option key={`c-${ev.id}`} value={encodeRef({ source: 'calendar_events', id: ev.id })}>
+                    {ev.title}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {eventOptions.length > 0 && (
+              <optgroup label="Event">
+                {eventOptions.map((ev) => (
+                  <option key={`e-${ev.id}`} value={encodeRef({ source: 'events', id: ev.id })}>
+                    {ev.title}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </label>
 

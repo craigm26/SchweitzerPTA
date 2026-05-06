@@ -5,6 +5,7 @@ import Image from 'next/image';
 import {
   getPhotos,
   getEvents,
+  getCalendarEvents,
   requestPhotoUploadUrl,
   createPhoto,
   updatePhoto,
@@ -12,12 +13,40 @@ import {
   batchUpdatePhotos,
   reorderPhotos,
   createEvent,
+  createCalendarEvent,
   photoUrl,
   Photo,
   Event,
+  CalendarEvent,
+  PhotoEventRefValue,
+  PhotoEventSource,
 } from '@/lib/api';
 import { schoolYearFromDate, isValidSchoolYear, currentSchoolYear } from '@/lib/school-year';
-import EventPicker from '@/components/photos/EventPicker';
+import EventPicker, { EventPickerOption } from '@/components/photos/EventPicker';
+
+// Encode a (source, id) pair for HTML <select> values. e:N = events table,
+// c:N = calendar_events table. Filter dropdowns also use 'all' / 'none'.
+function encodeRef(ref: PhotoEventRefValue): string {
+  return `${ref.source === 'calendar_events' ? 'c' : 'e'}:${ref.id}`;
+}
+function decodeRef(s: string): PhotoEventRefValue | null {
+  const [src, idStr] = s.split(':');
+  const id = Number(idStr);
+  if (!Number.isInteger(id)) return null;
+  if (src === 'e') return { source: 'events', id };
+  if (src === 'c') return { source: 'calendar_events', id };
+  return null;
+}
+function refMatchesPhoto(ref: PhotoEventRefValue, p: Photo): boolean {
+  return ref.source === 'events'
+    ? p.event_id === ref.id
+    : p.calendar_event_id === ref.id;
+}
+function photoEventRef(p: Photo): PhotoEventRefValue | null {
+  if (p.event_id !== null) return { source: 'events', id: p.event_id };
+  if (p.calendar_event_id !== null) return { source: 'calendar_events', id: p.calendar_event_id };
+  return null;
+}
 
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
 const HEIC_MIME = ['image/heic', 'image/heif'];
@@ -46,12 +75,15 @@ function uid() {
 export default function AdminPhotosPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterYear, setFilterYear] = useState<string>('all');
-  const [filterEvent, setFilterEvent] = useState<number | 'all' | 'none'>('all');
+  // 'all' = no filter; 'none' = untagged photos; otherwise a unified ref into
+  // either source table.
+  const [filterEvent, setFilterEvent] = useState<PhotoEventRefValue | 'all' | 'none'>('all');
 
   const [batchYear, setBatchYear] = useState<string>(currentSchoolYear());
-  const [batchEventId, setBatchEventId] = useState<string>('');
+  const [batchEventRef, setBatchEventRef] = useState<PhotoEventRefValue | null>(null);
   const [batchDate, setBatchDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [items, setItems] = useState<UploadItem[]>([]);
   const itemsRef = useRef<UploadItem[]>([]);
@@ -70,14 +102,23 @@ export default function AdminPhotosPage() {
 
   // Quick-create-event modal state. Triggered from the upload form so a
   // photographer can tag their batch with a brand-new event without leaving
-  // this page.
+  // this page. Source defaults to calendar_events because that's the main
+  // school calendar; the events table is used for special PDF-bearing events
+  // and isn't usually where new photo-tag events go.
   const [showNewEvent, setShowNewEvent] = useState(false);
   const [creatingEvent, setCreatingEvent] = useState(false);
-  const [newEvent, setNewEvent] = useState({
+  const [newEvent, setNewEvent] = useState<{
+    title: string;
+    date: string;
+    location: string;
+    description: string;
+    source: PhotoEventSource;
+  }>({
     title: '',
     date: new Date().toISOString().slice(0, 10),
     location: '',
     description: '',
+    source: 'calendar_events',
   });
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -85,7 +126,7 @@ export default function AdminPhotosPage() {
     caption: string;
     alt_text: string;
     school_year: string;
-    event_id: string;
+    eventRef: PhotoEventRefValue | null;
     date_taken: string;
     is_published: boolean;
   } | null>(null);
@@ -94,13 +135,15 @@ export default function AdminPhotosPage() {
     let cancelled = false;
     async function load() {
       try {
-        const [p, e] = await Promise.all([
+        const [p, e, c] = await Promise.all([
           getPhotos({ limit: 500, include_unpublished: true }),
           getEvents(),
+          getCalendarEvents(),
         ]);
         if (cancelled) return;
         setPhotos(p || []);
         setEvents(e || []);
+        setCalendarEvents(c || []);
       } catch (err) {
         console.error('Error loading admin photos:', err);
       } finally {
@@ -110,6 +153,29 @@ export default function AdminPhotosPage() {
     load();
     return () => { cancelled = true; };
   }, []);
+
+  // Unified picker options. Both sources flow through one dropdown with a
+  // source badge so admins don't have to think about which table an event
+  // lives in.
+  const pickerOptions = useMemo<EventPickerOption[]>(() => {
+    const fromEvents: EventPickerOption[] = events.map((e) => ({
+      source: 'events',
+      id: e.id,
+      title: e.title,
+      date: e.date,
+      location: e.location,
+      category: e.category,
+    }));
+    const fromCalendar: EventPickerOption[] = calendarEvents.map((e) => ({
+      source: 'calendar_events',
+      id: e.id,
+      title: e.title,
+      date: e.date,
+      location: e.location,
+      category: e.category,
+    }));
+    return [...fromEvents, ...fromCalendar];
+  }, [events, calendarEvents]);
 
   // Date drives school year. Admin can override the year afterwards.
   useEffect(() => {
@@ -121,13 +187,15 @@ export default function AdminPhotosPage() {
   const filteredPhotos = useMemo(() => {
     const list = photos.filter((p) => {
       if (filterYear !== 'all' && p.school_year !== filterYear) return false;
-      if (filterEvent === 'none') return p.event_id === null;
-      if (filterEvent !== 'all' && p.event_id !== filterEvent) return false;
+      if (filterEvent === 'none') {
+        return p.event_id === null && p.calendar_event_id === null;
+      }
+      if (filterEvent !== 'all' && !refMatchesPhoto(filterEvent, p)) return false;
       return true;
     });
     // When viewing a single event, sort by display_order (NULL last) then
     // date_taken DESC so the drag-reorder UI matches what the gallery sees.
-    if (typeof filterEvent === 'number') {
+    if (typeof filterEvent === 'object' && filterEvent !== null) {
       return [...list].sort((a, b) => {
         const ao = a.display_order ?? Number.POSITIVE_INFINITY;
         const bo = b.display_order ?? Number.POSITIVE_INFINITY;
@@ -249,7 +317,8 @@ export default function AdminPhotosPage() {
         storage_path,
         date_taken: new Date(batchDate).toISOString(),
         school_year: isValidSchoolYear(batchYear) ? batchYear : schoolYearFromDate(new Date(batchDate)),
-        event_id: batchEventId ? Number(batchEventId) : null,
+        event_id: batchEventRef?.source === 'events' ? batchEventRef.id : null,
+        calendar_event_id: batchEventRef?.source === 'calendar_events' ? batchEventRef.id : null,
         caption: captionText,
       });
       updateItem(item.localId, {
@@ -321,7 +390,7 @@ export default function AdminPhotosPage() {
       caption: p.caption || '',
       alt_text: p.alt_text || '',
       school_year: p.school_year,
-      event_id: p.event_id ? String(p.event_id) : '',
+      eventRef: photoEventRef(p),
       date_taken: p.date_taken.slice(0, 10),
       is_published: p.is_published,
     });
@@ -338,7 +407,11 @@ export default function AdminPhotosPage() {
         caption: editForm.caption || null,
         alt_text: editForm.alt_text || null,
         school_year: editForm.school_year,
-        event_id: editForm.event_id ? Number(editForm.event_id) : null,
+        // Send both fields so the server clears whichever one isn't selected
+        // (the API also auto-nulls the opposite, but being explicit lets the
+        // edit cleanly switch between sources).
+        event_id: editForm.eventRef?.source === 'events' ? editForm.eventRef.id : null,
+        calendar_event_id: editForm.eventRef?.source === 'calendar_events' ? editForm.eventRef.id : null,
         date_taken: new Date(editForm.date_taken).toISOString(),
         is_published: editForm.is_published,
       });
@@ -390,21 +463,26 @@ export default function AdminPhotosPage() {
     }
     setCreatingEvent(true);
     try {
-      const created = (await createEvent({
-        title,
-        description,
-        date: newEvent.date,
-        location,
-      })) as Event;
-      setEvents((prev) => [...prev, created]);
-      setBatchEventId(String(created.id));
-      // Roll the date over so the next quick-add doesn't reuse the old one.
-      setNewEvent({
+      const payload = { title, description, date: newEvent.date, location };
+      if (newEvent.source === 'calendar_events') {
+        const created = (await createCalendarEvent(payload)) as CalendarEvent;
+        setCalendarEvents((prev) => [...prev, created]);
+        setBatchEventRef({ source: 'calendar_events', id: created.id });
+      } else {
+        const created = (await createEvent(payload)) as Event;
+        setEvents((prev) => [...prev, created]);
+        setBatchEventRef({ source: 'events', id: created.id });
+      }
+      // Roll the date over so the next quick-add doesn't reuse the old one,
+      // but keep the user's source choice — they probably want consecutive
+      // adds to land in the same table.
+      setNewEvent((prev) => ({
         title: '',
         date: new Date().toISOString().slice(0, 10),
         location: '',
         description: '',
-      });
+        source: prev.source,
+      }));
       setShowNewEvent(false);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to create event');
@@ -430,11 +508,13 @@ export default function AdminPhotosPage() {
     setDraggingPhotoId(null);
     setDropTargetId(null);
     if (sourceId === null || sourceId === targetId) return;
-    if (typeof filterEvent !== 'number') return;
+    // Drag only makes sense when filtered to one specific event ref.
+    if (filterEvent === 'all' || filterEvent === 'none') return;
+    const ref = filterEvent;
 
     // Reorder only the currently-filtered subset; keep other photos untouched
     // in photos[] (they belong to different events).
-    const subset = photos.filter((p) => p.event_id === filterEvent);
+    const subset = photos.filter((p) => refMatchesPhoto(ref, p));
     const fromIdx = subset.findIndex((p) => p.id === sourceId);
     const toIdx = subset.findIndex((p) => p.id === targetId);
     if (fromIdx < 0 || toIdx < 0) return;
@@ -447,7 +527,7 @@ export default function AdminPhotosPage() {
     const idToOrder = new Map(reordered.map((p, i) => [p.id, i]));
     setPhotos((prev) =>
       prev.map((p) =>
-        p.event_id === filterEvent && idToOrder.has(p.id)
+        refMatchesPhoto(ref, p) && idToOrder.has(p.id)
           ? { ...p, display_order: idToOrder.get(p.id) ?? null }
           : p,
       ),
@@ -476,7 +556,9 @@ export default function AdminPhotosPage() {
       const ids = filteredPhotos.map((p) => p.id);
       await batchUpdatePhotos(ids, {
         school_year: batchYear,
-        event_id: batchEventId ? Number(batchEventId) : null,
+        // Always send both fields so we clear the opposite ref when switching.
+        event_id: batchEventRef?.source === 'events' ? batchEventRef.id : null,
+        calendar_event_id: batchEventRef?.source === 'calendar_events' ? batchEventRef.id : null,
       });
       const refreshed = await getPhotos({ limit: 500, include_unpublished: true });
       setPhotos(refreshed || []);
@@ -544,9 +626,9 @@ export default function AdminPhotosPage() {
               </button>
             </span>
             <EventPicker
-              events={events}
-              value={batchEventId ? Number(batchEventId) : null}
-              onChange={(id) => setBatchEventId(id ? String(id) : '')}
+              options={pickerOptions}
+              value={batchEventRef}
+              onChange={(ref) => setBatchEventRef(ref)}
               placeholder="Search events by name, location, date…"
             />
           </div>
@@ -680,24 +762,52 @@ export default function AdminPhotosPage() {
             <select
               value={filterYear}
               onChange={(e) => setFilterYear(e.target.value)}
+              aria-label="Filter by school year"
+              title="Filter by school year"
               className="h-9 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-2 text-sm"
             >
               <option value="all">All years</option>
               {allYears.map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
             <select
-              value={filterEvent === 'all' ? 'all' : filterEvent === 'none' ? 'none' : String(filterEvent)}
+              value={
+                filterEvent === 'all' || filterEvent === 'none'
+                  ? filterEvent
+                  : encodeRef(filterEvent)
+              }
               onChange={(e) => {
                 const v = e.target.value;
                 if (v === 'all') setFilterEvent('all');
                 else if (v === 'none') setFilterEvent('none');
-                else setFilterEvent(Number(v));
+                else {
+                  const ref = decodeRef(v);
+                  if (ref) setFilterEvent(ref);
+                }
               }}
+              aria-label="Filter by event"
+              title="Filter by event"
               className="h-9 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-2 text-sm"
             >
               <option value="all">All events</option>
               <option value="none">Untagged</option>
-              {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+              {calendarEvents.length > 0 && (
+                <optgroup label="Calendar">
+                  {calendarEvents.map((ev) => (
+                    <option key={`c-${ev.id}`} value={encodeRef({ source: 'calendar_events', id: ev.id })}>
+                      {ev.title}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {events.length > 0 && (
+                <optgroup label="Event">
+                  {events.map((ev) => (
+                    <option key={`e-${ev.id}`} value={encodeRef({ source: 'events', id: ev.id })}>
+                      {ev.title}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
             <button
               type="button"
@@ -711,7 +821,7 @@ export default function AdminPhotosPage() {
           </div>
         </div>
 
-        {typeof filterEvent === 'number' && filteredPhotos.length > 1 && (
+        {typeof filterEvent === 'object' && filterEvent !== null && filteredPhotos.length > 1 && (
           <p className="text-xs text-gray-500 dark:text-white/60 mb-3 flex items-center gap-1">
             <span className="material-symbols-outlined text-base">drag_indicator</span>
             Drag photos to reorder them within this event. The public gallery uses the same order.
@@ -725,7 +835,7 @@ export default function AdminPhotosPage() {
         ) : (
           <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {filteredPhotos.map((p) => {
-              const reorderable = typeof filterEvent === 'number';
+              const reorderable = typeof filterEvent === 'object' && filterEvent !== null;
               const isDragging = draggingPhotoId === p.id;
               const isDropTarget = dropTargetId === p.id && draggingPhotoId !== p.id;
               return (
@@ -782,7 +892,9 @@ export default function AdminPhotosPage() {
                   )}
                 </div>
                 <div className="p-2 text-xs">
-                  <p className="text-gray-700 dark:text-white/80 truncate">{p.event?.title || '— Untagged —'}</p>
+                  <p className="text-gray-700 dark:text-white/80 truncate">
+                    {p.event?.title || p.calendar_event?.title || '— Untagged —'}
+                  </p>
                   <p className="text-gray-500 dark:text-white/50">{p.school_year}</p>
                   <div className="mt-2 flex justify-between">
                     <button
@@ -854,9 +966,9 @@ export default function AdminPhotosPage() {
               <div className="flex flex-col gap-1 text-sm">
                 <span className="text-gray-700 dark:text-white/80">Event</span>
                 <EventPicker
-                  events={events}
-                  value={editForm.event_id ? Number(editForm.event_id) : null}
-                  onChange={(id) => setEditForm({ ...editForm, event_id: id ? String(id) : '' })}
+                  options={pickerOptions}
+                  value={editForm.eventRef}
+                  onChange={(ref) => setEditForm({ ...editForm, eventRef: ref })}
                   placeholder="Search events…"
                 />
               </div>
@@ -897,6 +1009,33 @@ export default function AdminPhotosPage() {
               Create an event so you can tag this batch of photos with it.
             </p>
             <div className="space-y-3">
+              <fieldset className="flex flex-col gap-1 text-sm">
+                <legend className="text-gray-700 dark:text-white/80 mb-1">Add to</legend>
+                <div className="inline-flex rounded-lg border border-gray-200 dark:border-white/15 overflow-hidden self-start">
+                  <button
+                    type="button"
+                    onClick={() => setNewEvent({ ...newEvent, source: 'calendar_events' })}
+                    className={`px-3 h-9 text-sm font-medium ${
+                      newEvent.source === 'calendar_events'
+                        ? 'bg-primary text-white'
+                        : 'bg-white dark:bg-[#2a221a] text-gray-700 dark:text-white/80'
+                    }`}
+                  >
+                    School calendar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewEvent({ ...newEvent, source: 'events' })}
+                    className={`px-3 h-9 text-sm font-medium border-l border-gray-200 dark:border-white/15 ${
+                      newEvent.source === 'events'
+                        ? 'bg-primary text-white'
+                        : 'bg-white dark:bg-[#2a221a] text-gray-700 dark:text-white/80'
+                    }`}
+                  >
+                    Events page
+                  </button>
+                </div>
+              </fieldset>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-gray-700 dark:text-white/80">Title</span>
                 <input

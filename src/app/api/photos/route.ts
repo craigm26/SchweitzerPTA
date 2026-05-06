@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const schoolYear = searchParams.get('school_year');
     const eventId = searchParams.get('event_id');
+    const calendarEventId = searchParams.get('calendar_event_id');
     const limit = Math.min(Number(searchParams.get('limit')) || 100, 500);
     const offset = Number(searchParams.get('offset')) || 0;
     const includeUnpublished = searchParams.get('include_unpublished') === 'true';
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
     // back to date_taken DESC so unsorted photos stay newest-first.
     let query = supabase
       .from('photos')
-      .select('*, event:events(id, title, date)')
+      .select('*, event:events(id, title, date), calendar_event:calendar_events(id, title, date)')
       .order('display_order', { ascending: true, nullsFirst: false })
       .order('date_taken', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -37,8 +38,15 @@ export async function GET(request: Request) {
       query = query.eq('is_published', true);
     }
     if (schoolYear) query = query.eq('school_year', schoolYear);
-    if (eventId === 'none') query = query.is('event_id', null);
-    else if (eventId) query = query.eq('event_id', Number(eventId));
+    // event_id=none means "show photos with no event of EITHER kind". Anything
+    // else still filters one ref at a time — the picker only sets one.
+    if (eventId === 'none') {
+      query = query.is('event_id', null).is('calendar_event_id', null);
+    } else if (eventId) {
+      query = query.eq('event_id', Number(eventId));
+    } else if (calendarEventId) {
+      query = query.eq('calendar_event_id', Number(calendarEventId));
+    }
 
     const { data, error } = await query;
     if (error) {
@@ -157,6 +165,12 @@ export async function POST(request: Request) {
       schoolYear = schoolYearFromDate(dateTaken);
     }
 
+    // Mutual exclusion: caller may send one or the other but not both. The
+    // DB CHECK constraint also enforces this; we normalize here so the row
+    // shape is predictable.
+    const eventRefId = body.event_id ?? null;
+    const calendarEventRefId = eventRefId !== null ? null : (body.calendar_event_id ?? null);
+
     const insert = await supabase
       .from('photos')
       .insert({
@@ -171,12 +185,13 @@ export async function POST(request: Request) {
         alt_text: body.alt_text || null,
         date_taken: dateTaken.toISOString(),
         school_year: schoolYear,
-        event_id: body.event_id ?? null,
+        event_id: eventRefId,
+        calendar_event_id: calendarEventRefId,
         uploader_id: user.id,
         content_hash: contentHash,
         is_published: body.is_published ?? true,
       })
-      .select('*, event:events(id, title, date)')
+      .select('*, event:events(id, title, date), calendar_event:calendar_events(id, title, date)')
       .single();
 
     if (insert.error) {

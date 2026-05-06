@@ -11,6 +11,7 @@ const EDITABLE = new Set([
   'date_taken',
   'school_year',
   'event_id',
+  'calendar_event_id',
   'is_published',
   'display_order',
 ]);
@@ -38,6 +39,14 @@ export async function PATCH(request: Request) {
     }
     if (typeof update.school_year === 'string' && !isValidSchoolYear(update.school_year)) {
       return NextResponse.json({ error: 'Invalid school_year format (expect YYYY-YYYY).' }, { status: 400 });
+    }
+    // Mirror /api/photos/[id]: switching one event ref on clears the other so
+    // the mutual-exclusion CHECK constraint doesn't reject the update.
+    if ('event_id' in update && update.event_id !== null && !('calendar_event_id' in update)) {
+      update.calendar_event_id = null;
+    }
+    if ('calendar_event_id' in update && update.calendar_event_id !== null && !('event_id' in update)) {
+      update.event_id = null;
     }
     if (Object.keys(update).length === 0) {
       return NextResponse.json({ error: 'No editable fields in patch' }, { status: 400 });
