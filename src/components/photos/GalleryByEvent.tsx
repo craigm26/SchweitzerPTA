@@ -70,6 +70,11 @@ export default function GalleryByEvent({ photos, onSelect }: Props) {
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                {photo.caption && (
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 py-2 opacity-0 group-hover:opacity-100 transition-opacity text-left">
+                    <p className="text-white text-xs leading-snug line-clamp-2">{photo.caption}</p>
+                  </div>
+                )}
               </button>
             ))}
           </div>

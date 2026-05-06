@@ -1,7 +1,9 @@
 'use client';
 
 import Lightbox from 'yet-another-react-lightbox';
+import Captions from 'yet-another-react-lightbox/plugins/captions';
 import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/captions.css';
 import { Photo, photoUrl } from '@/lib/api';
 
 type Props = {
@@ -17,6 +19,7 @@ export default function PhotoLightbox({ photos, index, onClose, onIndexChange }:
     width: p.width,
     height: p.height,
     alt: p.alt_text || p.caption || '',
+    title: p.event?.title || undefined,
     description: p.caption || undefined,
   }));
 
@@ -26,6 +29,8 @@ export default function PhotoLightbox({ photos, index, onClose, onIndexChange }:
       close={onClose}
       slides={slides}
       index={Math.max(0, index)}
+      plugins={[Captions]}
+      captions={{ descriptionTextAlign: 'center', descriptionMaxLines: 4 }}
       on={{ view: ({ index: i }) => onIndexChange(i) }}
     />
   );

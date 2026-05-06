@@ -26,9 +26,14 @@ export default function GalleryGrid({ photos, onSelect }: Props) {
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
-          {p.event && (
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <p className="text-white text-xs font-medium truncate">{p.event.title}</p>
+          {(p.caption || p.event) && (
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 py-2 opacity-0 group-hover:opacity-100 transition-opacity text-left">
+              {p.caption && (
+                <p className="text-white text-xs leading-snug line-clamp-2">{p.caption}</p>
+              )}
+              {p.event && (
+                <p className="text-white/80 text-[11px] mt-0.5 truncate">{p.event.title}</p>
+              )}
             </div>
           )}
         </button>

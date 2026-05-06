@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   getPhotos,
@@ -16,6 +16,7 @@ import {
 } from '@/lib/api';
 import { createClient } from '@/lib/supabase/client';
 import { schoolYearFromDate, isValidSchoolYear, currentSchoolYear } from '@/lib/school-year';
+import EventPicker from '@/components/photos/EventPicker';
 
 const BUCKET = 'event-photos';
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
@@ -26,6 +27,7 @@ type UploadItem = {
   localId: string;
   file: File;
   previewUrl: string;
+  caption: string;
   status: 'queued' | 'uploading' | 'processing' | 'done' | 'error';
   progress: number;
   error?: string;
@@ -47,6 +49,10 @@ export default function AdminPhotosPage() {
   const [batchEventId, setBatchEventId] = useState<string>('');
   const [batchDate, setBatchDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [items, setItems] = useState<UploadItem[]>([]);
+  const itemsRef = useRef<UploadItem[]>([]);
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
   const [dragActive, setDragActive] = useState(false);
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -110,6 +116,7 @@ export default function AdminPhotosPage() {
         next.push({
           localId: uid(), file,
           previewUrl: URL.createObjectURL(file),
+          caption: '',
           status: 'error', progress: 0,
           error: 'HEIC/HEIF not supported. Please convert to JPEG.',
         });
@@ -119,6 +126,7 @@ export default function AdminPhotosPage() {
         next.push({
           localId: uid(), file,
           previewUrl: URL.createObjectURL(file),
+          caption: '',
           status: 'error', progress: 0,
           error: 'Only JPEG, PNG, or WebP allowed.',
         });
@@ -128,6 +136,7 @@ export default function AdminPhotosPage() {
         next.push({
           localId: uid(), file,
           previewUrl: URL.createObjectURL(file),
+          caption: '',
           status: 'error', progress: 0,
           error: `Max size is ${MAX_FILE_SIZE / 1024 / 1024}MB.`,
         });
@@ -136,6 +145,7 @@ export default function AdminPhotosPage() {
       next.push({
         localId: uid(), file,
         previewUrl: URL.createObjectURL(file),
+        caption: '',
         status: 'queued', progress: 0,
       });
     }
@@ -170,11 +180,14 @@ export default function AdminPhotosPage() {
       if (upload.error) throw upload.error;
       updateItem(item.localId, { status: 'processing', progress: 65 });
 
+      const latest = itemsRef.current.find((it) => it.localId === item.localId);
+      const captionText = latest?.caption?.trim() || null;
       const created = await createPhoto({
         storage_path,
         date_taken: new Date(batchDate).toISOString(),
         school_year: isValidSchoolYear(batchYear) ? batchYear : schoolYearFromDate(new Date(batchDate)),
         event_id: batchEventId ? Number(batchEventId) : null,
+        caption: captionText,
       });
       updateItem(item.localId, { status: 'done', progress: 100, photo: created });
       return created;
@@ -313,21 +326,15 @@ export default function AdminPhotosPage() {
               className="h-10 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs">
+          <div className="flex flex-col gap-1 text-xs">
             <span className="text-gray-500 dark:text-white/60 font-medium uppercase tracking-wide">Event (optional)</span>
-            <select
-              value={batchEventId}
-              onChange={(e) => setBatchEventId(e.target.value)}
-              className="h-10 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">— No event —</option>
-              {events.map((ev) => (
-                <option key={ev.id} value={ev.id}>
-                  {ev.title} ({ev.date})
-                </option>
-              ))}
-            </select>
-          </label>
+            <EventPicker
+              events={events}
+              value={batchEventId ? Number(batchEventId) : null}
+              onChange={(id) => setBatchEventId(id ? String(id) : '')}
+              placeholder="Search events by name, location, date…"
+            />
+          </div>
         </div>
 
         <div
@@ -391,32 +398,46 @@ export default function AdminPhotosPage() {
               </div>
             </div>
             <ul className="divide-y divide-gray-100 dark:divide-white/10 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#2a221a]/40">
-              {items.map((it) => (
-                <li key={it.localId} className="flex items-center gap-3 p-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={it.previewUrl} alt="" className="w-12 h-12 rounded object-cover" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{it.file.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-white/50">
-                      {(it.file.size / 1024 / 1024).toFixed(2)} MB · {it.status}
-                      {it.error ? ` — ${it.error}` : ''}
-                    </p>
-                    {it.status !== 'error' && (
-                      <div className="mt-1 h-1 w-full rounded bg-gray-200 dark:bg-white/10 overflow-hidden">
-                        <div className="h-full bg-primary transition-all" style={{ width: `${it.progress}%` }} />
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeItem(it.localId)}
-                    className="text-gray-400 hover:text-red-500"
-                    title="Remove"
-                  >
-                    <span className="material-symbols-outlined">close</span>
-                  </button>
-                </li>
-              ))}
+              {items.map((it) => {
+                const captionDisabled = it.status === 'uploading' || it.status === 'processing' || it.status === 'done';
+                return (
+                  <li key={it.localId} className="flex items-start gap-3 p-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={it.previewUrl} alt="" className="w-14 h-14 rounded object-cover shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{it.file.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-white/50">
+                        {(it.file.size / 1024 / 1024).toFixed(2)} MB · {it.status}
+                        {it.error ? ` — ${it.error}` : ''}
+                      </p>
+                      {it.status !== 'error' && (
+                        <div className="mt-1 h-1 w-full rounded bg-gray-200 dark:bg-white/10 overflow-hidden">
+                          <div className="h-full bg-primary transition-all" style={{ width: `${it.progress}%` }} />
+                        </div>
+                      )}
+                      {it.status !== 'error' && (
+                        <input
+                          type="text"
+                          value={it.caption}
+                          onChange={(e) => updateItem(it.localId, { caption: e.target.value })}
+                          placeholder="Caption (optional)"
+                          disabled={captionDisabled}
+                          maxLength={300}
+                          className="mt-2 w-full h-9 rounded-md border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
+                        />
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(it.localId)}
+                      className="text-gray-400 hover:text-red-500 shrink-0"
+                      title="Remove"
+                    >
+                      <span className="material-symbols-outlined">close</span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
@@ -551,19 +572,15 @@ export default function AdminPhotosPage() {
                   />
                 </label>
               </div>
-              <label className="flex flex-col gap-1 text-sm">
+              <div className="flex flex-col gap-1 text-sm">
                 <span className="text-gray-700 dark:text-white/80">Event</span>
-                <select
-                  value={editForm.event_id}
-                  onChange={(e) => setEditForm({ ...editForm, event_id: e.target.value })}
-                  className="h-10 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#2a221a] px-3 text-sm"
-                >
-                  <option value="">— No event —</option>
-                  {events.map((ev) => (
-                    <option key={ev.id} value={ev.id}>{ev.title} ({ev.date})</option>
-                  ))}
-                </select>
-              </label>
+                <EventPicker
+                  events={events}
+                  value={editForm.event_id ? Number(editForm.event_id) : null}
+                  onChange={(id) => setEditForm({ ...editForm, event_id: id ? String(id) : '' })}
+                  placeholder="Search events…"
+                />
+              </div>
               <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-white/80">
                 <input
                   type="checkbox"
