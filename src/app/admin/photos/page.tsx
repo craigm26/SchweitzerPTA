@@ -53,6 +53,8 @@ export default function AdminPhotosPage() {
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
+  const isRunningRef = useRef(false);
+  const inFlightRef = useRef<Set<string>>(new Set());
   const [dragActive, setDragActive] = useState(false);
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -150,6 +152,9 @@ export default function AdminPhotosPage() {
       });
     }
     setItems((prev) => [...prev, ...next]);
+    // Auto-start uploads. Defer so the new items land in itemsRef before the
+    // worker pool inspects it.
+    setTimeout(() => void runQueueLoop(), 0);
   }
 
   function updateItem(localId: string, patch: Partial<UploadItem>) {
@@ -164,7 +169,7 @@ export default function AdminPhotosPage() {
     });
   }
 
-  async function uploadOne(item: UploadItem): Promise<Photo | null> {
+  async function uploadOne(item: UploadItem): Promise<void> {
     try {
       updateItem(item.localId, { status: 'uploading', progress: 5 });
       const { storage_path, token } = await requestPhotoUploadUrl({
@@ -190,33 +195,54 @@ export default function AdminPhotosPage() {
         caption: captionText,
       });
       updateItem(item.localId, { status: 'done', progress: 100, photo: created });
-      return created;
+      setPhotos((prev) => [created, ...prev]);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Upload failed';
       updateItem(item.localId, { status: 'error', error: message });
-      return null;
     }
   }
 
-  async function handleStartUploads() {
-    const queued = items.filter((it) => it.status === 'queued');
-    if (queued.length === 0) return;
-    // Upload in parallel, but cap concurrency at 4 to avoid overloading the
-    // sharp/processing route.
+  // Single shared worker pool. Picks queued items off itemsRef.current as they
+  // arrive (so files added mid-run get processed by an idle worker) and uses
+  // inFlightRef to prevent two workers grabbing the same item.
+  async function runQueueLoop() {
+    if (isRunningRef.current) return;
+    isRunningRef.current = true;
     const concurrency = 4;
-    const created: Photo[] = [];
-    let cursor = 0;
     async function worker() {
-      while (cursor < queued.length) {
-        const i = cursor++;
-        const result = await uploadOne(queued[i]);
-        if (result) created.push(result);
+      while (true) {
+        const next = itemsRef.current.find(
+          (it) => it.status === 'queued' && !inFlightRef.current.has(it.localId),
+        );
+        if (!next) return;
+        inFlightRef.current.add(next.localId);
+        try {
+          await uploadOne(next);
+        } finally {
+          inFlightRef.current.delete(next.localId);
+        }
       }
     }
-    await Promise.all(Array.from({ length: Math.min(concurrency, queued.length) }, worker));
-    if (created.length) {
-      setPhotos((prev) => [...created, ...prev]);
+    try {
+      await Promise.all(Array.from({ length: concurrency }, worker));
+    } finally {
+      isRunningRef.current = false;
     }
+  }
+
+  // Reset errored items back to queued and re-run.
+  function handleStartUploads() {
+    const errored = itemsRef.current.filter((it) => it.status === 'error');
+    if (errored.length > 0) {
+      setItems((prev) =>
+        prev.map((it) =>
+          it.status === 'error' && !it.error?.startsWith('HEIC') && !it.error?.startsWith('Only') && !it.error?.startsWith('Max size')
+            ? { ...it, status: 'queued', error: undefined, progress: 0 }
+            : it,
+        ),
+      );
+    }
+    setTimeout(() => void runQueueLoop(), 0);
   }
 
   function clearDone() {
@@ -293,6 +319,14 @@ export default function AdminPhotosPage() {
 
   const queuedCount = items.filter((it) => it.status === 'queued').length;
   const uploadingCount = items.filter((it) => it.status === 'uploading' || it.status === 'processing').length;
+  const erroredCount = items.filter((it) => it.status === 'error').length;
+  const retryableErrorCount = items.filter(
+    (it) =>
+      it.status === 'error' &&
+      !it.error?.startsWith('HEIC') &&
+      !it.error?.startsWith('Only') &&
+      !it.error?.startsWith('Max size'),
+  ).length;
 
   return (
     <div className="p-6 md:p-8">
@@ -357,7 +391,7 @@ export default function AdminPhotosPage() {
           </span>
           <p className="text-gray-700 dark:text-white/80 font-medium">Drag & drop photos here</p>
           <p className="text-sm text-gray-500 dark:text-white/50 mt-1">
-            JPEG, PNG, or WebP up to 15MB. HEIC must be converted first.
+            Uploads start automatically · JPEG, PNG, or WebP up to 15MB · HEIC must be converted first
           </p>
           <label className="mt-4 inline-flex items-center gap-2 cursor-pointer rounded-lg bg-primary px-4 py-2 text-white text-sm font-medium hover:bg-orange-600">
             <span className="material-symbols-outlined text-lg">add_photo_alternate</span>
@@ -374,20 +408,22 @@ export default function AdminPhotosPage() {
 
         {items.length > 0 && (
           <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-gray-600 dark:text-white/70">
                 {items.length} file{items.length === 1 ? '' : 's'} ·{' '}
                 {queuedCount} queued, {uploadingCount} in progress
+                {erroredCount > 0 ? `, ${erroredCount} failed` : ''}
               </p>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleStartUploads}
-                  disabled={queuedCount === 0}
-                  className="rounded-lg bg-primary text-white text-sm font-medium px-3 h-9 disabled:opacity-60"
-                >
-                  Start uploads
-                </button>
+                {(queuedCount > 0 || retryableErrorCount > 0) && (
+                  <button
+                    type="button"
+                    onClick={handleStartUploads}
+                    className="rounded-lg bg-primary text-white text-sm font-medium px-3 h-9"
+                  >
+                    {retryableErrorCount > 0 ? `Retry ${retryableErrorCount}` : 'Resume uploads'}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={clearDone}
@@ -399,7 +435,7 @@ export default function AdminPhotosPage() {
             </div>
             <ul className="divide-y divide-gray-100 dark:divide-white/10 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#2a221a]/40">
               {items.map((it) => {
-                const captionDisabled = it.status === 'uploading' || it.status === 'processing' || it.status === 'done';
+                const captionDisabled = it.status === 'processing' || it.status === 'done';
                 return (
                   <li key={it.localId} className="flex items-start gap-3 p-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
