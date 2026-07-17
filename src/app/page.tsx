@@ -79,8 +79,8 @@ export default function Home() {
                   <p>
                     The Albert Schweitzer Elementary PTA is a dedicated and enthusiastic group of parents
                     and teachers who work together to support and enrich every Wildcat&apos;s school
-                    experience. Our goal is simple: help create a fun, inclusive, and well-rounded
-                    environment where students can thrive both inside and outside the classroom.
+                    experience. Our goal is simple: to help create a fun, inclusive, and well-rounded
+                    environment where every student can thrive both inside and outside the classroom.
                   </p>
                   <p>
                     Through our efforts, we organize engaging school events, raise funds for essential
