@@ -22,6 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Stop iOS Safari's data detectors from auto-linking the address / phone
+            numbers / dates in the page. They rewrite the server HTML before React
+            hydrates, which caused a hydration mismatch on iPad Safari only. */}
+        <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
           rel="stylesheet"
