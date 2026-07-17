@@ -60,9 +60,17 @@ export default function ResourcesPage() {
       category: 'Volunteer',
       external: true,
     },
+    {
+      title: 'San Juan School District',
+      description: 'Visit the San Juan Unified School District website',
+      href: 'https://www.sanjuan.edu/',
+      icon: 'school',
+      category: 'School District',
+      external: true,
+    },
   ];
 
-  const categories = ['All', 'Membership', 'Documents', 'Forms', 'Social Media', 'Volunteer'];
+  const categories = ['All', 'Membership', 'Documents', 'Forms', 'Social Media', 'Volunteer', 'School District'];
 
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
