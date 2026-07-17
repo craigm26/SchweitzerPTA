@@ -87,8 +87,11 @@ export default function Home() {
                       <li>5th Grade Camp Support</li>
                       <li>Family Fun Dance</li>
                       <li>Starstruck Shirts</li>
-                      
                       <li>Muffins for Mom</li>
+                      <li>Donuts for Dad</li>
+                      <li>Fun Run</li>
+                      <li>School Upgrades</li>
+                      <li>and More!</li>
                     </ul>
                   </div>
                   <div>
