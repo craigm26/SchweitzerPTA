@@ -61,6 +61,14 @@ export default function ResourcesPage() {
       external: true,
     },
     {
+      title: 'San Juan School District Parent Portal',
+      description: 'Access grades, attendance, and student information online',
+      href: 'https://sis.sanjuan.edu/parentportal',
+      icon: 'account_circle',
+      category: 'School District',
+      external: true,
+    },
+    {
       title: 'Community Resources',
       description: 'Find community support services and resources for families',
       href: 'https://www.sanjuan.edu/resources/community-resources',
