@@ -96,15 +96,8 @@ export default function EventsPage() {
               Upcoming Events
             </h1>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
-              Browse upcoming PTA meetings, school spirit days, and community fundraisers. Subscribe to get
-              event updates delivered straight to your inbox.
+              Browse upcoming PTA meetings, school spirit days, and community fundraisers.
             </h2>
-            <div className="mt-4 flex gap-3">
-              <button className="flex cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-orange-600 text-white text-base font-bold transition-all shadow-lg shadow-orange-900/50">
-                <span className="mr-2 material-symbols-outlined text-[20px]">notifications_active</span>
-                Subscribe to Events
-              </button>
-            </div>
           </div>
         </div>
       </div>
