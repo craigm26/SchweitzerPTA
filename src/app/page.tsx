@@ -80,7 +80,7 @@ export default function Home() {
                     <ul className="list-disc list-inside space-y-1 ml-4">
                       <li>School Calendars</li>
                       <li>Teacher Stipends</li>
-                      <li>Classroom Field Trips</li>
+                      <li>Spirit Wear</li>
                       <li>Fall Festival</li>
                       <li>Cocoa and Crafts</li>
                       <li>Teacher and Staff Appreciation</li>
