@@ -42,7 +42,6 @@ const Header = () => {
               <Link href="/" className="text-white text-lg font-bold leading-tight tracking-tight hover:text-primary transition-colors">
                 Schweitzer Elementary PTA
               </Link>
-              <span className="text-primary text-xs font-bold uppercase tracking-wider">PTA</span>
             </div>
           </div>
           {/* Desktop Nav */}
