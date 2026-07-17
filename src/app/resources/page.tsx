@@ -68,9 +68,17 @@ export default function ResourcesPage() {
       category: 'School District',
       external: true,
     },
+    {
+      title: 'Community Resources',
+      description: 'Find community support services and resources for families',
+      href: 'https://www.sanjuan.edu/resources/community-resources',
+      icon: 'diversity_3',
+      category: 'Community',
+      external: true,
+    },
   ];
 
-  const categories = ['All', 'Membership', 'Documents', 'Forms', 'Social Media', 'Volunteer', 'School District'];
+  const categories = ['All', 'Membership', 'Documents', 'Forms', 'Social Media', 'Volunteer', 'School District', 'Community'];
 
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
