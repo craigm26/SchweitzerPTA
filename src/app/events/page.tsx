@@ -96,7 +96,7 @@ export default function EventsPage() {
               Upcoming Events
             </h1>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
-              Browse upcoming PTA meetings, school spirit days, and community fundraisers.
+              Browse upcoming PTA meetings, school events, and community fundraisers.
             </h2>
           </div>
         </div>
