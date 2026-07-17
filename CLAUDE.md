@@ -6,6 +6,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Schweitzer Elementary PTA website built with Next.js 16, React 19, TypeScript, Supabase, and Tailwind CSS 4. Deployed on Vercel.
 
+## ⚠️ Editing via PTA Studio — guardrails (READ FIRST)
+
+Most changes here are now requested by a **non-technical parent volunteer** through
+**PTA Studio** — a chat tool that runs you headlessly in this repo to make a change,
+show it on a dev preview, and let her Publish it to the live site. When you are making
+a change (you almost always are), follow these rules:
+
+**Do**
+- Make the **smallest** change that satisfies the request. Prefer editing existing
+  content/components over adding anything new.
+- Edit page **content, copy, text, images, and simple styling/layout** of existing pages
+  and components.
+- Keep the site **building and working** at all times — valid TSX, no broken imports,
+  no half-finished edits.
+- If the request is ambiguous, make one reasonable choice and **state the assumption**
+  in plain language.
+- Finish with **one short, non-technical sentence** starting `Done:` that says what you
+  changed and which page to look at.
+
+**Never do these — they need Craig. Refuse simply and make no changes:**
+- Don't touch auth / data plumbing: `src/lib/supabase/**`, `src/lib/auth-context.tsx`,
+  `src/middleware.ts`, RLS, or `supabase/schema.sql` (no migrations).
+- Don't edit **API routes** (`src/app/api/**`) — server/backend behavior.
+- Don't touch **payments/donations**: `src/app/api/donate/**`, Stripe code, `src/utils/stripe.ts`.
+- Don't change **config/tooling**: `package.json`, `pnpm-lock.yaml`, `next.config.ts`,
+  `vercel.json`, `tsconfig.json`, `.env*`, `.gitignore`, anything in `.github/`.
+- Don't add, remove, or upgrade **dependencies** (no new packages).
+- Don't **delete** pages, components, or files.
+- Don't run git / commit / push, and don't start or stop the dev server — PTA Studio
+  handles saving and publishing.
+- Don't change the admin role/permission logic.
+
+If a request can't be done safely within these rules, don't force it — say in one
+friendly sentence that this one needs Craig, and change nothing. Full playbook +
+examples: `.claude/skills/pta-website-edits/SKILL.md`.
+
 ## Commands
 
 ```bash
@@ -36,7 +72,10 @@ E2E tests use Playwright (`e2e/` directory) but require a running dev server and
 
 ### API Routes (`src/app/api/`)
 All routes follow REST conventions: GET, POST, PUT, DELETE on the same endpoint.
-- `/api/news`, `/api/calendar`, `/api/donors`, `/api/volunteers`, `/api/users`, `/api/contact`, `/api/auth/*`
+Current routes: `analytics`, `auction-items`, `auth/*`, `calendar`, `contact`,
+`documents`, `donate` (Stripe), `donors`, `events`, `fundraisers`, `news`,
+`newsletter-subscriptions`, `photos`, `upload`, `users`, `volunteer-events`,
+`volunteers`, `volunteer-shifts`. (These are server/backend — off-limits to PTA Studio edits.)
 
 ### Database Tables (Supabase)
 - `profiles` - User profiles with roles (admin, editor, member)
