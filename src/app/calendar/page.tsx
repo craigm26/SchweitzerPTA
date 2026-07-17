@@ -160,12 +160,6 @@ export default function EventsPage() {
               Join us for PTA meetings, school spirit events, and community fundraisers! Stay involved and help our
               Wildcats roar.
             </h2>
-            <div className="mt-4 flex gap-3">
-              <button className="flex cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-orange-600 text-white text-base font-bold transition-all shadow-lg shadow-orange-900/50">
-                <span className="mr-2 material-symbols-outlined text-[20px]">calendar_add_on</span>
-                Subscribe to Calendar
-              </button>
-            </div>
           </div>
         </div>
       </div>
