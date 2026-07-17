@@ -89,7 +89,7 @@ export default function Home() {
                   </p>
                   <div>
                     <p className="mb-2">PTA Sponsored Events/Items include:</p>
-                    <ul className="list-disc list-inside space-y-1 ml-4">
+                    <ul className="list-disc list-inside space-y-1 ml-4 sm:columns-2 sm:gap-8">
                       <li>School Calendars</li>
                       <li>Teacher Stipends</li>
                       <li>Spirit Wear</li>
