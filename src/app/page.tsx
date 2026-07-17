@@ -115,6 +115,12 @@ export default function Home() {
                     </ul>
                   </div>
                   <p>
+                    Our PTA meets on the first Tuesday of each month at 5:00 p.m. in the Schweitzer
+                    Elementary School Library. Meetings are open to everyone, and we encourage all parents,
+                    guardians, and staff to attend. Whether you&apos;re looking to stay informed, share ideas,
+                    or get more involved, we&apos;d love to have you join us.
+                  </p>
+                  <p>
                     None of this would be possible without our amazing community. Whether you have an
                     hour to spare, a skill to share, or want to be involved throughout the year, your time and
                     ideas truly make a difference. There&apos;s a place for everyone in our PTA, and we&apos;d love to
