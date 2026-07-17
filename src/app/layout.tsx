@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Analytics } from "@vercel/analytics/next"
 import FirstPartyAnalyticsTracker from '@/components/FirstPartyAnalyticsTracker';
+import VisualPicker from '@/components/VisualPicker';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const lexend = Lexend({ subsets: ['latin'], variable: '--font-lexend' });
@@ -38,6 +39,7 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
         <FirstPartyAnalyticsTracker />
+        {process.env.NODE_ENV === 'development' && <VisualPicker />}
         <Analytics />
       </body>
     </html>
