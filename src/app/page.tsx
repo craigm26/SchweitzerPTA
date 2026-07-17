@@ -86,7 +86,7 @@ export default function Home() {
                       <li>Teacher and Staff Appreciation</li>
                       <li>5th Grade Camp Support</li>
                       <li>Family Fun Dance</li>
-                      <li>Starstruck Shirts (A school-wide dance program where each class learns a routine and performs in a showcase)</li>
+                      <li>Starstruck Shirts</li>
                       
                       <li>Auction</li>
                     </ul>
