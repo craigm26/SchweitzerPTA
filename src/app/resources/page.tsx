@@ -13,14 +13,6 @@ export default function ResourcesPage() {
       external: true,
     },
     {
-      title: 'Albert Schweitzer PTA Bylaws',
-      description: 'View our official PTA bylaws and governance documents',
-      href: '#',
-      icon: 'description',
-      category: 'Documents',
-      comingSoon: true,
-    },
-    {
       title: 'Teacher Reimbursement Form',
       description: 'Submit reimbursement requests for classroom expenses',
       href: '#',
