@@ -58,9 +58,14 @@ const Header = () => {
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-center gap-0.5">
               <div className="size-10 rounded-full bg-primary flex items-center justify-center text-white">
-                <Link href="/" aria-label="Go to home page">
+                <a
+                  href="https://jointotem.com/ca/carmichael/albert-schweitzer-elementary-pta?utm_source=totem&utm_medium=qr&utm_campaign=print"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Join the PTA today"
+                >
                   <span className="material-symbols-outlined text-2xl">pets</span>
-                </Link>
+                </a>
               </div>
               <a
                 href="https://jointotem.com/ca/carmichael/albert-schweitzer-elementary-pta?utm_source=totem&utm_medium=qr&utm_campaign=print"
