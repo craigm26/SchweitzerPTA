@@ -56,10 +56,20 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo & School Name */}
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-full bg-primary flex items-center justify-center text-white">
-              <Link href="/" aria-label="Go to home page">
-                <span className="material-symbols-outlined text-2xl">pets</span>
-              </Link>
+            <div className="flex flex-col items-center gap-0.5">
+              <div className="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+                <Link href="/" aria-label="Go to home page">
+                  <span className="material-symbols-outlined text-2xl">pets</span>
+                </Link>
+              </div>
+              <a
+                href="https://jointotem.com/ca/carmichael/albert-schweitzer-elementary-pta?utm_source=totem&utm_medium=qr&utm_campaign=print"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary text-xs font-bold tracking-wide hover:text-white transition-colors"
+              >
+                JOIN
+              </a>
             </div>
             <div className="flex flex-col gap-1">
               <Link href="/" className="text-white text-lg font-bold leading-tight tracking-tight hover:text-primary transition-colors">
