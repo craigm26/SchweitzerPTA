@@ -198,7 +198,7 @@ export default function EventsPage() {
                   {calendarDays.map((d, i) => (
                     <div
                       key={i}
-                      className={`py-2 rounded-full relative cursor-pointer transition-colors ${
+                      className={`py-2 pb-3 rounded-full relative cursor-pointer transition-colors ${
                         d.highlight
                           ? 'bg-primary text-white font-bold'
                           : d.events
@@ -209,8 +209,12 @@ export default function EventsPage() {
                       }`}
                     >
                       {d.day}
-                      {d.events && !d.highlight && (
-                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"></span>
+                      {d.events && (
+                        <span
+                          className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
+                            d.highlight ? 'bg-white' : 'bg-primary'
+                          }`}
+                        ></span>
                       )}
                     </div>
                   ))}
