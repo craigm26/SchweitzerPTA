@@ -1,53 +1,15 @@
 'use client';
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [subscribeEmail, setSubscribeEmail] = useState('');
-  const [isSubscribing, setIsSubscribing] = useState(false);
-  const [subscribeMessage, setSubscribeMessage] = useState('');
-  const [subscribeError, setSubscribeError] = useState('');
   const pathname = usePathname();
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
-  };
-
-  const handleSubscribe = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isSubscribing) return;
-
-    setSubscribeMessage('');
-    setSubscribeError('');
-    setIsSubscribing(true);
-
-    try {
-      const response = await fetch('/api/newsletter-subscriptions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: subscribeEmail,
-          source: 'header_nav',
-        }),
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        setSubscribeError(result.error || 'Unable to subscribe right now.');
-        return;
-      }
-
-      setSubscribeMessage(result.alreadySubscribed ? 'Already subscribed' : 'Subscribed!');
-      setSubscribeEmail('');
-    } catch (error) {
-      console.error('Newsletter subscribe request failed:', error);
-      setSubscribeError('Unable to subscribe right now.');
-    } finally {
-      setIsSubscribing(false);
-    }
   };
 
   return (
@@ -80,31 +42,7 @@ const Header = () => {
               <Link href="/" className="text-white text-lg font-bold leading-tight tracking-tight hover:text-primary transition-colors">
                 Schweitzer Elementary
               </Link>
-              <form onSubmit={handleSubscribe} className="hidden lg:flex items-center gap-2">
-                <label htmlFor="header-subscribe-email" className="sr-only">
-                  Email for newsletter subscription
-                </label>
-                <input
-                  id="header-subscribe-email"
-                  type="email"
-                  required
-                  value={subscribeEmail}
-                  onChange={(event) => setSubscribeEmail(event.target.value)}
-                  placeholder="Email for PTA News"
-                  className="h-8 w-52 rounded-md border border-white/25 bg-white/10 px-3 text-xs text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <button
-                  type="submit"
-                  disabled={isSubscribing}
-                  className="h-8 px-3 rounded-md text-xs font-bold bg-primary text-white hover:bg-orange-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isSubscribing ? '...' : 'Subscribe'}
-                </button>
-              </form>
-              <p className={`hidden lg:block text-xs ${subscribeError ? 'text-red-300' : 'text-green-300'} min-h-4`}>
-                {subscribeError || subscribeMessage || ''}
-              </p>
-              <span className="text-primary text-xs font-bold uppercase tracking-wider lg:hidden">PTA</span>
+              <span className="text-primary text-xs font-bold uppercase tracking-wider">PTA</span>
             </div>
           </div>
           {/* Desktop Nav */}
@@ -184,35 +122,6 @@ const Header = () => {
             <button onClick={() => setIsMenuOpen(false)} className="text-white p-2">
               <span className="material-symbols-outlined text-3xl">close</span>
             </button>
-          </div>
-          <div className="mt-2 mb-6 rounded-lg border border-white/20 bg-white/5 p-3">
-            <p className="text-white text-sm font-semibold mb-2">Get PTA updates</p>
-            <form onSubmit={handleSubscribe} className="flex items-center gap-2">
-              <label htmlFor="mobile-subscribe-email" className="sr-only">
-                Email for newsletter subscription
-              </label>
-              <input
-                id="mobile-subscribe-email"
-                type="email"
-                required
-                value={subscribeEmail}
-                onChange={(event) => setSubscribeEmail(event.target.value)}
-                placeholder="Email for PTA News"
-                className="h-9 flex-1 rounded-md border border-white/25 bg-white/10 px-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <button
-                type="submit"
-                disabled={isSubscribing}
-                className="h-9 px-3 rounded-md text-sm font-bold bg-primary text-white hover:bg-orange-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isSubscribing ? '...' : 'Join'}
-              </button>
-            </form>
-            {(subscribeError || subscribeMessage) && (
-              <p className={`mt-2 text-xs font-medium ${subscribeError ? 'text-red-300' : 'text-green-300'}`}>
-                {subscribeError || subscribeMessage}
-              </p>
-            )}
           </div>
           <nav className="flex flex-col items-center gap-8 mt-10">
             <Link

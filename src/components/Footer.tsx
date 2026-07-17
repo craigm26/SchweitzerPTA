@@ -1,6 +1,47 @@
+'use client';
+import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 
 const Footer = () => {
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscribeMessage, setSubscribeMessage] = useState('');
+  const [subscribeError, setSubscribeError] = useState('');
+
+  const handleSubscribe = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubscribing) return;
+
+    setSubscribeMessage('');
+    setSubscribeError('');
+    setIsSubscribing(true);
+
+    try {
+      const response = await fetch('/api/newsletter-subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: subscribeEmail,
+          source: 'footer',
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        setSubscribeError(result.error || 'Unable to subscribe right now.');
+        return;
+      }
+
+      setSubscribeMessage(result.alreadySubscribed ? 'Already subscribed' : 'Subscribed!');
+      setSubscribeEmail('');
+    } catch (error) {
+      console.error('Newsletter subscribe request failed:', error);
+      setSubscribeError('Unable to subscribe right now.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
   return (
     <footer className="bg-background-dark text-white border-t border-primary/30 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -15,6 +56,35 @@ const Footer = () => {
             <p className="text-gray-400 max-w-sm mb-6">
               Dedicated to promoting the welfare of children and youth in home, school, and community. Go Wildcats!
             </p>
+            <div className="mb-6 max-w-sm">
+              <p className="text-white text-sm font-semibold mb-2">Get PTA updates</p>
+              <form onSubmit={handleSubscribe} className="flex items-center gap-2">
+                <label htmlFor="footer-subscribe-email" className="sr-only">
+                  Email for newsletter subscription
+                </label>
+                <input
+                  id="footer-subscribe-email"
+                  type="email"
+                  required
+                  value={subscribeEmail}
+                  onChange={(event) => setSubscribeEmail(event.target.value)}
+                  placeholder="Email for PTA News"
+                  className="h-9 flex-1 rounded-md border border-white/25 bg-white/10 px-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <button
+                  type="submit"
+                  disabled={isSubscribing}
+                  className="h-9 px-3 rounded-md text-sm font-bold bg-primary text-white hover:bg-orange-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isSubscribing ? '...' : 'Subscribe'}
+                </button>
+              </form>
+              {(subscribeError || subscribeMessage) && (
+                <p className={`mt-2 text-xs font-medium ${subscribeError ? 'text-red-300' : 'text-green-300'}`}>
+                  {subscribeError || subscribeMessage}
+                </p>
+              )}
+            </div>
             <div className="flex gap-4">
               <a href="https://www.facebook.com/schweitzer.elementary/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors">
                 <span className="sr-only">Facebook</span>
