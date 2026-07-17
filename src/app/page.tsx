@@ -58,9 +58,14 @@ export default function Home() {
         href="https://jointotem.com/ca/carmichael/albert-schweitzer-elementary-pta?utm_source=totem&utm_medium=qr&utm_campaign=print"
         target="_blank"
         rel="noopener noreferrer"
-        className="block w-full rounded-xl bg-orange-500 hover:bg-orange-600 transition-colors px-6 py-6 text-center text-white text-2xl sm:text-3xl font-black tracking-wide shadow-lg"
+        className="block w-full rounded-xl bg-orange-500 hover:bg-orange-600 transition-colors px-6 py-6 text-center text-white shadow-lg"
       >
-        JOIN PTA TODAY
+        <span className="block text-2xl sm:text-3xl font-black tracking-wide">
+          JOIN PTA TODAY
+        </span>
+        <span className="mt-2 block text-sm sm:text-base font-medium">
+          Membership means support &mdash; not a time commitment
+        </span>
       </a>
       <section className="w-full">
         <div className="@container">
