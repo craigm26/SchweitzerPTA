@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { FormEvent, useState } from 'react';
 
 export default function Home() {
@@ -58,13 +59,22 @@ export default function Home() {
         href="https://jointotem.com/ca/carmichael/albert-schweitzer-elementary-pta?utm_source=totem&utm_medium=qr&utm_campaign=print"
         target="_blank"
         rel="noopener noreferrer"
-        className="block w-full rounded-xl bg-primary hover:bg-orange-600 transition-colors px-6 py-6 text-center text-white shadow-lg"
+        className="flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-primary hover:bg-orange-600 transition-colors px-6 py-6 text-center text-white shadow-lg sm:flex-row sm:gap-6"
       >
-        <span className="block text-2xl sm:text-3xl font-black tracking-wide">
-          CLICK HERE TO JOIN PTA TODAY
-        </span>
-        <span className="mt-2 block text-sm sm:text-base font-medium">
-          Membership means support &mdash; not a time commitment
+        <Image
+          src="/AlbertSchweitzerElementaryLogo.png"
+          alt="Albert Schweitzer Elementary wildcat logo"
+          width={80}
+          height={80}
+          className="h-16 w-16 shrink-0 object-contain sm:h-20 sm:w-20"
+        />
+        <span className="block">
+          <span className="block text-2xl sm:text-3xl font-black tracking-wide">
+            CLICK HERE TO JOIN PTA TODAY
+          </span>
+          <span className="mt-2 block text-sm sm:text-base font-medium">
+            Membership means support &mdash; not a time commitment
+          </span>
         </span>
       </a>
       <section className="w-full">
