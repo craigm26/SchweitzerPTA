@@ -215,16 +215,6 @@ export default function EventsPage() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <div className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
-                    <span className="material-symbols-outlined text-primary text-lg">lightbulb</span>
-                    <div>
-                      <p className="text-xs">
-                        You can sync these events directly to your phone calendar by clicking &quot;Subscribe&quot;.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Event Cards */}
