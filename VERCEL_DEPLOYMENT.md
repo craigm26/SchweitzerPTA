@@ -1,134 +1,114 @@
-# Vercel Production Deployment Guide
+# Vercel Deployment Guide
 
-This guide ensures your Schweitzer PTA website is properly configured for production deployment on Vercel.
+How the Schweitzer PTA website builds and deploys on Vercel. Last verified against the
+repo on 2026-07-16.
 
-## Pre-Deployment Checklist
+## How deploys happen
 
-### 1. Environment Variables
+Deployment is **Git integration**: push to `main` on GitHub and Vercel builds and deploys
+automatically. There is no `vercel` CLI step and no GitHub Actions workflow — Vercel *is*
+the CI/CD here.
 
-Ensure the following environment variables are set in Vercel:
+```bash
+git push origin main   # Vercel auto-builds & deploys
+```
 
-**Required:**
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+(The PTA Studio kiosk's **Publish** button does exactly this `git push` under the hood.)
 
-**Optional (if using):**
-- `STRIPE_SECRET_KEY` - For Stripe payment processing
-- `STRIPE_PUBLISHABLE_KEY` - For Stripe payment processing
-- Any other API keys your application uses
+Vercel installs with **pnpm** (detected from `pnpm-lock.yaml`) and runs `next build`. There
+is **no `postinstall` script** — native modules are handled by config, not an install hook
+(see below). To redeploy without a new commit: Vercel Dashboard → *Deployments* → **Redeploy**.
 
-**To set in Vercel:**
-1. Go to your project → Settings → Environment Variables
-2. Add each variable for Production, Preview, and Development environments
-3. Redeploy after adding new variables
+Before pushing, it's cheapest to catch failures locally:
 
-### 2. Build Configuration
+```bash
+pnpm build   # production build (next build)
+pnpm lint
+```
 
-The project is configured with:
-- ✅ Optimized Next.js config for production
-- ✅ Image optimization with AVIF and WebP support
-- ✅ Console log removal in production (errors/warnings preserved)
-- ✅ Proper Vercel function timeout settings
-- ✅ Native dependency installation via postinstall script
+## Environment variables
 
-### 3. Database Setup
+Set these in the Vercel dashboard → *Settings → Environment Variables* (per Production /
+Preview / Development). Never commit them; `.env*` and `.vercel` are gitignored. Locally
+they live in `.env.local` (also gitignored; `pnpm exec vercel env pull` can fetch them).
 
-Ensure your Supabase database is set up:
-1. Run all migrations in `supabase/migrations/`
-2. Run the schema from `supabase/schema.sql`
-3. Verify RLS policies are in place
-4. Create at least one admin user
+**Required**
+- `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon (public) key
 
-### 4. Build Process
+**Used by specific features (set if that feature is on)**
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — client-side donations checkout
+- `STRIPE_SECRET_KEY` — server-side donations (`/api/donate`)
+- `RESEND_API_KEY` — transactional email
+- `SITE_EMAIL_FROM_VOLUNTEER_SIGNUP`, `SITE_EMAIL_REPLY_TO`, `SITE_EMAIL_CC` — email addressing
 
-Vercel will automatically:
-1. Run `npm install` (which triggers `postinstall` for native deps)
-2. Run `npm run build`
-3. Deploy the optimized build
+Only variables prefixed `NEXT_PUBLIC_` are exposed to the browser — that correctly includes
+the Stripe **publishable** key. Everything else (`STRIPE_SECRET_KEY`, `RESEND_API_KEY`,
+`SITE_EMAIL_*`) is server-only and must **never** be prefixed `NEXT_PUBLIC_`. A missing
+runtime var fails at request time, not build time — check the environment if a page 500s.
 
-## Deployment Steps
+## Build configuration
 
-1. **Push to GitHub** (if using Git integration)
-   ```bash
-   git push origin main
-   ```
+**`vercel.json`**
+- `framework: "nextjs"`, region pinned `iad1` (US East).
+- API routes (`src/app/api/**/*.ts`) capped at **`maxDuration` 30s**. Anything longer needs a
+  background job, not a bigger timeout.
 
-2. **Deploy via Vercel Dashboard**
-   - Go to your Vercel project
-   - Click "Deployments" → "Redeploy" or push to trigger auto-deploy
+**`next.config.ts`**
+- `reactStrictMode: true`.
+- `compiler.removeConsole` in production (keeps `error`/`warn`).
+- Image optimization: AVIF/WebP; remote patterns for Supabase storage, Google favicons,
+  icon.horse, and Clearbit logos.
+- **Native-module handling (this is what replaced the old postinstall script):**
+  - `serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist', 'sharp']` — these ship
+    platform-specific `.node` bindings; keeping them external stops the bundler from breaking
+    on them.
+  - `outputFileTracingIncludes` force-includes the pdfjs worker for `/api/events/upload-flyer`
+    (pdfjs v5 imports it dynamically, so Vercel's tracer misses it). It globs the **real pnpm
+    store path** (`node_modules/.pnpm/pdfjs-dist@*/…/pdf.worker.mjs`), **not** the symlinked
+    `node_modules/pdfjs-dist` — packaging the symlink causes an "invalid deployment package" error.
 
-3. **Monitor Build Logs**
-   - Check for any build errors
-   - Verify environment variables are loaded
-   - Ensure native dependencies install correctly
+**`package.json`**
+- `optionalDependencies: { "@rollup/rollup-win32-x64-msvc": … }`. The lockfile is authored on
+  Windows, so Windows-only native binaries must sit in **`optionalDependencies`** — the Linux
+  Vercel install skips them gracefully while pnpm pulls the matching Linux binaries via the
+  upstream packages' own optionalDependencies. **Never** move a `*-win32-*` binary into regular
+  `dependencies` — that breaks the Linux build.
+- No `postinstall` script, and `scripts/` contains only `check-env.js` and `dev.js`.
+
+Keep **`pnpm-lock.yaml` in sync** — Vercel installs from it, and a stale lockfile fails the build.
+
+## Database (Supabase)
+
+The site reads/writes Supabase. Ensure schema + RLS are in place (`supabase/schema.sql`,
+`supabase/migrations/`) and at least one admin user exists. See `SUPABASE_SETUP.md`.
 
 ## Troubleshooting
 
-### Build Fails with Native Dependency Errors
+**Build fails on a native module** (`@napi-rs/canvas`, `sharp`, `pdfjs-dist`, rollup/oxide/
+lightningcss binaries) — almost always one of:
+- a `*-win32-*` binary landed in `dependencies` instead of `optionalDependencies`;
+- the pdfjs worker tracer/symlink issue (see `next.config.ts` note above);
+- a stale `pnpm-lock.yaml`.
+Open the Vercel build log; the failing line names the module.
 
-The `postinstall` script automatically installs platform-specific dependencies. If it fails:
-- Check that npm has proper permissions
-- Verify the platform is supported in `scripts/install-native-deps.js`
-- Check Vercel build logs for specific errors
+**A route times out** — the 30s `maxDuration` cap in `vercel.json`; move long work to a
+background job.
 
-### Environment Variables Not Working
+**Env var "not working"** — confirm the `NEXT_PUBLIC_` prefix for anything the browser needs,
+and that it's set for the right environment (Production). Redeploy after adding one.
 
-- Ensure variables are prefixed with `NEXT_PUBLIC_` for client-side access
-- Verify variables are set for the correct environment (Production/Preview/Development)
-- Redeploy after adding new variables
+**Image won't load** — check the Supabase storage bucket and the `remotePatterns` in
+`next.config.ts`.
 
-### Image Loading Issues
+## After deploy
 
-- Verify Supabase storage bucket is configured
-- Check image remote patterns in `next.config.ts`
-- Ensure CORS is properly configured in Supabase
+Watch the newest deployment reach **Ready** (a red "Error" means a failed build — production
+keeps serving the previous good deploy, so the live site is never broken by a bad build).
+Then exercise a route that touches the native path — the flyer upload / PDF-thumbnail route
+`/api/events/upload-flyer` is the canary (it's the one that broke repeatedly).
 
-### API Routes Timing Out
-
-- Default timeout is 30 seconds (configured in `vercel.json`)
-- For longer operations, consider using background jobs or increasing timeout
-
-## Production Optimizations Applied
-
-1. **Next.js Config:**
-   - React Strict Mode enabled
-   - Image optimization (AVIF/WebP)
-   - Console log removal in production
-   - Experimental features for stability
-
-2. **Vercel Config:**
-   - Function timeouts set to 30s
-   - Region set to `iad1` (US East)
-   - Proper framework detection
-
-3. **Build Process:**
-   - Native dependencies auto-installed
-   - TypeScript compilation
-   - Production optimizations enabled
-
-## Post-Deployment
-
-1. **Test the live site:**
-   - Verify all pages load correctly
-   - Test authentication flows
-   - Check API endpoints
-   - Verify image loading
-
-2. **Monitor:**
-   - Check Vercel Analytics
-   - Monitor error logs
-   - Check Supabase dashboard for database activity
-
-3. **Set up custom domain** (if needed):
-   - Go to Vercel project → Settings → Domains
-   - Add your custom domain
-   - Update DNS records as instructed
-
-## Support
-
-For issues specific to:
-- **Vercel**: Check Vercel documentation or support
-- **Next.js**: Check Next.js documentation
-- **Supabase**: Check Supabase documentation
-- **Project-specific**: Review `README_ADMIN.md` and `SUPABASE_SETUP.md`
-
+## Related docs
+- `README_ADMIN.md` — admin usage
+- `SUPABASE_SETUP.md` — database setup
+- `CLAUDE.md` — repo overview + PTA Studio editing guardrails
