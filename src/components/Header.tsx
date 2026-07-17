@@ -40,7 +40,7 @@ const Header = () => {
             </div>
             <div className="flex flex-col gap-1">
               <Link href="/" className="text-white text-lg font-bold leading-tight tracking-tight hover:text-primary transition-colors">
-                Schweitzer Elementary
+                Schweitzer Elementary PTA
               </Link>
               <span className="text-primary text-xs font-bold uppercase tracking-wider">PTA</span>
             </div>
