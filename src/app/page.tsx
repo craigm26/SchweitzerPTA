@@ -72,7 +72,7 @@ export default function Home() {
           <div className="flex flex-col-reverse gap-6 py-4 lg:py-10 @[864px]:flex-row @[864px]:items-center">
             <div className="flex flex-col gap-6 @[480px]:min-w-[400px] @[480px]:gap-8 flex-1">
               <div className="flex flex-col gap-4 text-left">
-                <h1 className="text-[#181411] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl lg:text-6xl">
+                <h1 className="text-[#181411] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em] @[480px]:text-4xl lg:text-5xl">
                   Welcome Albert Schweitzer Families, Friends, and Wildcat Supporters!
                 </h1>
                 <div className="text-[#181411]/80 dark:text-gray-300 text-base font-normal leading-relaxed space-y-4">
