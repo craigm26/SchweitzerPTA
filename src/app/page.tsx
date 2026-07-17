@@ -88,7 +88,7 @@ export default function Home() {
                       <li>Family Fun Dance</li>
                       <li>Starstruck Shirts</li>
                       
-                      <li>Auction</li>
+                      <li>Muffins for Mom</li>
                     </ul>
                   </div>
                   <div>
