@@ -219,8 +219,7 @@ export default function EventsPage() {
                   <div className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
                     <span className="material-symbols-outlined text-primary text-lg">lightbulb</span>
                     <div>
-                      <p className="font-medium text-[#181411] dark:text-white">Did you know?</p>
-                      <p className="text-xs mt-1">
+                      <p className="text-xs">
                         You can sync these events directly to your phone calendar by clicking &quot;Subscribe&quot;.
                       </p>
                     </div>
