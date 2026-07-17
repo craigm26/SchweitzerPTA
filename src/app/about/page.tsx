@@ -166,7 +166,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-sm">School Address</h4>
-                    <p className="text-white/70 text-sm">
+                    <p className="text-white/70 text-sm" suppressHydrationWarning>
                       4350 Glenridge Drive
                       <br />
                       Carmichael, CA 95608

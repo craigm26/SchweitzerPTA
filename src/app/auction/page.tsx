@@ -603,11 +603,11 @@ export default function AuctionPage() {
                       <span className="material-symbols-outlined text-primary text-3xl">mail</span>
                       <h3 className="text-[#181411] dark:text-white text-xl font-bold">Donation Mailing Information</h3>
                     </div>
-                    <div className="mt-4 flex flex-col gap-2 text-[#181411]/80 dark:text-gray-300">
+                    <div className="mt-4 flex flex-col gap-2 text-[#181411]/80 dark:text-gray-300" suppressHydrationWarning>
                       <p className="font-semibold text-[#181411] dark:text-white">Albert Schweitzer Elementary School PTA</p>
                       <p>Attn: Andrea Ellery, PTA</p>
-                      <p>4350 Glenridge Drive</p>
-                      <p>Carmichael, CA 95608</p>
+                      <p suppressHydrationWarning>4350 Glenridge Drive</p>
+                      <p suppressHydrationWarning>Carmichael, CA 95608</p>
                     </div>
                   </section>
                 </div>

@@ -42,11 +42,14 @@ const Footer = () => {
             <ul className="space-y-2 text-sm text-gray-400">
               <li className="flex items-start gap-2">
                 <span className="material-symbols-outlined text-primary text-lg">location_on</span>
-                <span>4350 Glenridge Drive <br /> Carmichael, CA 95608</span>
+                {/* Safari's data detectors rewrite the address into a link before React
+                    hydrates (address=no in format-detection isn't honored on iOS), so
+                    suppress the resulting hydration mismatch here and on the email below. */}
+                <span suppressHydrationWarning>4350 Glenridge Drive <br /> Carmichael, CA 95608</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-lg">mail</span>
-                <span>AlbertSchweitzerPTA@gmail.com</span>
+                <span suppressHydrationWarning>AlbertSchweitzerPTA@gmail.com</span>
               </li>
             </ul>
           </div>
