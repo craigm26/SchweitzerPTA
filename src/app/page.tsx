@@ -99,7 +99,7 @@ export default function Home() {
                     <ul className="list-disc list-inside space-y-1 ml-4">
                       <li>School Mural (planned for 2026-2027 School Year)</li>
                       <li>New technology and lighting for MP Room (2025-2026 School Year)</li>
-                      <li>New library furniture</li>
+                      <li>New library furniture (2024-2025 School Year)</li>
                     </ul>
                   </div>
                   <p>
