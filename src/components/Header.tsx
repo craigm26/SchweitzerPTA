@@ -61,6 +61,7 @@ const Header = () => {
               >
                 Volunteer
               </Link>
+              {/* Auction link hidden for now
               <Link
                 href="/auction"
                 className={`text-sm font-medium transition-colors ${isActive('/auction') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
@@ -68,6 +69,7 @@ const Header = () => {
               >
                 Auction
               </Link>
+              */}
               <Link
                 href="/calendar"
                 className={`text-sm font-medium transition-colors ${isActive('/calendar') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
@@ -139,6 +141,7 @@ const Header = () => {
             >
               Volunteer
             </Link>
+            {/* Auction link hidden for now
             <Link
               href="/auction"
               onClick={() => setIsMenuOpen(false)}
@@ -147,6 +150,7 @@ const Header = () => {
             >
               Auction
             </Link>
+            */}
             <Link
               href="/calendar"
               onClick={() => setIsMenuOpen(false)}
