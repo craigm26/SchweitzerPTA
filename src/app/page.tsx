@@ -61,7 +61,7 @@ export default function Home() {
         className="block w-full rounded-xl bg-orange-500 hover:bg-orange-600 transition-colors px-6 py-6 text-center text-white shadow-lg"
       >
         <span className="block text-2xl sm:text-3xl font-black tracking-wide">
-          JOIN PTA TODAY
+          CLICK HERE TO JOIN PTA TODAY
         </span>
         <span className="mt-2 block text-sm sm:text-base font-medium">
           Membership means support &mdash; not a time commitment
