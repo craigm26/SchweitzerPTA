@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import Image from 'next/image';
 
 export default function Home() {
   const [email, setEmail] = useState('');
@@ -55,6 +54,14 @@ export default function Home() {
 
   return (
     <div className="layout-container flex flex-col w-full mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-6 gap-8">
+      <a
+        href="https://jointotem.com/ca/carmichael/albert-schweitzer-elementary-pta?utm_source=totem&utm_medium=qr&utm_campaign=print"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block w-full rounded-xl bg-orange-500 hover:bg-orange-600 transition-colors px-6 py-6 text-center text-white text-2xl sm:text-3xl font-black tracking-wide shadow-lg"
+      >
+        JOIN PTA TODAY
+      </a>
       <section className="w-full">
         <div className="@container">
           <div className="flex flex-col-reverse gap-6 py-4 lg:py-10 @[864px]:flex-row @[864px]:items-center">
@@ -155,19 +162,6 @@ export default function Home() {
                   <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-400">{subscribeError}</p>
                 )}
               </form>
-            </div>
-            <div className="w-full flex-1 rounded-xl overflow-hidden shadow-2xl bg-gray-200 dark:bg-gray-800 relative group flex items-center justify-center min-h-[400px]">
-              <Image
-                src="/AlbertSchweitzerElementaryLogo.png"
-                alt="Albert Schweitzer Elementary School Mascot"
-                width={800}
-                height={600}
-                className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
-              <div className="absolute bottom-6 left-6 text-white font-bold text-xl drop-shadow-md flex items-center gap-2 pointer-events-none">
-                <span className="material-symbols-outlined">campaign</span> Go Wildcats!
-              </div>
             </div>
           </div>
         </div>
