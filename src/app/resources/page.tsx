@@ -5,6 +5,14 @@ import Link from 'next/link';
 export default function ResourcesPage() {
   const resources = [
     {
+      title: 'Join the PTA',
+      description: 'Become a PTA member and support our school community',
+      href: 'https://jointotem.com/ca/carmichael/albert-schweitzer-elementary-pta?utm_source=totem&utm_medium=qr&utm_campaign=print',
+      icon: 'group_add',
+      category: 'Membership',
+      external: true,
+    },
+    {
       title: 'Albert Schweitzer PTA Bylaws',
       description: 'View our official PTA bylaws and governance documents',
       href: '#',
@@ -54,7 +62,7 @@ export default function ResourcesPage() {
     },
   ];
 
-  const categories = ['All', 'Documents', 'Forms', 'Social Media', 'Volunteer'];
+  const categories = ['All', 'Membership', 'Documents', 'Forms', 'Social Media', 'Volunteer'];
 
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
