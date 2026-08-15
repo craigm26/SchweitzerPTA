@@ -291,9 +291,9 @@ export default function VolunteerPage() {
                         <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2">
                           <span className="flex items-center gap-1">
                             <span className="material-symbols-outlined text-sm">event</span>
-                            {formatEventDate(event.date)}
+                            {event.volunteer_hide_date ? 'No set date' : formatEventDate(event.date)}
                           </span>
-                          {eventTime && (
+                          {eventTime && !event.volunteer_hide_date && (
                             <span className="flex items-center gap-1">
                               <span className="material-symbols-outlined text-sm">schedule</span>
                               {eventTime}

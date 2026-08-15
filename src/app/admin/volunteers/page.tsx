@@ -78,7 +78,10 @@ export default function VolunteerManagementPage() {
         includeInactive: true,
         includeInactiveShifts: true,
         includeSignups: true,
-        upcoming: true,
+        // Admins manage every event, including ones whose date has passed — otherwise an
+        // event can never be marked "No set date" once it falls out of the upcoming window,
+        // which is exactly the event most likely to need it.
+        upcoming: false,
       });
       setEvents(data || []);
       const initialOrders = Object.fromEntries(
@@ -131,6 +134,24 @@ export default function VolunteerManagementPage() {
     } catch (error) {
       console.error('Error updating event visibility:', error);
       alert('Failed to update event visibility');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleToggleHideDate = async (event: VolunteerEvent) => {
+    const loadingKey = `event-hidedate-${event.id}`;
+    setActionLoading(loadingKey);
+    try {
+      await updateCalendarEvent(event.id, { volunteer_hide_date: !event.volunteer_hide_date });
+      setEvents((prev) =>
+        prev.map((item) =>
+          item.id === event.id ? { ...item, volunteer_hide_date: !item.volunteer_hide_date } : item
+        )
+      );
+    } catch (error) {
+      console.error('Error updating event date display:', error);
+      alert('Failed to update the date setting');
     } finally {
       setActionLoading(null);
     }
@@ -628,6 +649,18 @@ export default function VolunteerManagementPage() {
                         }`}
                       >
                         {event.volunteer_active ? 'Visible to Volunteers' : 'Hidden from Volunteers'}
+                      </button>
+                      <button
+                        onClick={() => handleToggleHideDate(event)}
+                        disabled={actionLoading === `event-hidedate-${event.id}`}
+                        title="Ongoing or anytime opportunities: the Volunteer page shows “No set date” and the event stays listed even after its date passes."
+                        className={`text-xs font-bold px-3 py-2 rounded-lg ${
+                          event.volunteer_hide_date
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        {event.volunteer_hide_date ? 'No Set Date' : 'Shows Date'}
                       </button>
                       <button
                         onClick={() => openAddShiftModal(event.id)}

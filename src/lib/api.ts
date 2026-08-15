@@ -642,6 +642,7 @@ export interface CalendarEvent {
   is_featured: boolean;
   is_all_day: boolean;
   volunteer_active: boolean;
+  volunteer_hide_date: boolean;
   volunteer_display_order: number | null;
   created_at: string;
   updated_at: string;

@@ -45,7 +45,11 @@ export async function GET(request: Request) {
     }
 
     if (upcoming) {
-      eventsQuery = eventsQuery.gte('date', new Date().toISOString().split('T')[0]);
+      // An event marked "no set date" is an ongoing/anytime opportunity, so it must survive
+      // the upcoming filter — otherwise it still needs a real future date to appear at all
+      // and silently vanishes the day that placeholder date passes.
+      const today = new Date().toISOString().split('T')[0];
+      eventsQuery = eventsQuery.or(`date.gte.${today},volunteer_hide_date.is.true`);
     }
 
     if (eventIdParam) {
