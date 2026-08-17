@@ -273,22 +273,20 @@ export default function VolunteerPage() {
                         <h2 className="text-[#181411] dark:text-white text-2xl font-bold">
                           {event.title}
                         </h2>
-                        <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                          <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-sm">event</span>
-                            {event.volunteer_hide_date ? 'No set date' : formatEventDate(event.date)}
-                          </span>
-                          {eventTime && !event.volunteer_hide_date && (
+                        {!event.volunteer_hide_date && (
+                          <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2">
                             <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-sm">schedule</span>
-                              {eventTime}
+                              <span className="material-symbols-outlined text-sm">event</span>
+                              {formatEventDate(event.date)}
                             </span>
-                          )}
-                          <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-sm">location_on</span>
-                            {event.location}
-                          </span>
-                        </div>
+                            {eventTime && (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-sm">schedule</span>
+                                {eventTime}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         {renderEventDescription(event.description)}
                       </div>
 
