@@ -270,9 +270,6 @@ export default function VolunteerPage() {
                   <div className="flex flex-col lg:flex-row gap-6">
                     <div className="flex-1 flex flex-col gap-4">
                       <div>
-                        <h2 className="text-[#181411] dark:text-white text-2xl font-bold">
-                          {event.title}
-                        </h2>
                         {!event.volunteer_hide_date && (
                           <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2">
                             <span className="flex items-center gap-1">
@@ -287,7 +284,6 @@ export default function VolunteerPage() {
                             )}
                           </div>
                         )}
-                        {renderEventDescription(event.description)}
                       </div>
 
                       <div className="flex flex-col gap-4">
@@ -300,7 +296,7 @@ export default function VolunteerPage() {
                             const timeLabel =
                               shift.start_time || shift.end_time
                                 ? `${formattedShiftStart || 'Time TBD'}${formattedShiftEnd ? ` - ${formattedShiftEnd}` : ''}`
-                                : 'Time flexible';
+                                : null;
                             return (
                               <div
                                 key={shift.id}
@@ -318,7 +314,9 @@ export default function VolunteerPage() {
                                   {shift.shift_description && (
                                     <p className="text-sm text-gray-500 mt-1">{shift.shift_description}</p>
                                   )}
-                                  <p className="text-xs text-gray-500 mt-1">Time: {timeLabel}</p>
+                                  {timeLabel && (
+                                    <p className="text-xs text-gray-500 mt-1">Time: {timeLabel}</p>
+                                  )}
                                 </div>
                                 <ShiftSignup
                                   shift={shift}
