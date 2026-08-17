@@ -234,21 +234,6 @@ export default function VolunteerPage() {
 
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
-      {/* Hero Section */}
-      <div className="w-full bg-[#181411]">
-        <div className="relative w-full h-[200px] flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20"></div>
-          <div className="relative z-10 flex flex-col items-center gap-2 text-center px-4 max-w-4xl">
-            <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
-              Volunteer
-            </h1>
-            <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
-              Help make Schweitzer Elementary the best it can be
-            </h2>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
         <div className="flex flex-col max-w-[1100px] w-full gap-8">
@@ -308,7 +293,6 @@ export default function VolunteerPage() {
                       </div>
 
                       <div className="flex flex-col gap-4">
-                        <h3 className="text-[#181411] dark:text-white text-lg font-bold">Volunteer Needs</h3>
                         {event.shifts.length === 0 ? (
                           <div className="text-sm text-gray-500">No shifts posted yet.</div>
                         ) : (
