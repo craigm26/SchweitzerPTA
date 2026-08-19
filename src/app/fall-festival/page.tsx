@@ -155,6 +155,9 @@ export default function FallFestivalPage() {
             Whether you&rsquo;re creative, handy, tech-savvy, or simply available to lend a
             hand, we need you to make the Spooky Walk happen.
           </p>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            Interested? Contact Marie at 916-221-2384.
+          </p>
         </div>
       </div>
     </main>
