@@ -122,8 +122,27 @@ export default function FallFestivalPage() {
             campus. More details will be posted here soon.
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Check back for updates, and watch our Events page and social media for
-            announcements.
+            Fall Festival is one of Schweitzer&rsquo;s biggest and most-loved events of the
+            year&mdash;and it takes a lot of helping hands to make it happen!
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            We&rsquo;re looking for parents and caregivers who can help plan, prepare, set up,
+            volunteer during the event, and clean up afterward. Whether you can take on a
+            planning role, help with one specific task, or give us a few hours, there&rsquo;s a
+            way to get involved.
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            Want to learn more? Join us at our first PTA meeting of the year!
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed font-bold">
+            Tuesday, September 1 at 5:00 PM
+            <br />
+            Schweitzer School Library
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            Come hear what&rsquo;s planned for Fall Festival, learn where help is needed, and
+            find a way to pitch in that works for you. You don&rsquo;t need to be a PTA Board
+            member&mdash;or commit to every event&mdash;to help make Fall Festival a success.
           </p>
         </div>
       </div>
