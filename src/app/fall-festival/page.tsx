@@ -113,9 +113,6 @@ export default function FallFestivalPage() {
       <div className="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
         <div className="flex flex-col max-w-[900px] w-full gap-6">
           <FallFestivalCollage />
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-            About the Fall Festival
-          </h3>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
             Fall Festival is one of Schweitzer&rsquo;s biggest and most-loved events of the
             year&mdash;and it takes a lot of helping hands to make it happen!
