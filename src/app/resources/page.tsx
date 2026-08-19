@@ -45,7 +45,7 @@ export default function ResourcesPage() {
       external: true,
     },
     {
-      title: 'San Juan School District Volunteer Fingerprinting',
+      title: 'San Juan School District Volunteer Requirements',
       description: 'Complete required fingerprinting for school volunteers',
       href: 'https://www.sanjuan.edu/connect/volunteer',
       icon: 'fingerprint',
