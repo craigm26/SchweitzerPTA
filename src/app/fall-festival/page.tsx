@@ -136,6 +136,25 @@ export default function FallFestivalPage() {
             find a way to pitch in that works for you. You don&rsquo;t need to be a PTA
             member&mdash;or commit to every event&mdash;to help make Fall Festival a success.
           </p>
+
+          <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
+            Spooky Walk
+          </h2>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            The Spooky Walk is one of the main attractions of Fall Festival and a
+            Schweitzer favorite! Creating the experience takes weeks of preparation and a
+            team of creative, hands-on volunteers.
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            Prop-building volunteers are needed ASAP to help us start bringing this
+            year&rsquo;s Spooky Walk to life. We&rsquo;ll also need volunteers for setup and
+            take-down, lighting and sound support, decorating, and more.
+          </p>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            You don&rsquo;t need any special experience&mdash;just a willingness to help!
+            Whether you&rsquo;re creative, handy, tech-savvy, or simply available to lend a
+            hand, we need you to make the Spooky Walk happen.
+          </p>
         </div>
       </div>
     </main>
