@@ -28,8 +28,8 @@ export default function FallFestivalPage() {
           </h3>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
             The Fall Festival brings the Schweitzer community together for an evening of food,
-            games, treats, and fun. Details for this year&apos;s festival —
-            including the date, time, and how to volunteer — will be posted here soon.
+            games, treats, and fun. Fall Festival will be held on Friday, October 16th on
+            campus. More details will be posted here soon.
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
             Check back for updates, and watch our Events page and social media for
