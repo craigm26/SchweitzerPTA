@@ -1,3 +1,92 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import {
+  getPhotos,
+  getEvents,
+  getCalendarEvents,
+  photoUrl,
+  Photo,
+  Event,
+  CalendarEvent,
+} from '@/lib/api';
+
+// Photos tagged to this event on the Photos page show up in the collage below.
+const COLLAGE_EVENT_TITLE = 'Fall Festival 2025';
+const COLLAGE_MAX_PHOTOS = 8;
+
+function FallFestivalCollage() {
+  const [photos, setPhotos] = useState<Photo[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const [allPhotos, events, calendarEvents]: [Photo[], Event[], CalendarEvent[]] =
+          await Promise.all([getPhotos({ limit: 500 }), getEvents(), getCalendarEvents()]);
+        if (cancelled) return;
+
+        const wanted = COLLAGE_EVENT_TITLE.trim().toLowerCase();
+        const eventIds = new Set(
+          (events || []).filter((e) => e.title?.trim().toLowerCase() === wanted).map((e) => e.id)
+        );
+        const calendarEventIds = new Set(
+          (calendarEvents || [])
+            .filter((e) => e.title?.trim().toLowerCase() === wanted)
+            .map((e) => e.id)
+        );
+
+        setPhotos(
+          (allPhotos || [])
+            .filter(
+              (p) =>
+                (p.event_id !== null && eventIds.has(p.event_id)) ||
+                (p.calendar_event_id !== null && calendarEventIds.has(p.calendar_event_id))
+            )
+            .slice(0, COLLAGE_MAX_PHOTOS)
+        );
+      } catch (err) {
+        console.error('Could not load Fall Festival photos:', err);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (photos.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+        {photos.map((p) => (
+          <div
+            key={p.id}
+            className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-[#2a221a]"
+          >
+            <Image
+              src={photoUrl(p.thumb_path)}
+              alt={p.alt_text || p.caption || 'Fall Festival photo'}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 900px) 33vw, 220px"
+              className="object-cover"
+            />
+          </div>
+        ))}
+      </div>
+      <Link
+        href="/photos"
+        className="text-sm font-medium text-primary hover:underline self-start"
+      >
+        See more photos
+      </Link>
+    </div>
+  );
+}
+
 export default function FallFestivalPage() {
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
@@ -23,6 +112,7 @@ export default function FallFestivalPage() {
       {/* Main Content */}
       <div className="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
         <div className="flex flex-col max-w-[900px] w-full gap-6">
+          <FallFestivalCollage />
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
             About the Fall Festival
           </h3>
