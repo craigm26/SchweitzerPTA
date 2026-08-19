@@ -118,7 +118,7 @@ export default function FallFestivalPage() {
             year&mdash;and it takes a lot of helping hands to make it happen!
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            We&rsquo;re looking for parents and caregivers who can help plan, prepare, set up,
+            We&rsquo;re looking for volunteers who can help plan, prepare, set up,
             volunteer during the event, and clean up afterward. Whether you can take on a
             planning role, help with one specific task, or give us a few hours, there&rsquo;s a
             way to get involved.
