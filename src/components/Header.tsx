@@ -92,6 +92,13 @@ const Header = () => {
                 Events
               </Link>
               <Link
+                href="/fall-festival"
+                className={`text-sm font-medium transition-colors ${isActive('/fall-festival') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
+              >
+                Fall Festival
+              </Link>
+              <Link
                 href="/photos"
                 className={`text-sm font-medium transition-colors ${isActive('/photos') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
                   }`}
@@ -174,6 +181,14 @@ const Header = () => {
                 }`}
             >
               Events
+            </Link>
+            <Link
+              href="/fall-festival"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors ${isActive('/fall-festival') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
+            >
+              Fall Festival
             </Link>
             <Link
               href="/photos"
