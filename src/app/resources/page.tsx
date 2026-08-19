@@ -46,7 +46,7 @@ export default function ResourcesPage() {
     },
     {
       title: 'San Juan School District Volunteer Requirements',
-      description: 'Complete required fingerprinting for school volunteers',
+      description: 'New for the 2026-27 school year, volunteers require TB screening and fingerprinting. Find more information on the District volunteer page.',
       href: 'https://www.sanjuan.edu/connect/volunteer',
       icon: 'fingerprint',
       category: 'Volunteer',
