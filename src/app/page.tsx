@@ -96,13 +96,27 @@ export default function Home() {
                     inclusive, and well-rounded
                     environment where every student can thrive both inside and outside the classroom.
                   </p>
-                  <p className="mb-2">PTA Goals:</p>
-                  <ul className="list-disc list-inside space-y-1 ml-4">
-                    <li>Support student learning</li>
-                    <li>Fund programs &amp; improvements</li>
-                    <li>Plan &amp; support school events</li>
-                    <li>Build a strong school community</li>
-                  </ul>
+                  <div className="grid gap-4 sm:grid-cols-2 sm:gap-8">
+                    <div>
+                      <p className="mb-2">PTA Goals:</p>
+                      <ul className="list-disc list-inside space-y-1 ml-4">
+                        <li>Support student learning</li>
+                        <li>Fund programs &amp; improvements</li>
+                        <li>Plan &amp; support school events</li>
+                        <li>Build a strong school community</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="mb-2">Why Join?</p>
+                      <ul className="list-disc list-inside space-y-1 ml-4">
+                        <li>Come to a meeting &amp; share ideas</li>
+                        <li>Volunteer at an event</li>
+                        <li>Help plan an activity or fundraiser</li>
+                        <li>Meet other families</li>
+                        <li>Simply join &amp; show your support</li>
+                      </ul>
+                    </div>
+                  </div>
                   <p>
                     Through our efforts, we organize engaging school events, raise funds for essential
                     programs, and build strong connections between families and staff. Everything we do is
