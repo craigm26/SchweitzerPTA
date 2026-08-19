@@ -92,6 +92,7 @@ export default function Home() {
                     inclusive, and well-rounded
                     environment where every student can thrive both inside and outside the classroom.
                   </p>
+                  <p className="mb-2">PTA Goals:</p>
                   <ul className="list-disc list-inside space-y-1 ml-4">
                     <li>Support student learning</li>
                     <li>Fund programs &amp; improvements</li>
