@@ -9,6 +9,9 @@ export default function FallFestivalPage() {
             <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
               Fall Festival
             </h1>
+            <p className="text-white text-lg md:text-xl font-bold">
+              October 16, 2026
+            </p>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
               Our biggest family night of the year — games, food, and fun for the whole
               Schweitzer community.
