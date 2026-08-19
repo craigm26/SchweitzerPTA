@@ -27,7 +27,7 @@ export default function FallFestivalPage() {
             About the Fall Festival
           </h3>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            The Fall Festival brings Schweitzer families together for an evening of carnival
+            The Fall Festival brings the Schweitzer community together for an evening of carnival
             games, treats, music, and community. Details for this year&apos;s festival —
             including the date, time, and how to volunteer — will be posted here soon.
           </p>
