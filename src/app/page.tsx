@@ -73,7 +73,8 @@ export default function Home() {
             CLICK HERE TO JOIN PTA TODAY
           </span>
           <span className="mt-2 block text-sm sm:text-base font-medium">
-            Membership means support &mdash; not a time commitment
+            Membership is $11 for the year and helps support our school. There
+            are lots of ways to get involved &mdash; choose what works for you!
           </span>
         </span>
       </a>
