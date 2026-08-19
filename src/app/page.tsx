@@ -87,9 +87,9 @@ export default function Home() {
                 </h1>
                 <div className="text-[#181411]/80 dark:text-gray-300 text-base font-normal leading-relaxed space-y-4">
                   <p>
-                    The Albert Schweitzer Elementary PTA is a dedicated and enthusiastic group of parents
-                    and teachers who work together to support and enrich every Wildcat&apos;s school
-                    experience. Our goal is simple: to help create a fun, inclusive, and well-rounded
+                    The Albert Schweitzer Elementary PTA is our school community working together to
+                    support students, teachers, and families. Our goal is simple: to help create a fun,
+                    inclusive, and well-rounded
                     environment where every student can thrive both inside and outside the classroom.
                   </p>
                   <p>
