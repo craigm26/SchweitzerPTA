@@ -92,6 +92,12 @@ export default function Home() {
                     inclusive, and well-rounded
                     environment where every student can thrive both inside and outside the classroom.
                   </p>
+                  <ul className="list-disc list-inside space-y-1 ml-4">
+                    <li>Support student learning</li>
+                    <li>Fund programs &amp; improvements</li>
+                    <li>Plan &amp; support school events</li>
+                    <li>Build a strong school community</li>
+                  </ul>
                   <p>
                     Through our efforts, we organize engaging school events, raise funds for essential
                     programs, and build strong connections between families and staff. Everything we do is
