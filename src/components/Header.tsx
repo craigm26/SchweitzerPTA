@@ -99,6 +99,13 @@ const Header = () => {
                 Fall Festival
               </Link>
               <Link
+                href="/spiritwear"
+                className={`text-sm font-medium transition-colors ${isActive('/spiritwear') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
+                  }`}
+              >
+                Spiritwear
+              </Link>
+              <Link
                 href="/photos"
                 className={`text-sm font-medium transition-colors ${isActive('/photos') ? 'text-primary font-bold' : 'text-white/90 hover:text-primary'
                   }`}
@@ -189,6 +196,14 @@ const Header = () => {
                 }`}
             >
               Fall Festival
+            </Link>
+            <Link
+              href="/spiritwear"
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-2xl font-bold transition-colors ${isActive('/spiritwear') ? 'text-primary' : 'text-white hover:text-primary'
+                }`}
+            >
+              Spiritwear
             </Link>
             <Link
               href="/photos"
