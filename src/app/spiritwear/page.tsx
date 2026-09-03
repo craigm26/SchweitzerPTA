@@ -10,7 +10,7 @@ export default function SpiritwearPage() {
               Spiritwear
             </h1>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
-              Show your Schweitzer pride with shirts, hoodies, and more.
+              Show your Schweitzer pride with shirts and hoodies.
             </h2>
           </div>
         </div>
