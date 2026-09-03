@@ -27,6 +27,16 @@ export default function SpiritwearPage() {
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
             Wear your spiritwear every Friday all year long!
           </p>
+          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            T-shirts and hoodies are available for purchase at the school office.
+            Venmo and exact cash are accepted.
+          </p>
+          <ul className="list-disc pl-6 text-gray-700 dark:text-gray-300 text-base leading-relaxed space-y-1">
+            <li>Youth T-shirts $15</li>
+            <li>Youth Hoodies $30</li>
+            <li>Adult T-shirts $23</li>
+            <li>Adult Hoodies $38</li>
+          </ul>
         </div>
       </div>
     </main>
