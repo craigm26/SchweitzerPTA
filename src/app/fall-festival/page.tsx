@@ -124,7 +124,7 @@ export default function FallFestivalPage() {
             way to get involved.
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Want to learn more? Join us at our first PTA meeting of the year!
+            Join us at the Fall Festival Planning Meeting!
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed font-bold">
             Tuesday, September 1 at 5:00 PM
