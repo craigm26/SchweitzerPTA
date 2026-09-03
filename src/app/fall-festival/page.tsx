@@ -136,6 +136,15 @@ export default function FallFestivalPage() {
             find a way to pitch in that works for you. You don&rsquo;t need to be a PTA
             member&mdash;or commit to every event&mdash;to help make Fall Festival a success.
           </p>
+          <div className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+            <p>You can help by:</p>
+            <ul className="list-disc pl-6 mt-2 space-y-1">
+              <li>helping create props for the Spooky Walk</li>
+              <li>running a game station</li>
+              <li>setting up before the festival</li>
+              <li>cleaning up afterward</li>
+            </ul>
+          </div>
 
           <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
             Spooky Walk
