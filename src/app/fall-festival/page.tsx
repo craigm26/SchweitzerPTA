@@ -127,9 +127,9 @@ export default function FallFestivalPage() {
             Join us at the Fall Festival Planning Meeting!
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed font-bold">
-            Tuesday, September 1 at 5:00 PM
+            Tuesday, September 15 at 5:00 PM
             <br />
-            Schweitzer School Library
+            Location TBD
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
             Come hear what&rsquo;s planned for Fall Festival, learn where help is needed, and
