@@ -25,10 +25,6 @@ export default function SpiritwearPage() {
             throughout the year.
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Ordering details, sizes, and pricing will be posted here soon. Check back for
-            updates!
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
             Wear your spiritwear every Friday all year long!
           </p>
         </div>
