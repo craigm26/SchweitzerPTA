@@ -129,7 +129,7 @@ export default function FallFestivalPage() {
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed font-bold">
             Tuesday, September 15 at 5:00 PM
             <br />
-            Location TBD
+            Schweitzer, Location TBD
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
             Come hear what&rsquo;s planned for Fall Festival, learn where help is needed, and
