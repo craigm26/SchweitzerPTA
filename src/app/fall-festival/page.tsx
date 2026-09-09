@@ -111,73 +111,80 @@ export default function FallFestivalPage() {
 
       {/* Main Content */}
       <div className="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
-        <div className="flex flex-col max-w-[900px] w-full gap-6">
+        <div className="flex flex-col max-w-[900px] lg:max-w-[1200px] w-full gap-6">
           <FallFestivalCollage />
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Fall Festival is one of Schweitzer&rsquo;s biggest and most-loved events of the
-            year&mdash;and it takes a lot of helping hands to make it happen!
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            We&rsquo;re looking for volunteers who can help plan, prepare, set up,
-            work during the event, and clean up afterward. Whether you can take on a
-            planning role, help with one specific task, or give us a few hours, there&rsquo;s a
-            way to get involved.
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Join us at the Fall Festival Planning Meeting!
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed font-bold">
-            Tuesday, September 15 at 5:00 PM
-            <br />
-            Schweitzer, Location TBD
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Come hear what&rsquo;s planned for Fall Festival, learn where help is needed, and
-            find a way to pitch in that works for you. You don&rsquo;t need to be a PTA
-            member&mdash;or commit to every event&mdash;to help make Fall Festival a success.
-          </p>
-          <div className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            <p>You can help by:</p>
-            <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li>helping create props for the Spooky Walk</li>
-              <li>running a game station</li>
-              <li>setting up before the festival</li>
-              <li>cleaning up afterward</li>
-            </ul>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
+            <div className="flex flex-col gap-6">
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                Fall Festival is one of Schweitzer&rsquo;s biggest and most-loved events of
+                the year&mdash;and it takes a lot of helping hands to make it happen!
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                We&rsquo;re looking for volunteers who can help plan, prepare, set up,
+                work during the event, and clean up afterward. Whether you can take on a
+                planning role, help with one specific task, or give us a few hours,
+                there&rsquo;s a way to get involved.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                Join us at the Fall Festival Planning Meeting!
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed font-bold">
+                Tuesday, September 15 at 5:00 PM
+                <br />
+                Schweitzer, Location TBD
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                Come hear what&rsquo;s planned for Fall Festival, learn where help is
+                needed, and find a way to pitch in that works for you. You don&rsquo;t need
+                to be a PTA member&mdash;or commit to every event&mdash;to help make Fall
+                Festival a success.
+              </p>
+              <div className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                <p>You can help by:</p>
+                <ul className="list-disc pl-6 mt-2 space-y-1">
+                  <li>helping create props for the Spooky Walk</li>
+                  <li>running a game station</li>
+                  <li>setting up before the festival</li>
+                  <li>cleaning up afterward</li>
+                </ul>
+              </div>
 
-          <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
-            Spooky Walk
-          </h2>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            The Spooky Walk is one of the main attractions of Fall Festival and a
-            Schweitzer favorite! Creating the experience takes weeks of preparation and a
-            team of creative, hands-on volunteers.
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Prop-building volunteers are needed ASAP to help us start bringing this
-            year&rsquo;s Spooky Walk to life. We&rsquo;ll also need volunteers for setup and
-            take-down, lighting and sound support, decorating, and more.
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            You don&rsquo;t need any special experience&mdash;just a willingness to help!
-            Whether you&rsquo;re creative, handy, tech-savvy, or simply available to lend a
-            hand, we need you to make the Spooky Walk happen.
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            Interested? Contact Marie at 916-221-2384.
-          </p>
+              <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
+                Spooky Walk
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                The Spooky Walk is one of the main attractions of Fall Festival and a
+                Schweitzer favorite! Creating the experience takes weeks of preparation and
+                a team of creative, hands-on volunteers.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                Prop-building volunteers are needed ASAP to help us start bringing this
+                year&rsquo;s Spooky Walk to life. We&rsquo;ll also need volunteers for setup
+                and take-down, lighting and sound support, decorating, and more.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                You don&rsquo;t need any special experience&mdash;just a willingness to help!
+                Whether you&rsquo;re creative, handy, tech-savvy, or simply available to lend
+                a hand, we need you to make the Spooky Walk happen.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                Interested? Contact Marie at 916-221-2384.
+              </p>
+            </div>
 
-          <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
-            Purchase Fall Festival Tickets - On Sale 10/2
-          </h2>
-          <div className="relative w-full overflow-hidden h-[900px]">
-            <iframe
-              title="Donation form powered by Zeffy"
-              src="https://www.zeffy.com/embed/ticketing/fall-festival-albert-schweitzer-elementary-school--2026"
-              className="absolute inset-0 w-full h-full border-0"
-              allowTransparency
-            />
+            <div className="flex flex-col gap-6">
+              <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
+                Purchase Fall Festival Tickets - On Sale 10/2
+              </h2>
+              <div className="relative w-full overflow-hidden h-[900px]">
+                <iframe
+                  title="Donation form powered by Zeffy"
+                  src="https://www.zeffy.com/embed/ticketing/fall-festival-albert-schweitzer-elementary-school--2026"
+                  className="absolute inset-0 w-full h-full border-0"
+                  allowTransparency
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
