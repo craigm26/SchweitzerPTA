@@ -99,7 +99,7 @@ export default function FallFestivalPage() {
               Fall Festival
             </h1>
             <p className="text-white text-lg md:text-xl font-bold">
-              October 16, 2026
+              October 16, 2026 | 6:00pm -8:00pm
             </p>
             <h2 className="text-gray-300 text-base md:text-lg font-normal max-w-2xl">
               Our biggest family night of the year — games, food, and fun for the whole
