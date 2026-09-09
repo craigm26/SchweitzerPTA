@@ -167,6 +167,18 @@ export default function FallFestivalPage() {
           <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
             Interested? Contact Marie at 916-221-2384.
           </p>
+
+          <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
+            Purchase Fall Festival Tickets
+          </h2>
+          <div className="relative w-full overflow-hidden h-[900px]">
+            <iframe
+              title="Donation form powered by Zeffy"
+              src="https://www.zeffy.com/embed/ticketing/fall-festival-albert-schweitzer-elementary-school--2026"
+              className="absolute inset-0 w-full h-full border-0"
+              allowTransparency
+            />
+          </div>
         </div>
       </div>
     </main>
