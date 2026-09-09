@@ -169,7 +169,7 @@ export default function FallFestivalPage() {
           </p>
 
           <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
-            Purchase Fall Festival Tickets
+            Purchase Fall Festival Tickets - On Sale 10/2
           </h2>
           <div className="relative w-full overflow-hidden h-[900px]">
             <iframe
