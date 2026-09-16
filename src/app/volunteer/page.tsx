@@ -79,6 +79,10 @@ const SECOND_TO_LAST_ROLE = 'spooky walk clean up';
 const GAME_STATION_ROLE = 'game station';
 const AFTER_GAME_STATION_ROLE = 'spooky walk guide';
 
+// This job role always sits right after the Popcorn Station section.
+const POPCORN_STATION_ROLE = 'popcorn station';
+const AFTER_POPCORN_STATION_ROLE = 'cotton candy station';
+
 function normalizeRole(roleName: string): string {
   return roleName.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
 }
@@ -486,6 +490,17 @@ export default function VolunteerPage() {
       const [guide] = list.splice(guideIdx, 1);
       const target = list.findIndex((g) => normalizeRole(g.roleName).startsWith(GAME_STATION_ROLE));
       list.splice(target + 1, 0, guide);
+    }
+
+    // Slide the Cotton Candy Station group so it sits right after the Popcorn Station group.
+    const cottonCandyIdx = list.findIndex((g) =>
+      normalizeRole(g.roleName).startsWith(AFTER_POPCORN_STATION_ROLE)
+    );
+    const popcornIdx = list.findIndex((g) => normalizeRole(g.roleName).startsWith(POPCORN_STATION_ROLE));
+    if (cottonCandyIdx >= 0 && popcornIdx >= 0 && cottonCandyIdx !== popcornIdx + 1) {
+      const [cottonCandy] = list.splice(cottonCandyIdx, 1);
+      const target = list.findIndex((g) => normalizeRole(g.roleName).startsWith(POPCORN_STATION_ROLE));
+      list.splice(target + 1, 0, cottonCandy);
     }
 
     return list;
