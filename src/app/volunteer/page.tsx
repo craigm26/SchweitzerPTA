@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getVolunteerEvents, signUpForVolunteerShift, VolunteerEvent, VolunteerShift } from '@/lib/api';
 import { linkify } from '@/lib/linkify';
 
@@ -19,6 +19,18 @@ type SignupSuccessPayload = {
   eventTitle?: string | null;
   shiftTitle?: string | null;
   shiftTimeLabel?: string | null;
+};
+
+type ShiftEntry = {
+  shift: VolunteerShift;
+  eventTitle: string;
+  roleName: string;
+  audience: 'adult' | 'student' | 'other';
+  audienceLabel: string | null;
+  dateLabel: string | null;
+  dateIso: string;
+  timeLabel: string | null;
+  timeSort: number;
 };
 
 type SuccessModalState = {
@@ -49,6 +61,93 @@ function formatTimeLabel(time: string | null): string | null {
   const period = parts.hour >= 12 ? 'PM' : 'AM';
   const hour12 = parts.hour % 12 || 12;
   return `${hour12}:${parts.minute.toString().padStart(2, '0')} ${period}`;
+}
+
+const MONTH_PREFIXES = [
+  'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
+];
+
+// Shift titles are often written as "October 16 - Entrance Table (5:30pm - 6:45pm) [Adult Volunteer]".
+// Pull those pieces apart so the page can group by job role and offer filters.
+function parseShiftTitle(title: string) {
+  let rest = (title || '').trim();
+
+  let audienceLabel: string | null = null;
+  const audienceMatch = rest.match(/\[([^\]]+)\]\s*$/);
+  if (audienceMatch) {
+    audienceLabel = audienceMatch[1].trim();
+    rest = rest.slice(0, audienceMatch.index).trim();
+  }
+
+  let timeText: string | null = null;
+  const timeMatch = rest.match(/\(([^()]*)\)\s*$/);
+  if (timeMatch) {
+    timeText = timeMatch[1].trim();
+    rest = rest.slice(0, timeMatch.index).trim();
+  }
+
+  let dateText: string | null = null;
+  const dateMatch = rest.match(
+    /^((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}(?:,\s*\d{4})?)\s*[-–—]\s*(.+)$/i
+  );
+  if (dateMatch) {
+    dateText = dateMatch[1].trim();
+    rest = dateMatch[2].trim();
+  }
+
+  return {
+    roleName: rest || (title || '').trim() || 'Volunteer shift',
+    audienceLabel,
+    timeText,
+    dateText,
+  };
+}
+
+function audienceCategory(label: string | null): 'adult' | 'student' | 'other' {
+  if (!label) return 'other';
+  if (/student|kid|child/i.test(label)) return 'student';
+  if (/adult|parent|grown/i.test(label)) return 'adult';
+  return 'other';
+}
+
+function isoFromDateText(dateText: string | null, fallbackIso: string): string {
+  if (!dateText) return fallbackIso;
+  const match = dateText.match(/^([a-z]+)\.?\s+(\d{1,2})(?:,\s*(\d{4}))?$/i);
+  if (!match) return fallbackIso;
+  const monthIdx = MONTH_PREFIXES.indexOf(match[1].slice(0, 3).toLowerCase());
+  if (monthIdx < 0) return fallbackIso;
+  const year = match[3] ? Number(match[3]) : Number((fallbackIso || '').slice(0, 4));
+  if (!Number.isFinite(year)) return fallbackIso;
+  return `${year}-${String(monthIdx + 1).padStart(2, '0')}-${match[2].padStart(2, '0')}`;
+}
+
+function minutesFromTime(time: string | null): number | null {
+  const parts = parseTimeParts(time);
+  if (!parts) return null;
+  return parts.hour * 60 + parts.minute;
+}
+
+function minutesFromTimeText(timeText: string | null): number | null {
+  if (!timeText) return null;
+  const match = timeText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (!match) return null;
+  let hour = Number(match[1]);
+  const minute = match[2] ? Number(match[2]) : 0;
+  const period = match[3]?.toLowerCase();
+  if (period === 'pm' && hour < 12) hour += 12;
+  if (period === 'am' && hour === 12) hour = 0;
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+  return hour * 60 + minute;
+}
+
+function formatEventDate(date: string): string {
+  const [y, m, d] = (date || '').split('-').map(Number);
+  if (!y || !m || !d) return '';
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function renderEventDescription(description: string | null | undefined) {
@@ -189,6 +288,10 @@ export default function VolunteerPage() {
   const [events, setEvents] = useState<VolunteerEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [successModal, setSuccessModal] = useState<SuccessModalState | null>(null);
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [audienceFilter, setAudienceFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<'role' | 'date' | 'time'>('role');
 
   useEffect(() => {
     async function fetchEvents() {
@@ -204,14 +307,102 @@ export default function VolunteerPage() {
     fetchEvents();
   }, []);
 
-  const formatEventDate = (date: string) => {
-    const [y, m, d] = date.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+  const entries = useMemo<ShiftEntry[]>(() => {
+    const list: ShiftEntry[] = [];
+    events.forEach((event) => {
+      event.shifts.forEach((shift) => {
+        const parsed = parseShiftTitle(shift.job_title);
+        const formattedShiftStart = formatTimeLabel(shift.start_time);
+        const formattedShiftEnd = formatTimeLabel(shift.end_time);
+        const timeLabel =
+          shift.start_time || shift.end_time
+            ? `${formattedShiftStart || 'Time TBD'}${formattedShiftEnd ? ` - ${formattedShiftEnd}` : ''}`
+            : parsed.timeText;
+        const dateLabel = parsed.dateText
+          ? parsed.dateText
+          : event.volunteer_hide_date
+            ? null
+            : formatEventDate(event.date) || null;
+
+        list.push({
+          shift,
+          eventTitle: event.title,
+          roleName: parsed.roleName,
+          audience: audienceCategory(parsed.audienceLabel),
+          audienceLabel: parsed.audienceLabel,
+          dateLabel,
+          dateIso: isoFromDateText(parsed.dateText, event.date),
+          timeLabel,
+          timeSort:
+            minutesFromTime(shift.start_time) ??
+            minutesFromTimeText(parsed.timeText) ??
+            Number.MAX_SAFE_INTEGER,
+        });
+      });
     });
-  };
+    return list;
+  }, [events]);
+
+  const roleOptions = useMemo(
+    () => Array.from(new Set(entries.map((e) => e.roleName))).sort((a, b) => a.localeCompare(b)),
+    [entries]
+  );
+
+  const dateOptions = useMemo(() => {
+    const byLabel = new Map<string, string>();
+    entries.forEach((e) => {
+      if (e.dateLabel && !byLabel.has(e.dateLabel)) byLabel.set(e.dateLabel, e.dateIso);
+    });
+    return Array.from(byLabel.entries())
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([label]) => label);
+  }, [entries]);
+
+  const hasOtherAudience = useMemo(() => entries.some((e) => e.audience === 'other'), [entries]);
+
+  const groups = useMemo(() => {
+    const matching = entries.filter(
+      (e) =>
+        (roleFilter === 'all' || e.roleName === roleFilter) &&
+        (dateFilter === 'all' || e.dateLabel === dateFilter) &&
+        (audienceFilter === 'all' || e.audience === audienceFilter)
+    );
+
+    const byRole = new Map<string, ShiftEntry[]>();
+    matching.forEach((entry) => {
+      const bucket = byRole.get(entry.roleName);
+      if (bucket) bucket.push(entry);
+      else byRole.set(entry.roleName, [entry]);
+    });
+
+    const list = Array.from(byRole.entries()).map(([roleName, groupEntries]) => {
+      const sorted = [...groupEntries].sort(
+        (a, b) => a.dateIso.localeCompare(b.dateIso) || a.timeSort - b.timeSort
+      );
+      return {
+        roleName,
+        entries: sorted,
+        earliestDate: sorted[0]?.dateIso ?? '',
+        earliestTime: Math.min(...sorted.map((e) => e.timeSort)),
+      };
+    });
+
+    list.sort((a, b) => {
+      if (sortBy === 'date') {
+        return a.earliestDate.localeCompare(b.earliestDate) || a.roleName.localeCompare(b.roleName);
+      }
+      if (sortBy === 'time') {
+        return a.earliestTime - b.earliestTime || a.roleName.localeCompare(b.roleName);
+      }
+      return a.roleName.localeCompare(b.roleName);
+    });
+
+    return list;
+  }, [entries, roleFilter, dateFilter, audienceFilter, sortBy]);
+
+  const shownCount = groups.reduce((total, group) => total + group.entries.length, 0);
+  const selectClass =
+    'px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm font-normal normal-case tracking-normal text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50';
 
   const handleSignedUp = (payload: SuccessModalState & { shiftId: number }) => {
     setEvents((prev) =>
@@ -253,86 +444,164 @@ export default function VolunteerPage() {
               </p>
             </div>
           ) : (
-            events.map((event) => {
-              const formattedStart = formatTimeLabel(event.time);
-              const formattedEnd = formatTimeLabel(event.end_time);
-              const eventTime = event.time
-                ? `${formattedStart || 'Time TBD'}${formattedEnd ? ` - ${formattedEnd}` : ''}`
-                : event.is_all_day
-                  ? 'All day'
-                  : '';
+            <>
+              <div className="bg-white dark:bg-[#2a221a] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <label className="flex flex-col gap-1 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Job role
+                    <select
+                      value={roleFilter}
+                      onChange={(e) => setRoleFilter(e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="all">All job roles</option>
+                      {roleOptions.map((role) => (
+                        <option key={role} value={role}>
+                          {role}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-              return (
-                <section
-                  key={event.id}
-                  className="bg-white dark:bg-[#2a221a] rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800"
-                >
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    <div className="flex-1 flex flex-col gap-4">
-                      <div>
-                        {!event.volunteer_hide_date && (
-                          <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                            <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-sm">event</span>
-                              {formatEventDate(event.date)}
-                            </span>
-                            {eventTime && (
-                              <span className="flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">schedule</span>
-                                {eventTime}
+                  <label className="flex flex-col gap-1 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Date
+                    <select
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="all">All dates</option>
+                      {dateOptions.map((date) => (
+                        <option key={date} value={date}>
+                          {date}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Volunteer type
+                    <select
+                      value={audienceFilter}
+                      onChange={(e) => setAudienceFilter(e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="all">Adult &amp; student</option>
+                      <option value="adult">Adult volunteers</option>
+                      <option value="student">Student volunteers</option>
+                      {hasOtherAudience && <option value="other">Not specified</option>}
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Sort by
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as 'role' | 'date' | 'time')}
+                      className={selectClass}
+                    >
+                      <option value="role">Job role name (A–Z)</option>
+                      <option value="date">Date (soonest first)</option>
+                      <option value="time">Start time (earliest first)</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Showing {shownCount} of {entries.length} shifts
+                  </p>
+                  {(roleFilter !== 'all' || dateFilter !== 'all' || audienceFilter !== 'all') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRoleFilter('all');
+                        setDateFilter('all');
+                        setAudienceFilter('all');
+                      }}
+                      className="text-sm font-bold text-primary hover:underline"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {groups.length === 0 ? (
+                <div className="bg-white dark:bg-[#2a221a] rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+                  <h2 className="text-[#181411] dark:text-white text-xl font-bold mb-2">
+                    No shifts match those choices
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Try a different date, volunteer type, or job role.
+                  </p>
+                </div>
+              ) : (
+                groups.map((group) => (
+                  <section
+                    key={group.roleName}
+                    className="bg-white dark:bg-[#2a221a] rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-[#181411] dark:text-white text-xl font-bold">
+                        {group.roleName}
+                      </h3>
+                      <span className="text-xs font-bold px-2 py-1 rounded bg-primary/10 text-primary">
+                        {group.entries.length} {group.entries.length === 1 ? 'shift' : 'shifts'}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-4 mt-4">
+                      {group.entries.map((entry) => (
+                        <div
+                          key={entry.shift.id}
+                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-3"
+                        >
+                          <div>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <h4 className="text-[#181411] dark:text-white font-bold">
+                                {entry.dateLabel || entry.timeLabel || group.roleName}
+                              </h4>
+                              <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600">
+                                {entry.shift.spots_filled}/{entry.shift.spots_available} spots filled
                               </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              {entry.timeLabel && entry.dateLabel && (
+                                <span className="text-xs text-gray-500">Time: {entry.timeLabel}</span>
+                              )}
+                              {entry.audienceLabel && (
+                                <span
+                                  className={`text-xs font-bold px-2 py-0.5 rounded ${
+                                    entry.audience === 'student'
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : entry.audience === 'adult'
+                                        ? 'bg-amber-100 text-amber-700'
+                                        : 'bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {entry.audienceLabel}
+                                </span>
+                              )}
+                            </div>
+                            {entry.shift.shift_description && (
+                              <p className="text-sm text-gray-500 mt-1">
+                                {entry.shift.shift_description}
+                              </p>
                             )}
                           </div>
-                        )}
-                      </div>
-
-                      <div className="flex flex-col gap-4">
-                        {event.shifts.length === 0 ? (
-                          <div className="text-sm text-gray-500">No shifts posted yet.</div>
-                        ) : (
-                          event.shifts.map((shift) => {
-                            const formattedShiftStart = formatTimeLabel(shift.start_time);
-                            const formattedShiftEnd = formatTimeLabel(shift.end_time);
-                            const timeLabel =
-                              shift.start_time || shift.end_time
-                                ? `${formattedShiftStart || 'Time TBD'}${formattedShiftEnd ? ` - ${formattedShiftEnd}` : ''}`
-                                : null;
-                            return (
-                              <div
-                                key={shift.id}
-                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-3"
-                              >
-                                <div>
-                                  <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <h4 className="text-[#181411] dark:text-white font-bold">
-                                      {shift.job_title}
-                                    </h4>
-                                    <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600">
-                                      {shift.spots_filled}/{shift.spots_available} spots filled
-                                    </span>
-                                  </div>
-                                  {shift.shift_description && (
-                                    <p className="text-sm text-gray-500 mt-1">{shift.shift_description}</p>
-                                  )}
-                                  {timeLabel && (
-                                    <p className="text-xs text-gray-500 mt-1">Time: {timeLabel}</p>
-                                  )}
-                                </div>
-                                <ShiftSignup
-                                  shift={shift}
-                                  eventTitle={event.title}
-                                  onSignedUp={handleSignedUp}
-                                />
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
+                          <ShiftSignup
+                            shift={entry.shift}
+                            eventTitle={entry.eventTitle}
+                            onSignedUp={handleSignedUp}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                </section>
-              );
-            })
+                  </section>
+                ))
+              )}
+            </>
           )}
         </div>
       </div>
