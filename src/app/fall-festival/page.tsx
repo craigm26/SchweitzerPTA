@@ -128,12 +128,6 @@ export default function FallFestivalPage() {
                   Please visit the volunteer page.
                 </Link>
               </p>
-              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-                Come hear what&rsquo;s planned for Fall Festival, learn where help is
-                needed, and find a way to pitch in that works for you. You don&rsquo;t need
-                to be a PTA member&mdash;or commit to every event&mdash;to help make Fall
-                Festival a success.
-              </p>
               <div className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
                 <p>You can help by:</p>
                 <ul className="list-disc pl-6 mt-2 space-y-1">
