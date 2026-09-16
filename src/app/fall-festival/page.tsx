@@ -128,9 +128,6 @@ export default function FallFestivalPage() {
                   Please visit the volunteer page.
                 </Link>
               </p>
-              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-                Join us at the Fall Festival Planning Meeting!
-              </p>
               <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed font-bold">
                 Tuesday, September 15 at 5:00 PM
                 <br />
