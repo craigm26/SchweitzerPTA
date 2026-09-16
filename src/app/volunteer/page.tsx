@@ -85,6 +85,16 @@ function roleHeading(roleName: string): string {
   return ROLE_HEADINGS[roleName.trim().toLowerCase()] ?? roleName;
 }
 
+// Some shift titles have extra wording after the job role, which would split them
+// into a separate section. Anything starting with one of these goes in one section.
+const MERGED_ROLE_PREFIXES = ['popcorn station'];
+
+function canonicalRole(roleName: string): string {
+  const trimmed = roleName.trim();
+  const prefix = MERGED_ROLE_PREFIXES.find((p) => trimmed.toLowerCase().startsWith(p));
+  return prefix ? trimmed.slice(0, prefix.length) : roleName;
+}
+
 const MONTH_PREFIXES = [
   'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
 ];
@@ -369,7 +379,7 @@ export default function VolunteerPage() {
         list.push({
           shift,
           eventTitle: event.title,
-          roleName: parsed.roleName,
+          roleName: canonicalRole(parsed.roleName),
           audience: audienceCategory(parsed.audienceLabel),
           audienceLabel: parsed.audienceLabel,
           dateLabel,
