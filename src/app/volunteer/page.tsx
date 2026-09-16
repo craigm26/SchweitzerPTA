@@ -69,6 +69,13 @@ const PINNED_ROLE = 'spooky walk set-up';
 // This job role always shows last in the shift list, whatever sort is chosen.
 const LAST_ROLE = 'fall festival general clean up';
 
+// This job role sits one spot higher than the usual sort would put it.
+const MOVE_UP_ONE_ROLE = 'fall festival set up';
+
+function normalizeRole(roleName: string): string {
+  return roleName.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
+}
+
 // Friendlier headings for certain job roles (adds the meeting spot).
 const ROLE_HEADINGS: Record<string, string> = {
   'spooky walk set-up': 'Spooky Walk Set-Up (Meet in the Schweitzer Grove)',
@@ -441,6 +448,14 @@ export default function VolunteerPage() {
       }
       return a.roleName.localeCompare(b.roleName);
     });
+
+    // Slide the Fall Festival Set Up group up one spot (but never above the pinned group).
+    const moveUpIdx = list.findIndex((g) => normalizeRole(g.roleName) === MOVE_UP_ONE_ROLE);
+    if (moveUpIdx > 0 && list[moveUpIdx - 1].roleName.trim().toLowerCase() !== PINNED_ROLE) {
+      const above = list[moveUpIdx - 1];
+      list[moveUpIdx - 1] = list[moveUpIdx];
+      list[moveUpIdx] = above;
+    }
 
     return list;
   }, [entries, roleFilter, dateFilter, audienceFilter, sortBy]);
