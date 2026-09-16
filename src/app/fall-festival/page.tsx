@@ -123,7 +123,10 @@ export default function FallFestivalPage() {
                 We&rsquo;re looking for volunteers who can help plan, prepare, set up,
                 work during the event, and clean up afterward. Whether you can take on a
                 planning role, help with one specific task, or give us a few hours,
-                there&rsquo;s a way to get involved.
+                there&rsquo;s a way to get involved.{' '}
+                <Link href="/volunteer" className="text-primary hover:underline">
+                  Please visit the volunteer page.
+                </Link>
               </p>
               <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
                 Join us at the Fall Festival Planning Meeting!
