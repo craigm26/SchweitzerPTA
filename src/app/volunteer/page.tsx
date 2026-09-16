@@ -87,10 +87,8 @@ function normalizeRole(roleName: string): string {
   return roleName.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
 }
 
-// Friendlier headings for certain job roles (adds the meeting spot).
-const ROLE_HEADINGS: Record<string, string> = {
-  'spooky walk set-up': 'Spooky Walk Set-Up (Meet in the Schweitzer Grove)',
-};
+// Friendlier headings for certain job roles.
+const ROLE_HEADINGS: Record<string, string> = {};
 
 function roleHeading(roleName: string): string {
   return ROLE_HEADINGS[roleName.trim().toLowerCase()] ?? roleName;
@@ -99,6 +97,7 @@ function roleHeading(roleName: string): string {
 // Short descriptions shown under certain job role headings.
 const ROLE_DESCRIPTIONS: Record<string, string> = {
   'spooky walk guide': 'Lead groups through the Spooky Walk',
+  'spooky walk set up': 'Meet in the Schweitzer Grove',
 };
 
 function roleDescription(roleName: string): string | undefined {
