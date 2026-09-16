@@ -72,6 +72,9 @@ const LAST_ROLE = 'fall festival general clean up';
 // This job role sits one spot higher than the usual sort would put it.
 const MOVE_UP_ONE_ROLE = 'fall festival set up';
 
+// This job role always shows second-to-last, just above the last section.
+const SECOND_TO_LAST_ROLE = 'spooky walk clean up';
+
 function normalizeRole(roleName: string): string {
   return roleName.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
 }
@@ -449,6 +452,11 @@ export default function VolunteerPage() {
       const aLast = a.roleName.trim().toLowerCase() === LAST_ROLE;
       const bLast = b.roleName.trim().toLowerCase() === LAST_ROLE;
       if (aLast !== bLast) return aLast ? 1 : -1;
+
+      // Keep the Spooky Walk Clean Up group just above that last group.
+      const aSecondLast = normalizeRole(a.roleName) === SECOND_TO_LAST_ROLE;
+      const bSecondLast = normalizeRole(b.roleName) === SECOND_TO_LAST_ROLE;
+      if (aSecondLast !== bSecondLast) return aSecondLast ? 1 : -1;
 
       if (sortBy === 'date') {
         return a.earliestDate.localeCompare(b.earliestDate) || a.roleName.localeCompare(b.roleName);
