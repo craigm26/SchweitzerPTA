@@ -63,6 +63,9 @@ function formatTimeLabel(time: string | null): string | null {
   return `${hour12}:${parts.minute.toString().padStart(2, '0')} ${period}`;
 }
 
+// This job role always shows first in the shift list, whatever sort is chosen.
+const PINNED_ROLE = 'spooky walk set-up';
+
 const MONTH_PREFIXES = [
   'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
 ];
@@ -408,6 +411,11 @@ export default function VolunteerPage() {
     });
 
     list.sort((a, b) => {
+      // Keep the Spooky Walk Set-Up group pinned to the top of the page.
+      const aPinned = a.roleName.trim().toLowerCase() === PINNED_ROLE;
+      const bPinned = b.roleName.trim().toLowerCase() === PINNED_ROLE;
+      if (aPinned !== bPinned) return aPinned ? -1 : 1;
+
       if (sortBy === 'date') {
         return a.earliestDate.localeCompare(b.earliestDate) || a.roleName.localeCompare(b.roleName);
       }
