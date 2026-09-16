@@ -150,6 +150,26 @@ function formatEventDate(date: string): string {
   });
 }
 
+function eventDateLabel(event: VolunteerEvent): string | null {
+  if (!event.volunteer_hide_date) {
+    const formatted = formatEventDate(event.date);
+    if (formatted) return formatted;
+  }
+
+  const shiftDates = Array.from(
+    new Set(
+      (event.shifts || [])
+        .map((shift) => parseShiftTitle(shift.job_title).dateText)
+        .filter((text): text is string => Boolean(text))
+    )
+  ).sort((a, b) => isoFromDateText(a, event.date).localeCompare(isoFromDateText(b, event.date)));
+
+  if (shiftDates.length === 1) return shiftDates[0];
+  if (shiftDates.length > 1) return `${shiftDates[0]} - ${shiftDates[shiftDates.length - 1]}`;
+
+  return formatEventDate(event.date) || null;
+}
+
 function renderEventDescription(description: string | null | undefined) {
   if (!description) return null;
   const paragraphs = description.replace(/\r\n/g, '\n').split(/\n\s*\n/);
@@ -447,7 +467,7 @@ export default function VolunteerPage() {
             <>
               <div className="flex flex-col gap-1">
                 {events.map((event) => {
-                  const eventDate = event.volunteer_hide_date ? null : formatEventDate(event.date);
+                  const eventDate = eventDateLabel(event);
                   return (
                     <div key={event.id} className="flex flex-wrap items-baseline gap-x-3">
                       <h2 className="text-[#181411] dark:text-white text-2xl font-bold">
