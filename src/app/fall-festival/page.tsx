@@ -128,11 +128,6 @@ export default function FallFestivalPage() {
                   Please visit the volunteer page.
                 </Link>
               </p>
-              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed font-bold">
-                Tuesday, September 15 at 5:00 PM
-                <br />
-                Schweitzer, Meet on the Quad
-              </p>
               <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
                 Come hear what&rsquo;s planned for Fall Festival, learn where help is
                 needed, and find a way to pitch in that works for you. You don&rsquo;t need
