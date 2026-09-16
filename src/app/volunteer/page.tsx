@@ -100,6 +100,7 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
   'spooky walk set up': 'Meet in the Schweitzer Grove',
   'popcorn station': 'Hand out bags of pre-packaged popcorn',
   'cotton candy station': 'Hand out bags of pre-packaged cotton candy',
+  'game station': 'Run a game station and hand out candy',
 };
 
 function roleDescription(roleName: string): string | undefined {
