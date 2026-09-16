@@ -704,10 +704,13 @@ export default function VolunteerPage() {
                         >
                           <div>
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                              <h4 className="text-[#181411] dark:text-white font-bold">
-                                {entry.timeLabel || group.roleName}
-                              </h4>
-                              <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600">
+                              {/* Skip the heading when there's no time — it would just repeat the section title. */}
+                              {entry.timeLabel && (
+                                <h4 className="text-[#181411] dark:text-white font-bold">
+                                  {entry.timeLabel}
+                                </h4>
+                              )}
+                              <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600 ml-auto">
                                 {entry.shift.spots_filled}/{entry.shift.spots_available} spots filled
                               </span>
                             </div>
