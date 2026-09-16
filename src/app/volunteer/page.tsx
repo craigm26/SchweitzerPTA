@@ -66,6 +66,15 @@ function formatTimeLabel(time: string | null): string | null {
 // This job role always shows first in the shift list, whatever sort is chosen.
 const PINNED_ROLE = 'spooky walk set-up';
 
+// Friendlier headings for certain job roles (adds the meeting spot).
+const ROLE_HEADINGS: Record<string, string> = {
+  'spooky walk set-up': 'Spooky Walk Set-Up (Meet in the Schweitzer Grove)',
+};
+
+function roleHeading(roleName: string): string {
+  return ROLE_HEADINGS[roleName.trim().toLowerCase()] ?? roleName;
+}
+
 const MONTH_PREFIXES = [
   'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
 ];
@@ -588,7 +597,7 @@ export default function VolunteerPage() {
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h3 className="text-[#181411] dark:text-white text-xl font-bold">
-                        {group.roleName}
+                        {roleHeading(group.roleName)}
                       </h3>
                       <span className="text-xs font-bold px-2 py-1 rounded bg-primary/10 text-primary">
                         {group.entries.length} {group.entries.length === 1 ? 'shift' : 'shifts'}
