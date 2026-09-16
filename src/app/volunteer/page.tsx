@@ -66,6 +66,9 @@ function formatTimeLabel(time: string | null): string | null {
 // This job role always shows first in the shift list, whatever sort is chosen.
 const PINNED_ROLE = 'spooky walk set-up';
 
+// This job role always shows last in the shift list, whatever sort is chosen.
+const LAST_ROLE = 'fall festival general clean up';
+
 // Friendlier headings for certain job roles (adds the meeting spot).
 const ROLE_HEADINGS: Record<string, string> = {
   'spooky walk set-up': 'Spooky Walk Set-Up (Meet in the Schweitzer Grove)',
@@ -424,6 +427,11 @@ export default function VolunteerPage() {
       const aPinned = a.roleName.trim().toLowerCase() === PINNED_ROLE;
       const bPinned = b.roleName.trim().toLowerCase() === PINNED_ROLE;
       if (aPinned !== bPinned) return aPinned ? -1 : 1;
+
+      // Keep the Fall Festival General Clean Up group pinned to the bottom of the page.
+      const aLast = a.roleName.trim().toLowerCase() === LAST_ROLE;
+      const bLast = b.roleName.trim().toLowerCase() === LAST_ROLE;
+      if (aLast !== bLast) return aLast ? 1 : -1;
 
       if (sortBy === 'date') {
         return a.earliestDate.localeCompare(b.earliestDate) || a.roleName.localeCompare(b.roleName);
