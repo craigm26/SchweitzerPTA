@@ -98,6 +98,7 @@ function roleHeading(roleName: string): string {
 const ROLE_DESCRIPTIONS: Record<string, string> = {
   'spooky walk guide': 'Lead groups through the Spooky Walk',
   'spooky walk set up': 'Meet in the Schweitzer Grove',
+  'popcorn station': 'Hand out bags of pre-packaged popcorn',
 };
 
 function roleDescription(roleName: string): string | undefined {
