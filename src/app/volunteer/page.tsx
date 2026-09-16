@@ -63,8 +63,14 @@ function formatTimeLabel(time: string | null): string | null {
   return `${hour12}:${parts.minute.toString().padStart(2, '0')} ${period}`;
 }
 
-// This job role always shows first in the shift list, whatever sort is chosen.
-const PINNED_ROLE = 'spooky walk set-up';
+// These job roles always show first in the shift list, in this order,
+// whatever sort is chosen.
+const PINNED_ROLES = ['spooky walk preparation', 'spooky walk set up'];
+
+function pinnedRank(roleName: string): number {
+  const idx = PINNED_ROLES.indexOf(normalizeRole(roleName));
+  return idx < 0 ? PINNED_ROLES.length : idx;
+}
 
 // This job role always shows last in the shift list, whatever sort is chosen.
 const LAST_ROLE = 'fall festival general clean up';
@@ -462,10 +468,10 @@ export default function VolunteerPage() {
     });
 
     list.sort((a, b) => {
-      // Keep the Spooky Walk Set-Up group pinned to the top of the page.
-      const aPinned = a.roleName.trim().toLowerCase() === PINNED_ROLE;
-      const bPinned = b.roleName.trim().toLowerCase() === PINNED_ROLE;
-      if (aPinned !== bPinned) return aPinned ? -1 : 1;
+      // Keep the pinned groups at the top of the page, in their listed order.
+      const aPinned = pinnedRank(a.roleName);
+      const bPinned = pinnedRank(b.roleName);
+      if (aPinned !== bPinned) return aPinned - bPinned;
 
       // Keep the Fall Festival General Clean Up group pinned to the bottom of the page.
       const aLast = a.roleName.trim().toLowerCase() === LAST_ROLE;
@@ -486,9 +492,9 @@ export default function VolunteerPage() {
       return a.roleName.localeCompare(b.roleName);
     });
 
-    // Slide the Fall Festival Set Up group up one spot (but never above the pinned group).
+    // Slide the Fall Festival Set Up group up one spot (but never above the pinned groups).
     const moveUpIdx = list.findIndex((g) => normalizeRole(g.roleName) === MOVE_UP_ONE_ROLE);
-    if (moveUpIdx > 0 && list[moveUpIdx - 1].roleName.trim().toLowerCase() !== PINNED_ROLE) {
+    if (moveUpIdx > 0 && pinnedRank(list[moveUpIdx - 1].roleName) === PINNED_ROLES.length) {
       const above = list[moveUpIdx - 1];
       list[moveUpIdx - 1] = list[moveUpIdx];
       list[moveUpIdx] = above;
