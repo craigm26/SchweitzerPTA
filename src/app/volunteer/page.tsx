@@ -75,6 +75,10 @@ const MOVE_UP_ONE_ROLE = 'fall festival set up';
 // This job role always shows second-to-last, just above the last section.
 const SECOND_TO_LAST_ROLE = 'spooky walk clean up';
 
+// This job role always sits right after the Game Station section.
+const GAME_STATION_ROLE = 'game station';
+const AFTER_GAME_STATION_ROLE = 'spooky walk guide';
+
 function normalizeRole(roleName: string): string {
   return roleName.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
 }
@@ -473,6 +477,15 @@ export default function VolunteerPage() {
       const above = list[moveUpIdx - 1];
       list[moveUpIdx - 1] = list[moveUpIdx];
       list[moveUpIdx] = above;
+    }
+
+    // Slide the Spooky Walk Guide group so it sits right after the Game Station group.
+    const guideIdx = list.findIndex((g) => normalizeRole(g.roleName).startsWith(AFTER_GAME_STATION_ROLE));
+    const gameStationIdx = list.findIndex((g) => normalizeRole(g.roleName).startsWith(GAME_STATION_ROLE));
+    if (guideIdx >= 0 && gameStationIdx >= 0 && guideIdx !== gameStationIdx + 1) {
+      const [guide] = list.splice(guideIdx, 1);
+      const target = list.findIndex((g) => normalizeRole(g.roleName).startsWith(GAME_STATION_ROLE));
+      list.splice(target + 1, 0, guide);
     }
 
     return list;
