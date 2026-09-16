@@ -445,6 +445,22 @@ export default function VolunteerPage() {
             </div>
           ) : (
             <>
+              <div className="flex flex-col gap-1">
+                {events.map((event) => {
+                  const eventDate = event.volunteer_hide_date ? null : formatEventDate(event.date);
+                  return (
+                    <div key={event.id} className="flex flex-wrap items-baseline gap-x-3">
+                      <h2 className="text-[#181411] dark:text-white text-2xl font-bold">
+                        {event.title}
+                      </h2>
+                      {eventDate && (
+                        <span className="text-base font-bold text-primary">{eventDate}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="bg-white dark:bg-[#2a221a] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <label className="flex flex-col gap-1 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -560,16 +576,13 @@ export default function VolunteerPage() {
                           <div>
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <h4 className="text-[#181411] dark:text-white font-bold">
-                                {entry.dateLabel || entry.timeLabel || group.roleName}
+                                {entry.timeLabel || group.roleName}
                               </h4>
                               <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600">
                                 {entry.shift.spots_filled}/{entry.shift.spots_available} spots filled
                               </span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 mt-1">
-                              {entry.timeLabel && entry.dateLabel && (
-                                <span className="text-xs text-gray-500">Time: {entry.timeLabel}</span>
-                              )}
                               {entry.audienceLabel && (
                                 <span
                                   className={`text-xs font-bold px-2 py-0.5 rounded ${
