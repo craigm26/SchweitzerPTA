@@ -96,6 +96,15 @@ function roleHeading(roleName: string): string {
   return ROLE_HEADINGS[roleName.trim().toLowerCase()] ?? roleName;
 }
 
+// Short descriptions shown under certain job role headings.
+const ROLE_DESCRIPTIONS: Record<string, string> = {
+  'spooky walk guide': 'Lead groups through the Spooky Walk',
+};
+
+function roleDescription(roleName: string): string | undefined {
+  return ROLE_DESCRIPTIONS[normalizeRole(roleName)];
+}
+
 // Some shift titles have extra wording after the job role, which would split them
 // into a separate section. Anything starting with one of these goes in one section.
 const MERGED_ROLE_PREFIXES = ['popcorn station'];
@@ -672,6 +681,12 @@ export default function VolunteerPage() {
                         {group.entries.length} {group.entries.length === 1 ? 'shift' : 'shifts'}
                       </span>
                     </div>
+
+                    {roleDescription(group.roleName) && (
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">
+                        {roleDescription(group.roleName)}
+                      </p>
+                    )}
 
                     <div className="flex flex-col gap-4 mt-4">
                       {group.entries.map((entry) => (
