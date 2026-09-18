@@ -1,12 +1,20 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { getVolunteerEvents, signUpForVolunteerShift, VolunteerEvent, VolunteerShift } from '@/lib/api';
+import {
+  getVolunteerEvents,
+  signUpForVolunteerShift,
+  VolunteerEvent,
+  VolunteerRosterEntry,
+  VolunteerShift,
+} from '@/lib/api';
 import { linkify } from '@/lib/linkify';
+import { volunteerNotesLabel, VOLUNTEER_NOTES_MAX_LENGTH } from '@/lib/volunteer-notes';
 
 type SignupState = {
   name: string;
   email: string;
+  notes: string;
   loading: boolean;
   error: string | null;
 };
@@ -19,6 +27,7 @@ type SignupSuccessPayload = {
   eventTitle?: string | null;
   shiftTitle?: string | null;
   shiftTimeLabel?: string | null;
+  notes?: string | null;
 };
 
 type ShiftEntry = {
@@ -39,6 +48,7 @@ type SuccessModalState = {
   eventTitle: string;
   shiftTitle: string;
   shiftTimeLabel: string;
+  notes: string | null;
   emailSent: boolean;
 };
 
@@ -272,6 +282,39 @@ function renderEventDescription(description: string | null | undefined) {
   });
 }
 
+// Who has signed up so far, shown under each shift. Names come from the
+// public_volunteer_shift_roster view, so an email address can never reach this page.
+// A note only rides along when an admin flagged that shift notes_public.
+function ShiftRoster({ roster }: { roster?: VolunteerRosterEntry[] }) {
+  if (!roster || roster.length === 0) return null;
+
+  const anyNotes = roster.some((entry) => entry.notes);
+
+  return (
+    <div className="rounded-lg bg-gray-50 dark:bg-[#181411] border border-gray-200 dark:border-gray-700 px-3 py-2">
+      <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        Signed up ({roster.length})
+      </div>
+      {anyNotes ? (
+        <ul className="mt-1 flex flex-col gap-0.5">
+          {roster.map((entry) => (
+            <li key={entry.id} className="text-sm text-gray-600 dark:text-gray-300">
+              <span className="font-semibold text-[#181411] dark:text-white">{entry.name}</span>
+              {entry.notes && <span className="whitespace-pre-line"> — {entry.notes}</span>}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        // No notes to show, so the names collapse onto one wrapped line and the card
+        // stays short even on a shift with a dozen volunteers.
+        <p className="mt-0.5 text-sm text-[#181411] dark:text-gray-200">
+          {roster.map((entry) => entry.name).join(' · ')}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ShiftSignup({
   shift,
   eventTitle,
@@ -284,11 +327,16 @@ function ShiftSignup({
   const [state, setState] = useState<SignupState>({
     name: '',
     email: '',
+    notes: '',
     loading: false,
     error: null,
   });
 
   const isFull = shift.spots_filled >= shift.spots_available;
+  // Only some shifts ask the extra question — Game Station wants a station preference
+  // or a pairing request. Everything else keeps the plain name + email form.
+  const notesEnabled = shift.notes_enabled === true;
+  const notesLabel = volunteerNotesLabel(shift.notes_label);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,6 +353,7 @@ function ShiftSignup({
         shift_id: shift.id,
         name: state.name.trim(),
         email: state.email.trim(),
+        ...(notesEnabled ? { notes: state.notes.trim() } : {}),
       })) as SignupSuccessPayload;
       onSignedUp({
         shiftId: shift.id,
@@ -313,9 +362,10 @@ function ShiftSignup({
         eventTitle: result.eventTitle || eventTitle,
         shiftTitle: result.shiftTitle || shift.job_title,
         shiftTimeLabel: result.shiftTimeLabel || 'Time flexible',
+        notes: result.notes ?? (notesEnabled ? state.notes.trim() || null : null),
         emailSent: result.emailSent === true,
       });
-      setState({ name: '', email: '', loading: false, error: null });
+      setState({ name: '', email: '', notes: '', loading: false, error: null });
     } catch (error) {
       console.error('Error signing up:', error);
       const message =
@@ -330,36 +380,76 @@ function ShiftSignup({
     }
   };
 
+  // One tidy row of controls: name and email side by side on anything wider than a
+  // phone, the optional notes line under them, and the button on the same line as the
+  // field it follows so each shift card stays short. Tab order is name -> email ->
+  // notes -> Sign Up, which is the order someone actually fills it in.
+  const fieldClass =
+    'w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60';
+
+  const submitButton = (
+    <button
+      type="submit"
+      disabled={isFull || state.loading}
+      className="inline-flex shrink-0 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+    >
+      {isFull ? 'Shift Full' : state.loading ? 'Signing Up...' : 'Sign Up'}
+    </button>
+  );
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <input
           type="text"
-          placeholder="Name"
+          placeholder="First and last name"
+          aria-label="First and last name"
+          autoComplete="name"
           value={state.name}
           onChange={(e) => setState((prev) => ({ ...prev, name: e.target.value }))}
           disabled={isFull}
-          className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          className={fieldClass}
         />
-        <input
-          type="email"
-          placeholder="Email"
-          value={state.email}
-          onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
-          disabled={isFull}
-          className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
+        <div className="flex gap-2">
+          <input
+            type="email"
+            placeholder="Email"
+            aria-label="Email"
+            autoComplete="email"
+            inputMode="email"
+            value={state.email}
+            onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
+            disabled={isFull}
+            className={fieldClass}
+          />
+          {/* With no notes box the button rides alongside the email field, so the whole
+              form is a single row on desktop. */}
+          {!notesEnabled && submitButton}
+        </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="submit"
-          disabled={isFull || state.loading}
-          className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
-        >
-          {isFull ? 'Shift Full' : state.loading ? 'Signing Up...' : 'Sign Up'}
-        </button>
-        {state.error && <span className="text-sm text-red-500">{state.error}</span>}
-      </div>
+
+      {notesEnabled && (
+        <>
+          <label htmlFor={`shift_notes_${shift.id}`} className="text-xs text-gray-500 dark:text-gray-400">
+            {notesLabel}
+          </label>
+          <div className="flex items-end gap-2">
+            <textarea
+              id={`shift_notes_${shift.id}`}
+              rows={2}
+              value={state.notes}
+              onChange={(e) => setState((prev) => ({ ...prev, notes: e.target.value }))}
+              disabled={isFull}
+              maxLength={VOLUNTEER_NOTES_MAX_LENGTH}
+              placeholder="Optional"
+              className={`${fieldClass} resize-y`}
+            />
+            {submitButton}
+          </div>
+        </>
+      )}
+
+      {state.error && <span className="text-sm text-red-500">{state.error}</span>}
     </form>
   );
 }
@@ -532,7 +622,24 @@ export default function VolunteerPage() {
       prev.map((event) => ({
         ...event,
         shifts: event.shifts.map((shift) =>
-          shift.id === payload.shiftId ? { ...shift, spots_filled: shift.spots_filled + 1 } : shift
+          shift.id === payload.shiftId
+            ? {
+                ...shift,
+                spots_filled: shift.spots_filled + 1,
+                // Show the new volunteer in the roster straight away instead of waiting
+                // for a reload. The negative id can't collide with a real row's id.
+                roster: [
+                  ...(shift.roster || []),
+                  {
+                    id: -Date.now(),
+                    shift_id: shift.id,
+                    name: payload.volunteerName,
+                    notes: shift.notes_public ? payload.notes : null,
+                    created_at: new Date().toISOString(),
+                  },
+                ],
+              }
+            : shift
         ),
       }))
     );
@@ -542,6 +649,7 @@ export default function VolunteerPage() {
       eventTitle: payload.eventTitle,
       shiftTitle: payload.shiftTitle,
       shiftTimeLabel: payload.shiftTimeLabel,
+      notes: payload.notes,
       emailSent: payload.emailSent,
     });
   };
@@ -735,6 +843,7 @@ export default function VolunteerPage() {
                               </p>
                             )}
                           </div>
+                          <ShiftRoster roster={entry.shift.roster} />
                           <ShiftSignup
                             shift={entry.shift}
                             eventTitle={entry.eventTitle}
@@ -775,6 +884,9 @@ export default function VolunteerPage() {
               <p><span className="font-semibold">Email:</span> {successModal.volunteerEmail}</p>
               <p><span className="font-semibold">Shift:</span> {successModal.shiftTitle}</p>
               <p><span className="font-semibold">Time:</span> {successModal.shiftTimeLabel}</p>
+              {successModal.notes && (
+                <p className="whitespace-pre-line"><span className="font-semibold">Notes:</span> {successModal.notes}</p>
+              )}
             </div>
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
               {successModal.emailSent

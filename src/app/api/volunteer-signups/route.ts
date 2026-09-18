@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { normalizeVolunteerNotes, VOLUNTEER_NOTES_MAX_LENGTH } from '@/lib/volunteer-notes';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
 
     const { data: shift, error: shiftError } = await supabase
       .from('event_volunteer_shifts')
-      .select('spots_available, spots_filled, is_active')
+      .select('spots_available, spots_filled, is_active, notes_enabled')
       .eq('id', body.shift_id)
       .single();
 
@@ -46,6 +47,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No spots available' }, { status: 400 });
     }
 
+    // Same rule as the public form: notes are only stored for shifts that ask for them.
+    const notes = normalizeVolunteerNotes(body.notes, shift.notes_enabled === true);
+
+    if (notes && notes.length > VOLUNTEER_NOTES_MAX_LENGTH) {
+      return NextResponse.json(
+        { error: `Notes must be ${VOLUNTEER_NOTES_MAX_LENGTH} characters or fewer.` },
+        { status: 400 }
+      );
+    }
+
     const { data: signup, error } = await supabase
       .from('event_volunteer_signups')
       .insert({
@@ -53,6 +64,7 @@ export async function POST(request: Request) {
         user_id: null,
         name: body.name,
         email: body.email,
+        notes,
         status: 'pending',
       })
       .select()

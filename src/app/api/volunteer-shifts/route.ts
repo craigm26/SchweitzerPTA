@@ -61,6 +61,10 @@ export async function POST(request: Request) {
         spots_available: body.spots_available,
         spots_filled: body.spots_filled || 0,
         is_active: body.is_active ?? true,
+        notes_enabled: body.notes_enabled ?? false,
+        notes_label: body.notes_label ?? null,
+        // Notes can only be public on a shift that asks for them.
+        notes_public: (body.notes_enabled ?? false) ? (body.notes_public ?? false) : false,
       })
       .select()
       .single();

@@ -87,6 +87,40 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: shiftsError.message }, { status: 500 });
     }
 
+    // Who has signed up, for the public roster on the volunteer page. Read from the
+    // public_volunteer_shift_roster view, never from event_volunteer_signups — the view is
+    // column-limited (no email, no status) and drops cancelled signups. The view also
+    // blanks `notes` unless the shift is flagged notes_public.
+    type RosterEntry = {
+      id: number;
+      shift_id: number;
+      name: string;
+      notes: string | null;
+      created_at: string;
+    };
+    const rosterByShift = new Map<number, RosterEntry[]>();
+    const shiftIdsForRoster = (shifts || []).map((shift) => shift.id);
+
+    if (shiftIdsForRoster.length > 0) {
+      const { data: roster, error: rosterError } = await supabase
+        .from('public_volunteer_shift_roster')
+        .select('*')
+        .in('shift_id', shiftIdsForRoster)
+        .order('created_at', { ascending: true });
+
+      if (rosterError) {
+        // Don't fail the page over the roster — the shifts themselves still load.
+        console.error('Error fetching volunteer roster:', rosterError);
+      } else {
+        (roster || []).forEach((entry) => {
+          if (!rosterByShift.has(entry.shift_id)) {
+            rosterByShift.set(entry.shift_id, []);
+          }
+          rosterByShift.get(entry.shift_id)?.push(entry);
+        });
+      }
+    }
+
     let signupsByShift = new Map<number, any[]>();
     if (includeSignups && allowSignups && shifts && shifts.length > 0) {
       const shiftIds = shifts.map((shift) => shift.id);
@@ -111,9 +145,12 @@ export async function GET(request: Request) {
 
     const shiftsByEvent = new Map<number, typeof shifts>();
     (shifts || []).forEach((shift) => {
-      const decoratedShift = signupsByShift.size
+      let decoratedShift = signupsByShift.size
         ? { ...shift, signups: signupsByShift.get(shift.id) || [] }
         : shift;
+      if (rosterByShift.has(shift.id)) {
+        decoratedShift = { ...decoratedShift, roster: rosterByShift.get(shift.id) || [] };
+      }
       if (!shiftsByEvent.has(shift.event_id)) {
         shiftsByEvent.set(shift.event_id, []);
       }

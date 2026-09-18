@@ -480,6 +480,9 @@ export async function createVolunteerShift(data: {
   display_order?: number | null;
   spots_available: number;
   is_active?: boolean;
+  notes_enabled?: boolean;
+  notes_label?: string | null;
+  notes_public?: boolean;
 }) {
   const res = await fetch(`${API_BASE}/api/volunteer-shifts`, {
     method: 'POST',
@@ -512,6 +515,7 @@ export async function signUpForVolunteerShift(data: {
   shift_id: number;
   name: string;
   email: string;
+  notes?: string;
 }) {
   const res = await fetch(`${API_BASE}/api/volunteers/signup`, {
     method: 'POST',
@@ -530,6 +534,7 @@ export async function createVolunteerSignup(data: {
   shift_id: number;
   name: string;
   email: string;
+  notes?: string;
   allow_overbook?: boolean;
 }) {
   const res = await fetch(`${API_BASE}/api/volunteer-signups`, {
@@ -750,9 +755,24 @@ export interface VolunteerShift {
   spots_available: number;
   spots_filled: number;
   is_active: boolean;
+  // Opt-in "Notes" question on the signup form, configured per shift.
+  notes_enabled: boolean;
+  notes_label: string | null;
+  notes_public: boolean;
   signups?: VolunteerSignup[];
+  // Who has signed up, safe for the public page: name only, never the email address.
+  // `notes` is filled in only for a shift the admin flagged notes_public.
+  roster?: VolunteerRosterEntry[];
   created_at: string;
   updated_at: string;
+}
+
+export interface VolunteerRosterEntry {
+  id: number;
+  shift_id: number;
+  name: string;
+  notes: string | null;
+  created_at: string;
 }
 
 export interface VolunteerEvent extends CalendarEvent {
@@ -765,6 +785,7 @@ export interface VolunteerSignup {
   user_id: string | null;
   name: string;
   email: string;
+  notes: string | null;
   status: 'pending' | 'confirmed' | 'cancelled';
   created_at: string;
 }

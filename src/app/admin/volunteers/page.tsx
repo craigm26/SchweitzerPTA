@@ -14,6 +14,7 @@ import {
   VolunteerEvent,
   VolunteerShift,
 } from '@/lib/api';
+import { DEFAULT_VOLUNTEER_NOTES_LABEL, VOLUNTEER_NOTES_MAX_LENGTH } from '@/lib/volunteer-notes';
 
 type ShiftFormState = {
   event_id: number;
@@ -24,6 +25,9 @@ type ShiftFormState = {
   display_order: string;
   spots_available: number;
   is_active: boolean;
+  notes_enabled: boolean;
+  notes_label: string;
+  notes_public: boolean;
 };
 
 export default function VolunteerManagementPage() {
@@ -34,7 +38,10 @@ export default function VolunteerManagementPage() {
   const [shiftOrderInputs, setShiftOrderInputs] = useState<Record<number, string>>({});
   const [signupStatusFilter, setSignupStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
   const [signupForms, setSignupForms] = useState<
-    Record<number, { name: string; email: string; allowOverbook: boolean; loading: boolean; error: string | null }>
+    Record<
+      number,
+      { name: string; email: string; notes: string; allowOverbook: boolean; loading: boolean; error: string | null }
+    >
   >({});
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [editingShift, setEditingShift] = useState<VolunteerShift | null>(null);
@@ -47,6 +54,9 @@ export default function VolunteerManagementPage() {
     display_order: '',
     spots_available: 1,
     is_active: true,
+    notes_enabled: false,
+    notes_label: '',
+    notes_public: false,
   });
 
   useEffect(() => {
@@ -227,6 +237,9 @@ export default function VolunteerManagementPage() {
       display_order: '',
       spots_available: 1,
       is_active: true,
+      notes_enabled: false,
+      notes_label: '',
+      notes_public: false,
     });
     setShowShiftModal(true);
   };
@@ -242,6 +255,9 @@ export default function VolunteerManagementPage() {
       display_order: shift.display_order?.toString() || '',
       spots_available: shift.spots_available,
       is_active: shift.is_active,
+      notes_enabled: shift.notes_enabled === true,
+      notes_label: shift.notes_label || '',
+      notes_public: shift.notes_public === true,
     });
     setShowShiftModal(true);
   };
@@ -278,6 +294,10 @@ export default function VolunteerManagementPage() {
       display_order: parsedShiftOrder,
       spots_available: Number(formData.spots_available),
       is_active: formData.is_active,
+      notes_enabled: formData.notes_enabled,
+      notes_label: formData.notes_label.trim() || null,
+      // Notes can only be shown publicly on a shift that actually asks for them.
+      notes_public: formData.notes_enabled && formData.notes_public,
     };
 
     try {
@@ -381,9 +401,9 @@ export default function VolunteerManagementPage() {
   };
 
   const getSignupForm = (shiftId: number) =>
-    signupForms[shiftId] || { name: '', email: '', allowOverbook: false, loading: false, error: null };
+    signupForms[shiftId] || { name: '', email: '', notes: '', allowOverbook: false, loading: false, error: null };
 
-  const handleSignupFieldChange = (shiftId: number, field: 'name' | 'email', value: string) => {
+  const handleSignupFieldChange = (shiftId: number, field: 'name' | 'email' | 'notes', value: string) => {
     const current = getSignupForm(shiftId);
     setSignupForms((prev) => ({
       ...prev,
@@ -419,6 +439,7 @@ export default function VolunteerManagementPage() {
         shift_id: shiftId,
         name: current.name.trim(),
         email: current.email.trim(),
+        notes: current.notes.trim(),
         allow_overbook: current.allowOverbook,
       });
 
@@ -439,7 +460,7 @@ export default function VolunteerManagementPage() {
 
       setSignupForms((prev) => ({
         ...prev,
-        [shiftId]: { name: '', email: '', allowOverbook: false, loading: false, error: null },
+        [shiftId]: { name: '', email: '', notes: '', allowOverbook: false, loading: false, error: null },
       }));
     } catch (error) {
       console.error('Error adding signup:', error);
@@ -712,6 +733,18 @@ export default function VolunteerManagementPage() {
                                       {shift.shift_description && (
                                         <div className="text-xs text-gray-500">{shift.shift_description}</div>
                                       )}
+                                      {shift.notes_enabled && (
+                                        <div className="mt-1 flex flex-wrap gap-1">
+                                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                                            Asks for notes
+                                          </span>
+                                          {shift.notes_public && (
+                                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">
+                                              Notes public
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
                                     </td>
                                     <td className="py-3 pr-4 text-sm text-gray-600 dark:text-gray-300">{timeLabel}</td>
                                     <td className="py-3 pr-4">
@@ -792,6 +825,11 @@ export default function VolunteerManagementPage() {
                                                     {signup.name}
                                                   </div>
                                                   <div className="text-xs text-gray-500">{signup.email}</div>
+                                                  {signup.notes && (
+                                                    <div className="mt-1 text-xs text-[#181411] dark:text-gray-200 whitespace-pre-line">
+                                                      <span className="font-semibold">Note:</span> {signup.notes}
+                                                    </div>
+                                                  )}
                                                 </div>
                                                 <button
                                                   onClick={() => handleRemoveSignup(shift.id, signup.id)}
@@ -845,6 +883,16 @@ export default function VolunteerManagementPage() {
                                             className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-xs text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
                                           />
                                         </div>
+                                        {shift.notes_enabled && (
+                                          <textarea
+                                            rows={2}
+                                            placeholder="Notes (optional)"
+                                            value={signupForm.notes}
+                                            maxLength={VOLUNTEER_NOTES_MAX_LENGTH}
+                                            onChange={(e) => handleSignupFieldChange(shift.id, 'notes', e.target.value)}
+                                            className="mt-2 w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] text-xs text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y"
+                                          />
+                                        )}
                                         <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                                           <input
                                             id={`allow_overbook_${shift.id}`}
@@ -1008,6 +1056,71 @@ export default function VolunteerManagementPage() {
                     Active
                   </label>
                 </div>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="shift_notes_enabled"
+                    checked={formData.notes_enabled}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        notes_enabled: e.target.checked,
+                        // Turning the question off also takes the notes back off the public page.
+                        notes_public: e.target.checked ? formData.notes_public : false,
+                      })
+                    }
+                    className="rounded border-gray-300"
+                  />
+                  <label htmlFor="shift_notes_enabled" className="text-sm font-medium text-[#181411] dark:text-white">
+                    Ask volunteers for notes on this shift
+                  </label>
+                </div>
+
+                {formData.notes_enabled && (
+                  <div className="mt-4 flex flex-col gap-4">
+                    <div>
+                      <label
+                        htmlFor="shift_notes_label"
+                        className="block text-sm font-medium text-[#181411] dark:text-white mb-1"
+                      >
+                        Question wording
+                      </label>
+                      <textarea
+                        id="shift_notes_label"
+                        rows={2}
+                        value={formData.notes_label}
+                        onChange={(e) => setFormData({ ...formData, notes_label: e.target.value })}
+                        placeholder={DEFAULT_VOLUNTEER_NOTES_LABEL}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-[#181411] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Leave blank to use the default wording shown above.
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="shift_notes_public"
+                          checked={formData.notes_public}
+                          onChange={(e) => setFormData({ ...formData, notes_public: e.target.checked })}
+                          className="rounded border-gray-300"
+                        />
+                        <label htmlFor="shift_notes_public" className="text-sm text-[#181411] dark:text-white">
+                          Show these notes on the public volunteer page
+                        </label>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Off by default. When on, visitors see each volunteer&apos;s first name and last
+                        initial next to their note. Email addresses are never shown.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 mt-4">

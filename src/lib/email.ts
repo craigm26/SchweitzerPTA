@@ -6,6 +6,9 @@ type VolunteerAcknowledgementInput = {
   eventLocation: string;
   shiftTitle: string;
   shiftTimeLabel: string;
+  // Optional per-shift notes answer. Included so the PTA inbox copy carries the
+  // station/pairing request, not just the name and time.
+  volunteerNotes?: string | null;
 };
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
@@ -39,6 +42,7 @@ export async function sendVolunteerSignupAcknowledgement({
   eventLocation,
   shiftTitle,
   shiftTimeLabel,
+  volunteerNotes,
 }: VolunteerAcknowledgementInput) {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const from = process.env.SITE_EMAIL_FROM_VOLUNTEER_SIGNUP?.trim();
@@ -57,6 +61,10 @@ export async function sendVolunteerSignupAcknowledgement({
   const safeShiftTitle = escapeHtml(shiftTitle);
   const safeShiftTimeLabel = escapeHtml(shiftTimeLabel);
   const safeReplyTo = escapeHtml(replyTo);
+  const trimmedNotes = (volunteerNotes || '').trim();
+  const notesHtmlRow = trimmedNotes
+    ? `<p style="margin:6px 0;"><strong>Your Notes:</strong> ${escapeHtml(trimmedNotes)}</p>`
+    : '';
   const html = `
     <div style="margin:0; padding:24px; background:#f7f4f1; font-family: Arial, sans-serif; color:#181411; line-height:1.6;">
       <div style="max-width:640px; margin:0 auto; background:#ffffff; border:1px solid #eadfd4; border-radius:16px; overflow:hidden;">
@@ -74,6 +82,7 @@ export async function sendVolunteerSignupAcknowledgement({
             <p style="margin:6px 0;"><strong>Location:</strong> ${safeEventLocation}</p>
             <p style="margin:6px 0;"><strong>Volunteer Role:</strong> ${safeShiftTitle}</p>
             <p style="margin:6px 0;"><strong>Shift Time:</strong> ${safeShiftTimeLabel}</p>
+            ${notesHtmlRow}
           </div>
           <p>If anything changes or you need to update your availability, just reply to this email at <a href="mailto:${safeReplyTo}" style="color:#f97316; text-decoration:none;">${safeReplyTo}</a> and we will help.</p>
           <p style="margin-bottom:0;">Thank you again for supporting our Wildcats and school community.<br /><br />Schweitzer Elementary PTA</p>
@@ -91,6 +100,7 @@ export async function sendVolunteerSignupAcknowledgement({
     `Location: ${eventLocation}`,
     `Volunteer Role: ${shiftTitle}`,
     `Shift Time: ${shiftTimeLabel}`,
+    ...(trimmedNotes ? [`Your Notes: ${trimmedNotes}`] : []),
     '',
     `If anything changes, just reply to this email at ${replyTo} and we will help.`,
     '',

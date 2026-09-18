@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendVolunteerSignupAcknowledgement } from '@/lib/email';
+import { normalizeVolunteerNotes, VOLUNTEER_NOTES_MAX_LENGTH } from '@/lib/volunteer-notes';
 
 function parseTimeParts(time: string | null): { hour: number; minute: number } | null {
   if (!time) return null;
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
       // Event volunteer shift signup
       const { data: shift, error: shiftError } = await supabase
         .from('event_volunteer_shifts')
-        .select('event_id, job_title, start_time, end_time, spots_available, spots_filled, is_active')
+        .select('event_id, job_title, start_time, end_time, spots_available, spots_filled, is_active, notes_enabled')
         .eq('id', body.shift_id)
         .single();
 
@@ -52,6 +53,17 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'No spots available' }, { status: 400 });
       }
 
+      // Only shifts that ask for notes can store them — anything sent for a shift with
+      // the question turned off is dropped rather than quietly saved.
+      const notes = normalizeVolunteerNotes(body.notes, shift.notes_enabled === true);
+
+      if (notes && notes.length > VOLUNTEER_NOTES_MAX_LENGTH) {
+        return NextResponse.json(
+          { error: `Notes must be ${VOLUNTEER_NOTES_MAX_LENGTH} characters or fewer.` },
+          { status: 400 }
+        );
+      }
+
       const { error } = await supabase
         .from('event_volunteer_signups')
         .insert({
@@ -59,6 +71,7 @@ export async function POST(request: Request) {
           user_id: user?.id || null,
           name: body.name,
           email: body.email,
+          notes,
           status: 'pending',
         });
 
@@ -107,6 +120,7 @@ export async function POST(request: Request) {
             eventLocation: event.location,
             shiftTitle: shift.job_title,
             shiftTimeLabel,
+            volunteerNotes: notes,
           });
           emailSent = true;
         }
@@ -122,6 +136,7 @@ export async function POST(request: Request) {
         eventTitle: event?.title || null,
         shiftTitle: shift.job_title,
         shiftTimeLabel,
+        notes,
       });
     }
 
