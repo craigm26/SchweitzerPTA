@@ -8,7 +8,6 @@ import {
   deleteVolunteerSignup,
   deleteVolunteerShift,
   getVolunteerEvents,
-  updateVolunteerSignup,
   updateCalendarEvent,
   updateVolunteerShift,
   VolunteerEvent,
@@ -36,7 +35,6 @@ export default function VolunteerManagementPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [eventOrderInputs, setEventOrderInputs] = useState<Record<number, string>>({});
   const [shiftOrderInputs, setShiftOrderInputs] = useState<Record<number, string>>({});
-  const [signupStatusFilter, setSignupStatusFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
   const [signupForms, setSignupForms] = useState<
     Record<
       number,
@@ -500,39 +498,6 @@ export default function VolunteerManagementPage() {
     }
   };
 
-  const handleUpdateSignupStatus = async (
-    shiftId: number,
-    signupId: number,
-    status: 'pending' | 'confirmed' | 'cancelled'
-  ) => {
-    const loadingKey = `signup-${signupId}`;
-    setActionLoading(loadingKey);
-    try {
-      const result = await updateVolunteerSignup(signupId, { status });
-      setEvents((prev) =>
-        prev.map((event) => ({
-          ...event,
-          shifts: event.shifts.map((shift) =>
-            shift.id === shiftId
-              ? {
-                  ...shift,
-                  spots_filled: result.spots_filled ?? shift.spots_filled,
-                  signups: (shift.signups || []).map((signup) =>
-                    signup.id === signupId ? result.signup : signup
-                  ),
-                }
-              : shift
-          ),
-        }))
-      );
-    } catch (error) {
-      console.error('Error updating signup status:', error);
-      alert('Failed to update signup status');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   if (loading) {
     return (
       <div className="p-6 lg:p-10 flex items-center justify-center min-h-[400px]">
@@ -566,21 +531,6 @@ export default function VolunteerManagementPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Signup status</label>
-                <select
-                  value={signupStatusFilter}
-                  onChange={(e) =>
-                    setSignupStatusFilter(e.target.value as 'all' | 'pending' | 'confirmed' | 'cancelled')
-                  }
-                  className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] px-3 py-2 text-sm text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value="all">All</option>
-                  <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
               <button
                 onClick={() => openAddShiftModal()}
                 className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
@@ -718,12 +668,6 @@ export default function VolunteerManagementPage() {
                               const signups = shift.signups || [];
                               const signupForm = getSignupForm(shift.id);
                               const isFull = shift.spots_filled >= shift.spots_available;
-                              const filteredSignups =
-                                signupStatusFilter === 'all'
-                                  ? signups
-                                  : signups.filter(
-                                      (signup) => (signup.status || 'pending') === signupStatusFilter
-                                    );
 
                               return (
                                 <Fragment key={shift.id}>
@@ -810,11 +754,9 @@ export default function VolunteerManagementPage() {
                                       <span className="font-semibold text-gray-600 dark:text-gray-300">Signups:</span>{' '}
                                       {signups.length === 0 ? (
                                         <span>No signups yet.</span>
-                                      ) : filteredSignups.length === 0 ? (
-                                        <span>No signups match the current filter.</span>
                                       ) : (
                                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                                          {filteredSignups.map((signup) => (
+                                          {signups.map((signup) => (
                                             <div
                                               key={signup.id}
                                               className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181411] px-3 py-2"
@@ -839,25 +781,6 @@ export default function VolunteerManagementPage() {
                                                 >
                                                   Remove
                                                 </button>
-                                              </div>
-                                              <div className="mt-2 flex items-center gap-2">
-                                                <label className="text-[11px] font-semibold text-gray-500">Status</label>
-                                                <select
-                                                  value={signup.status || 'pending'}
-                                                  onChange={(e) =>
-                                                    handleUpdateSignupStatus(
-                                                      shift.id,
-                                                      signup.id,
-                                                      e.target.value as 'pending' | 'confirmed' | 'cancelled'
-                                                    )
-                                                  }
-                                                  disabled={actionLoading === `signup-${signup.id}`}
-                                                  className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a221a] px-2 py-1 text-[11px] text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                >
-                                                  <option value="pending">Pending</option>
-                                                  <option value="confirmed">Confirmed</option>
-                                                  <option value="cancelled">Cancelled</option>
-                                                </select>
                                               </div>
                                             </div>
                                           ))}
