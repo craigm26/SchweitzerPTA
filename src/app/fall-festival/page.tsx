@@ -161,6 +161,17 @@ export default function FallFestivalPage() {
               </div>
 
               <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
+                Candy Donations
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                The candy muncher is back! We need candy donations to hand out at Fall
+                Festival. The candy muncher will be out in front of school beginning on
+                10/2. Label candy with your child&rsquo;s name and teacher for a chance to
+                win Front of the Line Spooky Walk passes for the whole family. The class
+                who donates the most candy will win a sno-cone party!
+              </p>
+
+              <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em] pt-4">
                 Spooky Walk
               </h2>
               <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
