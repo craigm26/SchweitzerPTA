@@ -113,6 +113,10 @@ export default function FallFestivalPage() {
       <div className="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
         <div className="flex flex-col max-w-[900px] lg:max-w-[1200px] w-full gap-6">
           <div className="flex flex-col gap-6">
+            <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+              Fall Festival is one of Schweitzer&rsquo;s biggest and most-loved events of
+              the year&mdash;and it takes a lot of helping hands to make it happen!
+            </p>
             <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em]">
               Purchase Fall Festival Tickets - On Sale 10/2
             </h2>
@@ -129,10 +133,6 @@ export default function FallFestivalPage() {
           <FallFestivalCollage />
           <div className="grid grid-cols-1 gap-6 lg:gap-10 items-start">
             <div className="flex flex-col gap-6">
-              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-                Fall Festival is one of Schweitzer&rsquo;s biggest and most-loved events of
-                the year&mdash;and it takes a lot of helping hands to make it happen!
-              </p>
               <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
                 We&rsquo;re looking for volunteers who can help plan, prepare, set up,
                 work during the event, and clean up afterward. Whether you can take on a
