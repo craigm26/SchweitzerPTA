@@ -115,7 +115,15 @@ export default function FallFestivalPage() {
           <div className="flex flex-col gap-6">
             <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
               Fall Festival is one of Schweitzer&rsquo;s biggest and most-loved events of
-              the year&mdash;and it takes a lot of helping hands to make it happen!
+              the year. It takes a lot of helping hands to make it happen. Please see
+              below for{' '}
+              <Link
+                href="/volunteer"
+                className="text-primary hover:underline"
+              >
+                volunteer information
+              </Link>{' '}
+              and how you can make candy donations.
             </p>
             <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em]">
               Purchase Fall Festival Tickets - On Sale 10/2
