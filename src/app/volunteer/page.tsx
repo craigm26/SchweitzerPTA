@@ -282,6 +282,14 @@ function renderEventDescription(description: string | null | undefined) {
   });
 }
 
+// How many spots a shift has actually taken: one per person on that shift's roster.
+// The stored spots_filled number can drift out of date (a signup removed behind the
+// scenes, an older shift edited by hand), so it's only the fallback for the rare case
+// where the roster didn't load.
+function filledSpots(shift: VolunteerShift): number {
+  return shift.roster ? shift.roster.length : shift.spots_filled;
+}
+
 // Who has signed up so far, shown under each shift. Names come from the
 // public_volunteer_shift_roster view, so an email address can never reach this page.
 // A note only rides along when an admin flagged that shift notes_public.
@@ -819,7 +827,7 @@ export default function VolunteerPage() {
                                 </h4>
                               )}
                               <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600 ml-auto">
-                                {entry.shift.spots_filled}/{entry.shift.spots_available} spots filled
+                                {filledSpots(entry.shift)}/{entry.shift.spots_available} spots filled
                               </span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 mt-1">
