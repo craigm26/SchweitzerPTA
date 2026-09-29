@@ -75,14 +75,17 @@ function formatTimeLabel(time: string | null): string | null {
 
 // These job roles always show first in the shift list, in this order,
 // whatever sort is chosen.
-const PINNED_ROLES = ['spooky walk preparation', 'spooky walk set up'];
+const PINNED_ROLES = ['spooky walk set up'];
+
+// This job role always shows at the very bottom of the shift list, whatever sort is chosen.
+const VERY_LAST_ROLE = 'spooky walk preparation';
 
 function pinnedRank(roleName: string): number {
   const idx = PINNED_ROLES.indexOf(normalizeRole(roleName));
   return idx < 0 ? PINNED_ROLES.length : idx;
 }
 
-// This job role always shows last in the shift list, whatever sort is chosen.
+// This job role always shows just above Spooky Walk Preparation at the bottom, whatever sort is chosen.
 const LAST_ROLE = 'fall festival general clean up';
 
 // This job role sits one spot higher than the usual sort would put it.
@@ -573,6 +576,11 @@ export default function VolunteerPage() {
       const aPinned = pinnedRank(a.roleName);
       const bPinned = pinnedRank(b.roleName);
       if (aPinned !== bPinned) return aPinned - bPinned;
+
+      // Keep the Spooky Walk Preparation group at the very bottom of the page.
+      const aVeryLast = normalizeRole(a.roleName) === VERY_LAST_ROLE;
+      const bVeryLast = normalizeRole(b.roleName) === VERY_LAST_ROLE;
+      if (aVeryLast !== bVeryLast) return aVeryLast ? 1 : -1;
 
       // Keep the Fall Festival General Clean Up group pinned to the bottom of the page.
       const aLast = a.roleName.trim().toLowerCase() === LAST_ROLE;
