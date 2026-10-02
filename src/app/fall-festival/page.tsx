@@ -126,8 +126,12 @@ export default function FallFestivalPage() {
               and how you can make candy donations.
             </p>
             <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em]">
-              Purchase Fall Festival Tickets. On sale until 10/15. Punch cards can be purchased at the door.
+              Purchase Fall Festival Tickets Now!
             </h2>
+            <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed -mt-4">
+              Pre-sale available until 10/15 at 5pm. Punch cards can be purchased at the
+              door. When checking out, select &ldquo;Other&rdquo; to not pay any fees.
+            </p>
             <div className="relative w-full overflow-hidden h-[900px]">
               <iframe
                 title="Donation form powered by Zeffy"
