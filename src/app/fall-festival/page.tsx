@@ -126,7 +126,7 @@ export default function FallFestivalPage() {
               and how you can make candy donations.
             </p>
             <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em]">
-              Purchase Fall Festival Tickets - On Sale 10/2
+              Purchase Fall Festival Tickets. On sale until 10/15. Punch cards can be purchased at the door.
             </h2>
             <div className="relative w-full overflow-hidden h-[900px]">
               <iframe
