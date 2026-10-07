@@ -110,7 +110,9 @@ function normalizeRole(roleName: string): string {
 }
 
 // Friendlier headings for certain job roles.
-const ROLE_HEADINGS: Record<string, string> = {};
+const ROLE_HEADINGS: Record<string, string> = {
+  'cotton candy station': 'Popcorn and Cotton Candy Station',
+};
 
 function roleHeading(roleName: string): string {
   return ROLE_HEADINGS[roleName.trim().toLowerCase()] ?? roleName;
