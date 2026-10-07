@@ -109,6 +109,9 @@ function normalizeRole(roleName: string): string {
   return roleName.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
 }
 
+// These job role sections are hidden from the page.
+const HIDDEN_ROLES = ['popcorn/cotton candy station'];
+
 // Friendlier headings for certain job roles.
 const ROLE_HEADINGS: Record<string, string> = {
   'cotton candy station': 'Popcorn and Cotton Candy Station',
@@ -530,7 +533,10 @@ export default function VolunteerPage() {
   }, [events]);
 
   const roleOptions = useMemo(
-    () => Array.from(new Set(entries.map((e) => e.roleName))).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(new Set(entries.map((e) => e.roleName)))
+        .filter((role) => !HIDDEN_ROLES.includes(normalizeRole(role)))
+        .sort((a, b) => a.localeCompare(b)),
     [entries]
   );
 
@@ -561,7 +567,9 @@ export default function VolunteerPage() {
       else byRole.set(entry.roleName, [entry]);
     });
 
-    const list = Array.from(byRole.entries()).map(([roleName, groupEntries]) => {
+    const list = Array.from(byRole.entries())
+      .filter(([roleName]) => !HIDDEN_ROLES.includes(normalizeRole(roleName)))
+      .map(([roleName, groupEntries]) => {
       const sorted = [...groupEntries].sort(
         (a, b) => a.dateIso.localeCompare(b.dateIso) || a.timeSort - b.timeSort
       );
