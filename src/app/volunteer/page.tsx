@@ -136,12 +136,13 @@ function roleDescription(roleName: string): string | undefined {
 
 // Some shift titles have extra wording after the job role, which would split them
 // into a separate section. Anything starting with one of these goes in one section.
-const MERGED_ROLE_PREFIXES = ['popcorn station'];
+// The timed "Popcorn/Cotton Candy Station (5:45pm - 7:00pm)" shifts also join the Popcorn Station section.
+const MERGED_ROLE_PREFIXES = ['popcorn station', 'popcorn/cotton candy station ('];
 
 function canonicalRole(roleName: string): string {
   const trimmed = roleName.trim();
   const prefix = MERGED_ROLE_PREFIXES.find((p) => trimmed.toLowerCase().startsWith(p));
-  return prefix ? trimmed.slice(0, prefix.length) : roleName;
+  return prefix ? 'Popcorn Station' : roleName;
 }
 
 const MONTH_PREFIXES = [
