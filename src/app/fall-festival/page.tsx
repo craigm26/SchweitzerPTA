@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import Script from 'next/script';
 import Link from 'next/link';
 import {
   getPhotos,
@@ -87,6 +88,43 @@ function FallFestivalCollage() {
   );
 }
 
+// Zeffy's official embed script; if it fails or doesn't render, fall back to a plain iframe.
+const ZEFFY_FORM_PATH = '/embed/ticketing/fall-festival-albert-schweitzer-elementary-school--2026';
+
+function ZeffyTicketForm() {
+  const embedRef = useRef<HTMLDivElement>(null);
+  const [showFallback, setShowFallback] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!embedRef.current?.hasChildNodes()) setShowFallback(true);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div>
+      {!showFallback && <div ref={embedRef} data-zeffy-embed data-form-url={ZEFFY_FORM_PATH} />}
+      {showFallback && (
+        <div className="relative w-full overflow-hidden h-[900px]">
+          <iframe
+            title="Donation form powered by Zeffy"
+            src={`https://www.zeffy.com${ZEFFY_FORM_PATH}`}
+            className="absolute inset-0 w-full h-full border-0"
+            allow="payment"
+            allowTransparency
+          />
+        </div>
+      )}
+      <Script
+        src="https://www.zeffy.com/embed/v2/zeffy-embed.js"
+        strategy="afterInteractive"
+        onError={() => setShowFallback(true)}
+      />
+    </div>
+  );
+}
+
 export default function FallFestivalPage() {
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
@@ -130,14 +168,7 @@ export default function FallFestivalPage() {
               Pre-sale available until 10/15 at 5pm. Punch cards can be purchased at the
               door. When checking out, select &ldquo;Other&rdquo; to not pay any fees.
             </p>
-            <div className="relative w-full overflow-hidden h-[900px]">
-              <iframe
-                title="Donation form powered by Zeffy"
-                src="https://www.zeffy.com/embed/ticketing/fall-festival-albert-schweitzer-elementary-school--2026"
-                className="absolute inset-0 w-full h-full border-0"
-                allowTransparency
-              />
-            </div>
+            <ZeffyTicketForm />
           </div>
 
           <FallFestivalCollage />
