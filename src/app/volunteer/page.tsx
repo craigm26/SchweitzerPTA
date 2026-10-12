@@ -75,7 +75,7 @@ function formatTimeLabel(time: string | null): string | null {
 
 // These job roles always show first in the shift list, in this order,
 // whatever sort is chosen.
-const PINNED_ROLES = ['spooky walk set up'];
+const PINNED_ROLES = ['game station', 'spooky walk set up'];
 
 // This job role always shows at the very bottom of the shift list, whatever sort is chosen.
 const VERY_LAST_ROLE = 'spooky walk preparation';
