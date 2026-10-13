@@ -106,6 +106,9 @@ const AFTER_SPOOKY_WALK_GUIDE_ROLE = 'spooky walk actor';
 const INFLATABLE_MAZE_ROLE = 'inflatable maze';
 const AFTER_INFLATABLE_MAZE_ROLE = 'cotton candy station';
 
+// This job role always sits right after the Popcorn and Cotton Candy Station section.
+const AFTER_COTTON_CANDY_ROLE = 'entrance table';
+
 function normalizeRole(roleName: string): string {
   return roleName.trim().toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ');
 }
@@ -666,6 +669,21 @@ export default function VolunteerPage() {
       const [cottonCandy] = list.splice(cottonCandyIdx, 1);
       const target = list.findIndex((g) => normalizeRole(g.roleName).startsWith(INFLATABLE_MAZE_ROLE));
       list.splice(target + 1, 0, cottonCandy);
+    }
+
+    // Slide the Entrance Table group so it sits right after the Popcorn and Cotton Candy Station group.
+    const entranceIdx = list.findIndex((g) =>
+      normalizeRole(g.roleName).startsWith(AFTER_COTTON_CANDY_ROLE)
+    );
+    const cottonCandyGroupIdx = list.findIndex((g) =>
+      normalizeRole(g.roleName).startsWith(AFTER_INFLATABLE_MAZE_ROLE)
+    );
+    if (entranceIdx >= 0 && cottonCandyGroupIdx >= 0 && entranceIdx !== cottonCandyGroupIdx + 1) {
+      const [entrance] = list.splice(entranceIdx, 1);
+      const target = list.findIndex((g) =>
+        normalizeRole(g.roleName).startsWith(AFTER_INFLATABLE_MAZE_ROLE)
+      );
+      list.splice(target + 1, 0, entrance);
     }
 
     return list;
