@@ -75,7 +75,10 @@ function formatTimeLabel(time: string | null): string | null {
 
 // These job roles always show first in the shift list, in this order,
 // whatever sort is chosen.
-const PINNED_ROLES = ['game station', 'spooky walk set up'];
+const PINNED_ROLES = ['game station'];
+
+// This job role always sits right after the Spooky Walk Actor section.
+const AFTER_SPOOKY_WALK_ACTOR_ROLE = 'spooky walk set up';
 
 // This job role always shows at the very bottom of the shift list, whatever sort is chosen.
 const VERY_LAST_ROLE = 'spooky walk preparation';
@@ -697,6 +700,21 @@ export default function VolunteerPage() {
       const [actor] = list.splice(actorMoveIdx, 1);
       const target = list.findIndex((g) => normalizeRole(g.roleName).startsWith(AFTER_COTTON_CANDY_ROLE));
       list.splice(target + 1, 0, actor);
+    }
+
+    // Slide the Spooky Walk Set-Up group so it sits right after the Spooky Walk Actor group.
+    const setUpIdx = list.findIndex((g) =>
+      normalizeRole(g.roleName).startsWith(AFTER_SPOOKY_WALK_ACTOR_ROLE)
+    );
+    const actorGroupIdx = list.findIndex((g) =>
+      normalizeRole(g.roleName).startsWith(AFTER_SPOOKY_WALK_GUIDE_ROLE)
+    );
+    if (setUpIdx >= 0 && actorGroupIdx >= 0 && setUpIdx !== actorGroupIdx + 1) {
+      const [setUp] = list.splice(setUpIdx, 1);
+      const target = list.findIndex((g) =>
+        normalizeRole(g.roleName).startsWith(AFTER_SPOOKY_WALK_GUIDE_ROLE)
+      );
+      list.splice(target + 1, 0, setUp);
     }
 
     return list;
