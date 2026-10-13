@@ -717,6 +717,21 @@ export default function VolunteerPage() {
       list.splice(target + 1, 0, setUp);
     }
 
+    // Slide the Spooky Walk Clean Up group so it sits right after the Spooky Walk Set-Up group.
+    const cleanUpIdx = list.findIndex((g) =>
+      normalizeRole(g.roleName).startsWith(SECOND_TO_LAST_ROLE)
+    );
+    const setUpGroupIdx = list.findIndex((g) =>
+      normalizeRole(g.roleName).startsWith(AFTER_SPOOKY_WALK_ACTOR_ROLE)
+    );
+    if (cleanUpIdx >= 0 && setUpGroupIdx >= 0 && cleanUpIdx !== setUpGroupIdx + 1) {
+      const [cleanUp] = list.splice(cleanUpIdx, 1);
+      const target = list.findIndex((g) =>
+        normalizeRole(g.roleName).startsWith(AFTER_SPOOKY_WALK_ACTOR_ROLE)
+      );
+      list.splice(target + 1, 0, cleanUp);
+    }
+
     return list;
   }, [entries, roleFilter, dateFilter, audienceFilter, sortBy]);
 
