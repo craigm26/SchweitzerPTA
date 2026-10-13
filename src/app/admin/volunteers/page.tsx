@@ -35,6 +35,7 @@ export default function VolunteerManagementPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [eventOrderInputs, setEventOrderInputs] = useState<Record<number, string>>({});
   const [shiftOrderInputs, setShiftOrderInputs] = useState<Record<number, string>>({});
+  const [copiedEventId, setCopiedEventId] = useState<number | null>(null);
   const [signupForms, setSignupForms] = useState<
     Record<
       number,
@@ -144,6 +145,39 @@ export default function VolunteerManagementPage() {
       alert('Failed to update event visibility');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  // Unique signup emails across all of an event's shifts, for pasting into an email "To"/"Bcc" field.
+  const getEventEmails = (event: VolunteerEvent) => {
+    const seen = new Set<string>();
+    const emails: string[] = [];
+    for (const shift of event.shifts) {
+      for (const signup of shift.signups || []) {
+        const email = signup.email?.trim();
+        if (email && !seen.has(email.toLowerCase())) {
+          seen.add(email.toLowerCase());
+          emails.push(email);
+        }
+      }
+    }
+    return emails;
+  };
+
+  const handleCopyEmails = async (event: VolunteerEvent) => {
+    const emails = getEventEmails(event);
+    if (emails.length === 0) {
+      alert('No one has signed up for this event yet.');
+      return;
+    }
+    const list = emails.join(', ');
+    try {
+      await navigator.clipboard.writeText(list);
+      setCopiedEventId(event.id);
+      setTimeout(() => setCopiedEventId((current) => (current === event.id ? null : current)), 2000);
+    } catch {
+      // Clipboard can be blocked by the browser; show the list so it can be copied by hand.
+      window.prompt('Copy these email addresses:', list);
     }
   };
 
@@ -639,6 +673,18 @@ export default function VolunteerManagementPage() {
                       >
                         <span className="material-symbols-outlined text-base">add</span>
                         Add Shift
+                      </button>
+                      <button
+                        onClick={() => handleCopyEmails(event)}
+                        title="Copy all volunteer email addresses for this event, ready to paste into a new email"
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-bold text-[#181411] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-base">
+                          {copiedEventId === event.id ? 'check' : 'content_copy'}
+                        </span>
+                        {copiedEventId === event.id
+                          ? 'Copied!'
+                          : `Copy Emails (${getEventEmails(event).length})`}
                       </button>
                     </div>
                   </div>
