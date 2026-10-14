@@ -781,8 +781,8 @@ export default function VolunteerPage() {
   return (
     <main className="layout-container flex h-full grow flex-col pb-20">
       {/* Main Content */}
-      <div className="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
-        <div className="flex flex-col max-w-[1100px] w-full gap-8">
+      <div className="px-4 md:px-10 lg:px-20 py-5 sm:py-8 flex justify-center">
+        <div className="flex flex-col max-w-[1100px] w-full gap-5 sm:gap-8">
           {loading ? (
             <div className="flex items-center justify-center min-h-[300px]">
               <div className="flex flex-col items-center gap-4">
@@ -829,7 +829,7 @@ export default function VolunteerPage() {
                 groups.map((group) => (
                   <section
                     key={group.roleName}
-                    className="bg-white dark:bg-[#2a221a] rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800"
+                    className="bg-white dark:bg-[#2a221a] rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-800"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h3 className="text-[#181411] dark:text-white text-xl font-bold">
@@ -846,11 +846,11 @@ export default function VolunteerPage() {
                       </p>
                     )}
 
-                    <div className="flex flex-col gap-4 mt-4">
+                    <div className="flex flex-col gap-3 mt-3">
                       {group.entries.map((entry) => (
                         <div
                           key={entry.shift.id}
-                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-3"
+                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 flex flex-col gap-2"
                         >
                           <div>
                             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -860,11 +860,6 @@ export default function VolunteerPage() {
                                   {entry.timeLabel}
                                 </h4>
                               )}
-                              <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600 ml-auto">
-                                {filledSpots(entry.shift)}/{entry.shift.spots_available} spots filled
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 mt-1">
                               {entry.audienceLabel && (
                                 <span
                                   className={`text-xs font-bold px-2 py-0.5 rounded ${
@@ -878,6 +873,9 @@ export default function VolunteerPage() {
                                   {entry.audienceLabel}
                                 </span>
                               )}
+                              <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600 ml-auto">
+                                {filledSpots(entry.shift)}/{entry.shift.spots_available} spots filled
+                              </span>
                             </div>
                             {entry.shift.shift_description && (
                               <p className="text-sm text-gray-500 mt-1">
