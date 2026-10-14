@@ -813,6 +813,18 @@ export default function VolunteerManagementPage() {
                                                     {signup.name}
                                                   </div>
                                                   <div className="text-xs text-gray-500">{signup.email}</div>
+                                                  {signup.created_at && (
+                                                    <div className="text-xs text-gray-500">
+                                                      Signed up{' '}
+                                                      {new Date(signup.created_at).toLocaleString('en-US', {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                        hour: 'numeric',
+                                                        minute: '2-digit',
+                                                      })}
+                                                    </div>
+                                                  )}
                                                   {signup.notes && (
                                                     <div className="mt-1 text-xs text-[#181411] dark:text-gray-200 whitespace-pre-line">
                                                       <span className="font-semibold">Note:</span> {signup.notes}

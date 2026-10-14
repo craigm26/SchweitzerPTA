@@ -364,7 +364,9 @@ function ShiftSignup({
     error: null,
   });
 
-  const isFull = shift.spots_filled >= shift.spots_available;
+  // Count the actual roster (or the stored number, whichever is higher) so a shift
+  // can never look open when it's really already full.
+  const isFull = Math.max(filledSpots(shift), shift.spots_filled) >= shift.spots_available;
   // Only some shifts ask the extra question — Game Station wants a station preference
   // or a pairing request. Everything else keeps the plain name + email form.
   const notesEnabled = shift.notes_enabled === true;
