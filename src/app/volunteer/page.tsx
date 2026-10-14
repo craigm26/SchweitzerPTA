@@ -323,23 +323,28 @@ function ShiftRoster({ roster }: { roster?: VolunteerRosterEntry[] }) {
   const anyNotes = roster.some((entry) => entry.notes);
 
   return (
-    <div className="rounded-lg bg-gray-50 dark:bg-[#181411] border border-gray-200 dark:border-gray-700 px-3 py-2">
-      <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-        Signed up ({roster.length})
-      </div>
+    <div className="rounded-lg bg-gray-50 dark:bg-[#181411] border border-gray-200 dark:border-gray-700 px-3 py-1.5">
       {anyNotes ? (
-        <ul className="mt-1 flex flex-col gap-0.5">
-          {roster.map((entry) => (
-            <li key={entry.id} className="text-sm text-gray-600 dark:text-gray-300">
-              <span className="font-semibold text-[#181411] dark:text-white">{entry.name}</span>
-              {entry.notes && <span className="whitespace-pre-line"> — {entry.notes}</span>}
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Signed up ({roster.length})
+          </div>
+          <ul className="mt-0.5 flex flex-col gap-0.5">
+            {roster.map((entry) => (
+              <li key={entry.id} className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="font-semibold text-[#181411] dark:text-white">{entry.name}</span>
+                {entry.notes && <span className="whitespace-pre-line"> — {entry.notes}</span>}
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
-        // No notes to show, so the names collapse onto one wrapped line and the card
+        // No notes to show, so the label and names share one wrapped line and the card
         // stays short even on a shift with a dozen volunteers.
-        <p className="mt-0.5 text-sm text-[#181411] dark:text-gray-200">
+        <p className="text-sm text-[#181411] dark:text-gray-200">
+          <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Signed up ({roster.length}):
+          </span>{' '}
           {roster.map((entry) => entry.name).join(' · ')}
         </p>
       )}
@@ -419,13 +424,13 @@ function ShiftSignup({
   // field it follows so each shift card stays short. Tab order is name -> email ->
   // notes -> Sign Up, which is the order someone actually fills it in.
   const fieldClass =
-    'w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60';
+    'w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#181411] text-sm text-[#181411] dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60';
 
   const submitButton = (
     <button
       type="submit"
       disabled={isFull || state.loading}
-      className="inline-flex shrink-0 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+      className="inline-flex shrink-0 items-center justify-center rounded-lg bg-primary px-4 py-1.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
     >
       {isFull ? 'Shift Full' : state.loading ? 'Signing Up...' : 'Sign Up'}
     </button>
@@ -470,7 +475,7 @@ function ShiftSignup({
           <div className="flex items-end gap-2">
             <textarea
               id={`shift_notes_${shift.id}`}
-              rows={2}
+              rows={1}
               value={state.notes}
               onChange={(e) => setState((prev) => ({ ...prev, notes: e.target.value }))}
               disabled={isFull}
@@ -782,7 +787,7 @@ export default function VolunteerPage() {
     <main className="layout-container flex h-full grow flex-col pb-20">
       {/* Main Content */}
       <div className="px-4 md:px-10 lg:px-20 py-5 sm:py-8 flex justify-center">
-        <div className="flex flex-col max-w-[1100px] w-full gap-5 sm:gap-8">
+        <div className="flex flex-col max-w-[1100px] w-full gap-4 sm:gap-6">
           {loading ? (
             <div className="flex items-center justify-center min-h-[300px]">
               <div className="flex flex-col items-center gap-4">
@@ -832,7 +837,7 @@ export default function VolunteerPage() {
                     className="bg-white dark:bg-[#2a221a] rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-800"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-[#181411] dark:text-white text-xl font-bold">
+                      <h3 className="text-[#181411] dark:text-white text-lg sm:text-xl font-bold">
                         {roleHeading(group.roleName)}
                       </h3>
                       <span className="text-xs font-bold px-2 py-1 rounded bg-primary/10 text-primary">
@@ -841,16 +846,16 @@ export default function VolunteerPage() {
                     </div>
 
                     {roleDescription(group.roleName) && (
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
                         {roleDescription(group.roleName)}
                       </p>
                     )}
 
-                    <div className="flex flex-col gap-3 mt-3">
+                    <div className="flex flex-col gap-2 mt-2">
                       {group.entries.map((entry) => (
                         <div
                           key={entry.shift.id}
-                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 flex flex-col gap-2"
+                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 sm:p-3 flex flex-col gap-1.5"
                         >
                           <div>
                             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -873,12 +878,12 @@ export default function VolunteerPage() {
                                   {entry.audienceLabel}
                                 </span>
                               )}
-                              <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600 ml-auto">
+                              <span className="text-xs font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-600 ml-auto">
                                 {filledSpots(entry.shift)}/{entry.shift.spots_available} spots filled
                               </span>
                             </div>
                             {entry.shift.shift_description && (
-                              <p className="text-sm text-gray-500 mt-1">
+                              <p className="text-sm text-gray-500 mt-0.5">
                                 {entry.shift.shift_description}
                               </p>
                             )}
