@@ -104,8 +104,8 @@ const AFTER_GAME_STATION_ROLE = 'spooky walk guide';
 // This job role always sits right after the Spooky Walk Guide section.
 const AFTER_SPOOKY_WALK_GUIDE_ROLE = 'spooky walk actor';
 
-// The Inflatable Maze section always sits at the very bottom of the shift list,
-// and this job role keeps the spot right after Game Station that the maze used to hold.
+// The Inflatable Maze section always sits right after the Game Station section,
+// and this job role always sits right after the Inflatable Maze section.
 const INFLATABLE_MAZE_ROLE = 'inflatable maze';
 const AFTER_INFLATABLE_MAZE_ROLE = 'cotton candy station';
 
@@ -732,13 +732,6 @@ export default function VolunteerPage() {
         normalizeRole(g.roleName).startsWith(AFTER_SPOOKY_WALK_ACTOR_ROLE)
       );
       list.splice(target + 1, 0, cleanUp);
-    }
-
-    // Move the Inflatable Maze group to the very bottom of the page.
-    const mazeBottomIdx = list.findIndex((g) => normalizeRole(g.roleName).startsWith(INFLATABLE_MAZE_ROLE));
-    if (mazeBottomIdx >= 0 && mazeBottomIdx !== list.length - 1) {
-      const [maze] = list.splice(mazeBottomIdx, 1);
-      list.push(maze);
     }
 
     return list;
