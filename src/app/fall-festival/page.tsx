@@ -151,16 +151,6 @@ export default function FallFestivalPage() {
       <div className="px-4 md:px-10 lg:px-20 py-8 flex justify-center">
         <div className="flex flex-col max-w-[900px] lg:max-w-[1200px] w-full gap-6">
           <div className="flex flex-col gap-6">
-            <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-              Please see below for{' '}
-              <Link
-                href="/volunteer"
-                className="text-primary hover:underline"
-              >
-                volunteer information
-              </Link>{' '}
-              and how you can make candy donations.
-            </p>
             <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em]">
               Fall Festival Tickets
             </h2>
