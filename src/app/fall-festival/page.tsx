@@ -172,7 +172,10 @@ export default function FallFestivalPage() {
           <FallFestivalCollage />
           <div className="grid grid-cols-1 gap-6 lg:gap-10 items-start">
             <div className="flex flex-col gap-6">
-              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+              <h2 className="text-gray-900 dark:text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em]">
+                Volunteers
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed -mt-4">
                 We&rsquo;re looking for volunteers who can help plan, prepare, set up,
                 work during the event, and clean up afterward. Whether you can take on a
                 planning role, help with one specific task, or give us a few hours,
