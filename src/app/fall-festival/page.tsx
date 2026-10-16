@@ -165,7 +165,7 @@ export default function FallFestivalPage() {
               Fall Festival Tickets
             </h2>
             <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed -mt-4">
-              Pre-sale has ended. Punch cards can be purchased at the door.
+              Pre-sale has ended. Punch cards can be purchased at the door for $15.
             </p>
           </div>
 
